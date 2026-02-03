@@ -1,0 +1,213 @@
+.quotationSection {
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.quotationHeader {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  border-radius: 0;
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+}
+
+.actionGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.downloadButton {
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.downloadButton .material-icons {
+  margin: 0 !important;
+}
+
+.downloadButton:hover {
+  background: linear-gradient(180deg, #4a90e2 0%, #3b82f6 100%) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.downloadButton:active {
+  transform: translateY(0) !important;
+}
+
+.reviewLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.reviewLink .material-icons {
+  font-size: 20px;
+  color: #1e40af;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px;
+  transition: all 0.2s ease;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reviewLink:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.reviewLink:hover .material-icons {
+  background: rgba(255, 255, 255, 0.3);
+  color: #2563eb;
+}
+
+.reviewLink:active {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .headerActions {
+    align-items: flex-start;
+  }
+  
+  .actionGroup {
+    width: 100%;
+    align-items: stretch;
+  }
+  
+  .downloadButton {
+    width: 100%;
+  }
+  
+  .reviewLink {
+    justify-content: center;
+  }
+}
+
+.quotationHeader h2 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin: 0;
+  color: #ffffff;
+}
+
+.headerSubtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.quotationPreview {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f8fafc;
+  min-height: 0;
+  margin: 0;
+  position: relative;
+}
+
+/* Ensure the preview container inside can be full-width */
+.quotationPreview > div {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .quotationPreview {
+    padding: 16px;
+  }
+}
+
+.quotationPreview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.quotationPreview::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quotationPreview::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+.quotationPreview::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.emptyQuotation {
+  text-align: center;
+  color: #64748b;
+  padding: 80px 20px;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+}
+
+.emptyQuotation::before {
+  content: '📄';
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.emptyQuotation p {
+  max-width: 400px;
+  line-height: 1.7;
+  color: #94a3b8;
+}
+
