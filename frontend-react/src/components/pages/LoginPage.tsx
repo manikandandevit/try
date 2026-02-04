@@ -1,10 +1,11 @@
 /**
- * Login Page Component with Parallax Design
+ * Login Page Component - Split Screen Design
  */
 
-import React, { useState, FormEvent, useEffect, useRef } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { apiService } from '@/services/api';
 import styles from './LoginPage.module.css';
 
 export interface LoginPageProps {
@@ -14,48 +15,35 @@ export interface LoginPageProps {
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [emailError, setEmailError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [smoothMousePosition, setSmoothMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number>();
+  const [loginLogo, setLoginLogo] = useState<string | null>(null);
+  const [loginImage, setLoginImage] = useState<string | null>(null);
+  const [defaultEmail, setDefaultEmail] = useState<string>('');
 
-  // Smooth painting-like mouse parallax effect with interpolation
+  // Load company login data
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-        setMousePosition({ x, y });
+    const loadCompanyLogin = async () => {
+      try {
+        const data = await apiService.getCompanyLogin();
+        if (data.login_logo_url) {
+          setLoginLogo(data.login_logo_url);
+        }
+        if (data.login_image_url) {
+          setLoginImage(data.login_image_url);
+        }
+        if (data.email) {
+          setDefaultEmail(data.email);
+          setEmail(data.email);
+        }
+      } catch (error) {
+        console.error('Error loading company login data:', error);
       }
     };
-
-    // Smooth interpolation function (lerp) for painting-like effect
-    const lerp = (start: number, end: number, factor: number) => {
-      return start + (end - start) * factor;
-    };
-
-    const animate = () => {
-      setSmoothMousePosition(prev => ({
-        x: lerp(prev.x, mousePosition.x, 0.08),
-        y: lerp(prev.y, mousePosition.y, 0.08)
-      }));
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    animationFrameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [mousePosition]);
+    loadCompanyLogin();
+  }, []);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,9 +71,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     if (!password.trim()) {
       setPasswordError('Password is required');
       isValid = false;
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      isValid = false;
     }
 
     if (!isValid) {
@@ -95,201 +80,159 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     // Handle login
     setIsLoading(true);
     try {
-      // TODO: Implement actual login API call
-      console.log('Login attempt:', { email, password });
+      const response = await apiService.login(email, password);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // On success, call the onLogin callback
-      if (onLogin) {
-        onLogin();
+      if (response.success) {
+        // On success, call the onLogin callback
+        if (onLogin) {
+          onLogin();
+        }
+      } else {
+        setEmailError(response.error || 'Invalid email or password');
       }
-      console.log('Login successful');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      setEmailError('Invalid email or password');
+      setEmailError(error.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div ref={containerRef} className={styles.loginContainer}>
-      {/* Animated Background Grid */}
-      <div className={styles.gridBackground}></div>
-      
-      {/* Parallax Background Layers with smooth painting effect */}
-      <div 
-        className={styles.parallaxLayer1}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 40}px, ${smoothMousePosition.y * 40}px)`,
-          transition: 'transform 0.1s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.parallaxLayer2}
-        style={{
-          transform: `translate(${smoothMousePosition.x * -30}px, ${smoothMousePosition.y * -30}px)`,
-          transition: 'transform 0.1s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.parallaxLayer3}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 20}px, ${smoothMousePosition.y * 20}px)`,
-          transition: 'transform 0.1s ease-out'
-        }}
-      ></div>
-      
-      {/* Floating Geometric Shapes with mouse interaction */}
-      <div 
-        className={styles.geometricShape1}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 25}px, ${smoothMousePosition.y * 25}px) rotate(45deg)`,
-          transition: 'transform 0.15s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.geometricShape2}
-        style={{
-          transform: `translate(${smoothMousePosition.x * -20}px, ${smoothMousePosition.y * -20}px) rotate(-30deg)`,
-          transition: 'transform 0.15s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.geometricShape3}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 15}px, ${smoothMousePosition.y * 15}px) rotate(60deg)`,
-          transition: 'transform 0.15s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.geometricShape4}
-        style={{
-          transform: `translate(${smoothMousePosition.x * -15}px, ${smoothMousePosition.y * -15}px) rotate(120deg)`,
-          transition: 'transform 0.15s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.geometricShape5}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 18}px, ${smoothMousePosition.y * 18}px) rotate(-45deg)`,
-          transition: 'transform 0.15s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.geometricShape6}
-        style={{
-          transform: `translate(${smoothMousePosition.x * -12}px, ${smoothMousePosition.y * -12}px) rotate(90deg)`,
-          transition: 'transform 0.15s ease-out'
-        }}
-      ></div>
-      
-      {/* Painting brush effect - cursor trail */}
-      <div 
-        className={styles.paintBrush}
-        style={{
-          left: `${(mousePosition.x + 1) * 50}%`,
-          top: `${(mousePosition.y + 1) * 50}%`,
-        }}
-      ></div>
-      
-      {/* Animated Particles */}
-      <div className={styles.particles}>
-        {Array.from({ length: 50 }).map((_, i) => {
-          const left = Math.random() * 100;
-          const delay = Math.random() * 15;
-          const duration = 10 + Math.random() * 10;
-          return (
-            <div 
-              key={i} 
-              className={styles.particle} 
-              style={{ 
-                '--delay': `${delay}s`,
-                '--duration': `${duration}s`,
-                '--left': `${left}%`
-              } as React.CSSProperties}
-            ></div>
-          );
-        })}
-      </div>
-      
-      {/* Glowing Orbs with mouse interaction */}
-      <div 
-        className={styles.orb1}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 10}px, ${smoothMousePosition.y * 10}px)`,
-          transition: 'transform 0.2s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.orb2}
-        style={{
-          transform: `translate(${smoothMousePosition.x * -8}px, ${smoothMousePosition.y * -8}px)`,
-          transition: 'transform 0.2s ease-out'
-        }}
-      ></div>
-      <div 
-        className={styles.orb3}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 6}px, ${smoothMousePosition.y * 6}px)`,
-          transition: 'transform 0.2s ease-out'
-        }}
-      ></div>
-      
-      {/* Login Form Card */}
-      <div 
-        className={styles.loginCard}
-        style={{
-          transform: `translate(${smoothMousePosition.x * 8}px, ${smoothMousePosition.y * 8}px)`,
-          transition: 'transform 0.12s ease-out'
-        }}
-      >
-        <div className={styles.loginHeader}>
-          <h1 className={styles.title}>Welcome Back</h1>
-          <p className={styles.subtitle}>Sign in to continue to your account</p>
+    <div className={styles.loginContainer}>
+      {/* Left Side - Illustration */}
+      <div className={styles.leftSection}>
+        {loginImage ? (
+          <img src={loginImage} alt="Login Illustration" className={styles.loginImage} />
+        ) : (
+          <div className={styles.illustration}>
+            {/* Person with Laptop */}
+            <div className={styles.personLaptop}>
+              <div className={styles.person}>
+                <div className={styles.head}></div>
+                <div className={styles.body}></div>
+              </div>
+              <div className={styles.laptop}></div>
+            </div>
+            
+            {/* Invoice Document */}
+            <div className={styles.invoice}>
+              <div className={styles.invoiceText}>INVOICE</div>
+              <div className={styles.invoiceLines}>
+                <div className={styles.invoiceLine}></div>
+                <div className={styles.invoiceLine}></div>
+                <div className={styles.invoiceLine}></div>
+              </div>
+            </div>
+            
+            {/* Paper Airplane */}
+            <div className={styles.paperAirplane}>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
+              </svg>
+            </div>
+            
+            {/* Dashed Line */}
+            <div className={styles.dashedLine}></div>
+          </div>
+        )}
+        
+        {/* Branding */}
+        <div className={styles.branding}>
+          <h1 className={styles.brandName}>syn<span className={styles.boldQ}>Q</span>uot</h1>
+          <p className={styles.tagline}>Smart Quotes, Made Simple.</p>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className={styles.loginForm}>
-          <div className={styles.inputGroup}>
-            <Input
-              type="email"
-              label="Email Address"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={emailError}
-              className={styles.input}
+      {/* Right Side - Login Form */}
+      <div className={styles.rightSection}>
+        <div className={styles.formContainer}>
+          {/* Company Logo */}
+          {loginLogo && (
+            <div className={styles.logoContainer}>
+              <img src={loginLogo} alt="Company Logo" className={styles.companyLogo} />
+            </div>
+          )}
+          
+          {!loginLogo && (
+            <div className={styles.logoContainer}>
+              <div className={styles.defaultLogo}>
+                <div className={styles.logoIcon}></div>
+                <div className={styles.logoText}>
+                  <div className={styles.logoTitle}>SYNGRID</div>
+                  <div className={styles.logoSubtitle}>Digital Solution Architects</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Welcome Text */}
+          <h2 className={styles.welcomeText}>Welcome!</h2>
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className={styles.loginForm}>
+            <div className={styles.inputGroup}>
+              <Input
+                type="email"
+                label="Email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={emailError}
+                className={styles.input}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Password</label>
+              <div className={styles.passwordWrapper}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={styles.input}
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  className={styles.passwordToggle}
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {passwordError && <span className={styles.errorMessage}>{passwordError}</span>}
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="large"
+              className={styles.loginButton}
               disabled={isLoading}
-            />
-          </div>
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
+            </Button>
+          </form>
 
-          <div className={styles.inputGroup}>
-            <Input
-              type="password"
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={passwordError}
-              className={styles.input}
-              disabled={isLoading}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            variant="primary"
-            size="large"
-            className={styles.loginButton}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing in...' : 'Login'}
-          </Button>
-        </form>
+          {/* Support Link */}
+          <a href="#" className={styles.supportLink}>Need a Support?</a>
+        </div>
       </div>
     </div>
   );
 };
-

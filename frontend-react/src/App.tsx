@@ -2,7 +2,7 @@
  * Main App Component
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import type { TabType } from '@/types';
 import { TabType as TabTypeEnum } from '@/types';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -44,6 +44,13 @@ const QuotationPage: React.FC = () => {
   }, [quotation]);
 
   const handleReset = useCallback(async () => {
+    if (!window.confirm('Are you sure you want to clear everything? This will clear the conversation and quotation preview.')) {
+      return;
+    }
+    
+    // Reset quotation first (clears backend session), then reset chat (syncs empty conversation)
+    // This ensures backend quotation is cleared before syncing conversation history
+    // The sync_conversation_history will also clear quotation if conversation has only welcome message
     await resetQuotation();
     await chat.resetChat();
   }, [resetQuotation, chat]);
@@ -108,10 +115,30 @@ const TabPage: React.FC<{ title: string; description: string }> = ({ title, desc
 };
 
 export const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabTypeEnum.QUOTATION);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    // Check if user is authenticated (you can also check session/localStorage)
+    const checkAuth = async () => {
+      try {
+        // Check if there's a session (you might want to add an endpoint to verify session)
+        // For now, we'll check localStorage
+        const authStatus = localStorage.getItem('isAuthenticated');
+        if (authStatus === 'true') {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleLogin = () => {
+    // Set authentication status
+    localStorage.setItem('isAuthenticated', 'true');
     setIsAuthenticated(true);
   };
 
@@ -135,6 +162,7 @@ export const App: React.FC = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  // Show main app if authenticated
   return (
     <div className={styles.appContainer}>
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />

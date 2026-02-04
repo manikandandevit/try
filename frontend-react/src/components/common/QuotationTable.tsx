@@ -203,6 +203,27 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Key Features Section - After Grand Total */}
+        {quotation.services.some(service => service.key_features && service.key_features.length > 0) && (
+          <div className={styles.keyFeaturesSection}>
+            <div className={styles.keyFeaturesTitle}>Key Features:</div>
+            <div className={styles.keyFeaturesList}>
+              {quotation.services.map((service, index) => {
+                if (service.key_features && service.key_features.length > 0) {
+                  const featuresText = service.key_features.join(', ');
+                  return (
+                    <div key={index} className={styles.keyFeatureItem}>
+                      <span className={styles.serviceName}>{escapeHtml(service.service_name)}:</span>
+                      <span className={styles.featuresText}>{escapeHtml(featuresText)}</span>
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </div>
+        )}
       </div>
       </div>
 

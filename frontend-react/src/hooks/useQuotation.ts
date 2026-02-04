@@ -123,13 +123,34 @@ export const useQuotation = (): UseQuotationReturn => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await apiService.resetQuotation();
-      const normalized = normalizeQuotation(response.quotation);
-      setQuotationState(normalized, 'Reset Quotation');
+      
+      // Prevent auto-sync during reset
+      isSyncingRef.current = true;
+      
+      // Clear any pending auto-sync
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
+      
+      // Immediately set quotation to empty state for instant UI update
+      setQuotationState(initialQuotation, 'Reset Quotation');
       clearHistory();
+      
+      // Sync empty state to backend
+      try {
+        await apiService.resetQuotation();
+      } catch (apiErr) {
+        console.warn('Failed to sync reset to backend:', apiErr);
+        // Don't throw - UI is already updated
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reset quotation');
+      // Even on error, ensure quotation is reset
+      setQuotationState(initialQuotation, 'Reset Quotation');
+      clearHistory();
     } finally {
+      isSyncingRef.current = false;
       setIsLoading(false);
     }
   }, [setQuotationState, clearHistory]);

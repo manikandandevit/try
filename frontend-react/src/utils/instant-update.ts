@@ -3,9 +3,10 @@
  * Handles real-time quotation updates from natural language commands
  */
 
-import type { Quotation, Service, InstantUpdateResult } from '@/types';
+import type { Quotation, InstantUpdateResult } from '@/types';
 import { recalculateTotals } from './quotation-calculator';
 import { round } from './format';
+import { generateKeyFeatures } from './key-features-generator';
 
 export const tryInstantUpdate = (
   message: string,
@@ -58,14 +59,18 @@ export const tryInstantUpdate = (
             quantity,
             unit_price: price,
             amount: round(quantity * price, 2),
+            key_features: generateKeyFeatures(serviceName),
           });
           updated = true;
         } else {
+          const existingService = quotation.services[existingIndex];
           quotation.services[existingIndex] = {
-            ...quotation.services[existingIndex],
+            service_name: existingService.service_name,
             quantity,
             unit_price: price,
             amount: round(quantity * price, 2),
+            // Generate key features if not already present
+            key_features: existingService.key_features || generateKeyFeatures(serviceName),
           };
           updated = true;
         }
@@ -98,6 +103,7 @@ export const tryInstantUpdate = (
               quantity: 1,
               unit_price: 0,
               amount: 0,
+              key_features: generateKeyFeatures(serviceName),
             });
             updated = true;
           }
@@ -137,9 +143,14 @@ export const tryInstantUpdate = (
         });
 
         if (serviceIndex !== -1) {
+          const existingService = quotation.services[serviceIndex];
           quotation.services[serviceIndex] = {
-            ...quotation.services[serviceIndex],
             service_name: newName,
+            quantity: existingService.quantity,
+            unit_price: existingService.unit_price,
+            amount: existingService.amount,
+            // Regenerate key features since service name changed
+            key_features: generateKeyFeatures(newName),
           };
           updated = true;
         }
@@ -170,11 +181,13 @@ export const tryInstantUpdate = (
         if (serviceIndex !== -1) {
           const service = quotation.services[serviceIndex];
           quotation.services[serviceIndex] = {
-            ...service,
+            service_name: service.service_name,
+            quantity: service.quantity,
             unit_price: newPrice,
             price: newPrice,
             unit_rate: newPrice,
-            amount: round((service.quantity || 0) * newPrice, 2),
+            amount: round(service.quantity * newPrice, 2),
+            key_features: service.key_features,
           };
           updated = true;
         }
@@ -184,11 +197,13 @@ export const tryInstantUpdate = (
         const lastService = quotation.services[quotation.services.length - 1];
         if (lastService) {
           quotation.services[quotation.services.length - 1] = {
-            ...lastService,
+            service_name: lastService.service_name,
+            quantity: lastService.quantity,
             unit_price: newPrice,
             price: newPrice,
             unit_rate: newPrice,
-            amount: round((lastService.quantity || 0) * newPrice, 2),
+            amount: round(lastService.quantity * newPrice, 2),
+            key_features: lastService.key_features,
           };
           updated = true;
         }
@@ -219,10 +234,13 @@ export const tryInstantUpdate = (
     const newQuantity = parseInt(quantityMatch[1] || '0', 10);
     const lastService = quotation.services[quotation.services.length - 1];
     if (lastService) {
+      const unitPrice = lastService.unit_price || lastService.price || lastService.unit_rate || 0;
       quotation.services[quotation.services.length - 1] = {
-        ...lastService,
+        service_name: lastService.service_name,
         quantity: newQuantity,
-        amount: round((lastService.unit_price || lastService.price || lastService.unit_rate || 0) * newQuantity, 2),
+        unit_price: lastService.unit_price,
+        amount: round(unitPrice * newQuantity, 2),
+        key_features: lastService.key_features,
       };
       updated = true;
     }

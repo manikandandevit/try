@@ -9,6 +9,7 @@ import { MessageRole as MessageRoleEnum } from '@/types';
 import { apiService } from '@/services/api';
 import { tryInstantUpdate } from '@/utils/instant-update';
 import { normalizeQuotation, cleanInvalidServices } from '@/utils/validation';
+import { generateKeyFeatures } from '@/utils/key-features-generator';
 
 const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome-msg',
@@ -171,7 +172,12 @@ export const useChat = (
             const serverServiceName = serverService.service_name.toLowerCase();
 
             if (!existingServiceNames.has(serverServiceName)) {
-              currentQuotation.services.push(serverService);
+              // Generate key features if not present
+              const serviceWithFeatures = {
+                ...serverService,
+                key_features: serverService.key_features || generateKeyFeatures(serverService.service_name),
+              };
+              currentQuotation.services.push(serviceWithFeatures);
               existingServiceNames.add(serverServiceName);
             } else {
               // Update existing service with server's data if it has valid values
@@ -186,7 +192,11 @@ export const useChat = (
                 const existingPrice = existingService.unit_price || existingService.price || existingService.unit_rate || 0;
 
                 if (serverService.quantity > 0 && serverPrice > 0) {
-                  currentQuotation.services[existingIndex] = serverService;
+                  // Generate key features if not present
+                  currentQuotation.services[existingIndex] = {
+                    ...serverService,
+                    key_features: serverService.key_features || generateKeyFeatures(serverService.service_name),
+                  };
                 } else if (existingPrice > 0 && serverPrice === 0) {
                   // Keep existing
                 }
@@ -204,6 +214,11 @@ export const useChat = (
         } else {
           // No instant update, use server response
           const normalized = normalizeQuotation(response.quotation);
+          // Generate key features for services that don't have them
+          normalized.services = normalized.services.map(service => ({
+            ...service,
+            key_features: service.key_features || generateKeyFeatures(service.service_name),
+          }));
           updateQuotation(normalized);
         }
       } catch (err) {
@@ -222,10 +237,6 @@ export const useChat = (
   );
 
   const resetChat = useCallback(async () => {
-    if (!window.confirm('Are you sure you want to reset the quotation? This will clear all data.')) {
-      return;
-    }
-
     setMessages([WELCOME_MESSAGE]);
     setError(null);
     

@@ -20,6 +20,9 @@ import type {
   ClientUpdateRequest,
   ClientUpdateResponse,
   ClientDeleteResponse,
+  CompanyLoginData,
+  LoginRequest,
+  LoginResponse,
 } from '@/types';
 import { getCsrfToken } from '@/utils/csrf';
 
@@ -179,6 +182,26 @@ export const apiService = {
   deleteClient: async (clientId: number): Promise<ClientDeleteResponse> => {
     return fetchWithCsrf<ClientDeleteResponse>(`${API_BASE_URL}/clients/${clientId}/`, {
       method: 'DELETE',
+    });
+  },
+
+  /**
+   * Get company login data (logo, image, email)
+   */
+  getCompanyLogin: async (): Promise<CompanyLoginData> => {
+    return fetchWithCsrf<CompanyLoginData>(`${API_BASE_URL}/company-login/`, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Login with email and password
+   */
+  login: async (email: string, password: string): Promise<LoginResponse> => {
+    const request: LoginRequest = { email, password };
+    return fetchWithCsrf<LoginResponse>(`${API_BASE_URL}/login/`, {
+      method: 'POST',
+      body: JSON.stringify(request),
     });
   },
 };

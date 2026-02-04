@@ -21,6 +21,7 @@ export interface Service {
   price?: number; // Backward compatibility
   unit_rate?: number; // Backward compatibility
   amount: number;
+  key_features?: string[]; // Auto-generated key features
 }
 
 export interface Quotation {
@@ -256,6 +257,28 @@ export interface ClientUpdateResponse {
 export interface ClientDeleteResponse {
   success: boolean;
   message: string;
+  error?: string;
+}
+
+// ============================================
+// LOGIN TYPES
+// ============================================
+
+export interface CompanyLoginData {
+  email: string;
+  login_logo_url: string | null;
+  login_image_url: string | null;
+  error?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message?: string;
   error?: string;
 }
 
