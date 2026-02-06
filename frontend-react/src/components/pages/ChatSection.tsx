@@ -5,8 +5,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { ChatSectionProps } from '@/types';
 import { MessageBubble } from '@/components/common/MessageBubble';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import styles from './ChatSection.module.css';
 
@@ -53,39 +51,7 @@ export const ChatSection: React.FC<ChatSectionProps> = ({
   return (
     <div className={styles.chatSection}>
       <div className={styles.chatHeader}>
-        <div className={styles.headerContent}>
-          <h2>Conversation</h2>
-          <p className={styles.headerSubtitle}>Chat with AI Assistant</p>
-        </div>
-        <div className={styles.headerActions}>
-          {onUndo && onRedo && (
-            <>
-              <Button
-                variant="secondary"
-                size="small"
-                icon="undo"
-                onClick={onUndo}
-                disabled={!canUndo}
-                title="Undo (Ctrl+Z)"
-              >
-                Undo
-              </Button>
-              <Button
-                variant="secondary"
-                size="small"
-                icon="redo"
-                onClick={onRedo}
-                disabled={!canRedo}
-                title="Redo (Ctrl+Y)"
-              >
-                Redo
-              </Button>
-            </>
-          )}
-          <Button variant="secondary" size="small" icon="refresh" onClick={onReset}>
-            Clear
-          </Button>
-        </div>
+        <h2 className={styles.headerTitle}>Conversation</h2>
       </div>
 
       <div className={styles.chatMessages}>
@@ -96,7 +62,8 @@ export const ChatSection: React.FC<ChatSectionProps> = ({
       </div>
 
       <form className={styles.chatInputContainer} onSubmit={handleSubmit}>
-        <Input
+        <div className={styles.chatInputWrapper}>
+          <input
           ref={inputRef}
           type="text"
           value={inputValue}
@@ -106,15 +73,15 @@ export const ChatSection: React.FC<ChatSectionProps> = ({
           disabled={isLoading}
           className={styles.chatInput}
         />
-        <Button
+          <button
           type="submit"
-          variant="primary"
-          size="large"
-          icon="send"
+            className={styles.sendButton}
           disabled={isLoading || !inputValue.trim()}
+            aria-label="Send message"
         >
-          Send
-        </Button>
+            <span className="material-icons">send</span>
+          </button>
+        </div>
       </form>
 
       {isLoading && (

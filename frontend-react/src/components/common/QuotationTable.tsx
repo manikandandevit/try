@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect } from 'react';
-import type { QuotationTableProps } from '@/types';
+import type { QuotationTableProps, Client } from '@/types';
 import { formatCurrency, formatDate, escapeHtml } from '@/utils/format';
 import styles from './QuotationTable.module.css';
 
@@ -22,6 +22,7 @@ const DEFAULT_COMPANY_INFO = {
 export const QuotationTable: React.FC<QuotationTableProps> = ({
   quotation,
   companyInfo,
+  selectedClient,
 }) => {
   const company = companyInfo || DEFAULT_COMPANY_INFO;
   const currentDate = formatDate(new Date());
@@ -142,9 +143,75 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
         </table>
       </div>
 
-      {/* Date */}
+      {/* Date Section - At Top */}
       <div className={styles.dateSection}>
         <p>Date: {currentDate}</p>
+      </div>
+
+      {/* Quotation By and Quotation To Section */}
+      <div className={styles.quotationInfoSection}>
+        {/* Left Column - Quotation By (Company Info) */}
+        <div className={styles.quotationBySection}>
+          <div className={styles.quotationByLabel}>Quotation by</div>
+          <div className={styles.quotationByDetails}>
+            <div className={styles.detailItem}>
+              <strong>{escapeHtml(company.company_name)}</strong>
+            </div>
+            {company.address && (
+              <div className={styles.detailItem}>
+                {escapeHtml(company.address)}
+              </div>
+            )}
+            {company.phone_number && (
+              <div className={styles.detailItem}>
+                {escapeHtml(company.phone_number)}
+              </div>
+            )}
+            {company.email && (
+              <div className={styles.detailItem}>
+                {escapeHtml(company.email)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column - Quotation To (Client Info) */}
+        <div className={styles.quotationToSection}>
+          <div className={styles.quotationToLabel}>Quotation To</div>
+          {selectedClient ? (
+            <div className={styles.quotationToDetails}>
+              <div className={styles.detailItem}>
+                <strong>{escapeHtml(selectedClient.customer_name)}</strong>
+              </div>
+              {selectedClient.company_name && (
+                <div className={styles.detailItem}>
+                  {escapeHtml(selectedClient.company_name)}
+                </div>
+              )}
+              {selectedClient.address && (
+                <div className={styles.detailItem}>
+                  {escapeHtml(selectedClient.address)}
+                </div>
+              )}
+              {selectedClient.phone_number && (
+                <div className={styles.detailItem}>
+                  {escapeHtml(selectedClient.phone_number)}
+                </div>
+              )}
+              {selectedClient.email && (
+                <div className={styles.detailItem}>
+                  {escapeHtml(selectedClient.email)}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.quotationToDetails}>
+              <div className={styles.detailItemPlaceholder}>
+                Select a client from the dropdown above
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quotation Table */}

@@ -44,6 +44,14 @@ body {
   overflow: hidden;
 }
 
+/* Allow scrolling for login page */
+body.login-page-active,
+#root.login-page-active {
+  overflow: auto !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   body {

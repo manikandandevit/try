@@ -20,9 +20,21 @@ import type {
   ClientUpdateRequest,
   ClientUpdateResponse,
   ClientDeleteResponse,
+  User,
+  UserListResponse,
+  UserCreateRequest,
+  UserCreateResponse,
+  UserUpdateRequest,
+  UserUpdateResponse,
+  UserDeleteResponse,
+  UserPasswordResetRequest,
+  UserPasswordResetResponse,
   CompanyLoginData,
   LoginRequest,
   LoginResponse,
+  LogoutResponse,
+  CheckAuthResponse,
+  DashboardStatsResponse,
 } from '@/types';
 import { getCsrfToken } from '@/utils/csrf';
 
@@ -44,14 +56,24 @@ const fetchWithCsrf = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const csrfToken = getCsrfToken();
+  
+  // Get access token from localStorage
+  const accessToken = localStorage.getItem('access_token');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    'X-CSRFToken': csrfToken,
+    ...options.headers,
+  };
+
+  // Add Authorization header if access token exists
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
 
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-      ...options.headers,
-    },
+    headers,
     credentials: 'same-origin',
   });
 
@@ -202,6 +224,126 @@ export const apiService = {
     return fetchWithCsrf<LoginResponse>(`${API_BASE_URL}/login/`, {
       method: 'POST',
       body: JSON.stringify(request),
+    });
+  },
+
+  /**
+   * Logout - clears session for security
+   */
+  logout: async (): Promise<LogoutResponse> => {
+    return fetchWithCsrf<LogoutResponse>(`${API_BASE_URL}/logout/`, {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Check if user is authenticated
+   */
+  checkAuth: async (): Promise<CheckAuthResponse> => {
+    return fetchWithCsrf<CheckAuthResponse>(`${API_BASE_URL}/check-auth/`, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * List all users with optional search
+   */
+  listUsers: async (search?: string): Promise<UserListResponse> => {
+    const url = search
+      ? `${API_BASE_URL}/users/?search=${encodeURIComponent(search)}`
+      : `${API_BASE_URL}/users/`;
+    return fetchWithCsrf<UserListResponse>(url, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Create a new user
+   */
+  createUser: async (data: UserCreateRequest): Promise<UserCreateResponse> => {
+    return fetchWithCsrf<UserCreateResponse>(`${API_BASE_URL}/users/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update an existing user
+   */
+  updateUser: async (
+    userId: number,
+    data: UserUpdateRequest
+  ): Promise<UserUpdateResponse> => {
+    return fetchWithCsrf<UserUpdateResponse>(`${API_BASE_URL}/users/${userId}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete a user
+   */
+  deleteUser: async (userId: number): Promise<UserDeleteResponse> => {
+    return fetchWithCsrf<UserDeleteResponse>(`${API_BASE_URL}/users/${userId}/`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Reset user password
+   */
+  resetUserPassword: async (
+    userId: number,
+    data: UserPasswordResetRequest
+  ): Promise<UserPasswordResetResponse> => {
+    return fetchWithCsrf<UserPasswordResetResponse>(`${API_BASE_URL}/users/${userId}/reset-password/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Send quotation PDF via email using SMTP
+   */
+  sendQuotationEmail: async (
+    recipientEmail: string,
+    customerName: string,
+    pdfBlob: Blob,
+    pdfFilename: string
+  ): Promise<{ success: boolean; message: string }> => {
+    // Convert blob to base64
+    const reader = new FileReader();
+    const base64Promise = new Promise<string>((resolve, reject) => {
+      reader.onloadend = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(pdfBlob);
+    });
+
+    const pdfBase64 = await base64Promise;
+
+    return fetchWithCsrf<{ success: boolean; message: string }>(`${API_BASE_URL}/send-quotation-email/`, {
+      method: 'POST',
+      body: JSON.stringify({
+        recipient_email: recipientEmail,
+        customer_name: customerName,
+        pdf_base64: pdfBase64,
+        pdf_filename: pdfFilename,
+      }),
+    });
+  },
+
+  /**
+   * Get dashboard statistics
+   */
+  getDashboardStats: async (year?: number): Promise<DashboardStatsResponse> => {
+    const url = year
+      ? `${API_BASE_URL}/dashboard-stats/?year=${year}`
+      : `${API_BASE_URL}/dashboard-stats/`;
+    return fetchWithCsrf<DashboardStatsResponse>(url, {
+      method: 'GET',
     });
   },
 };

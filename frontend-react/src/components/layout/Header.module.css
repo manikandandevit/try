@@ -1,0 +1,248 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 260px; /* Sidebar width - exactly aligned, no gap */
+  right: 0;
+  height: 70px; /* Same as sidebar header height */
+  background: #00085E; /* Same as sidebar background */
+  border: none; /* Remove all borders */
+  z-index: 999;
+  box-shadow: none; /* Remove shadow that might create line effect */
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0 24px;
+  width: 100%;
+  margin: 0;
+}
+
+.mobileMenuButton {
+  display: none;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 16px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileMenuButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobileMenuButton .material-icons {
+  font-size: 24px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Notification Styles */
+.notificationContainer {
+  position: relative;
+}
+
+.notificationButton {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificationButton:hover {
+  color: #ffffff;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #dc2626;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  border: 2px solid #00085E;
+}
+
+.notificationDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notificationHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.notificationHeader button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificationHeader button:hover {
+  color: #111827;
+}
+
+.notificationList {
+  padding: 8px 0;
+}
+
+.notificationItem {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notificationItem:hover {
+  background: #f9fafb;
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationItem p {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #111827;
+}
+
+.notificationTime {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* User Profile Styles */
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.userProfile:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.avatarContainer {
+  position: relative;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.2;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    left: 0;
+  }
+
+  .headerContent {
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+
+  .mobileMenuButton {
+    display: flex;
+  }
+
+  .userInfo {
+    display: none;
+  }
+}
+

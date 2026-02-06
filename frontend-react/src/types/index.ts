@@ -3,6 +3,7 @@
 // ============================================
 
 export enum TabType {
+  DASHBOARD = 'dashboard',
   QUOTATION = 'quotation',
   CLIENT_PROFILE = 'client-profile',
   HISTORY = 'history',
@@ -149,9 +150,52 @@ export interface ServiceUpdatePattern {
 // COMPONENT PROP TYPES
 // ============================================
 
+export interface DashboardStatsResponse {
+  success: boolean;
+  data: {
+    kpis: {
+      total_quotations: number;
+      total_customers: number;
+      active_customers: number;
+      inactive_customers: number;
+      total_users: number;
+    };
+    monthly_sends: Array<{
+      month: string;
+      email: number;
+      whatsapp: number;
+      total: number;
+    }>;
+    send_breakdown: {
+      email: {
+        count: number;
+        percentage: number;
+      };
+      whatsapp: {
+        count: number;
+        percentage: number;
+      };
+      total: number;
+    };
+    customers: Array<{
+      id: number;
+      customer_name: string;
+      company_name: string;
+      email: string;
+      phone_number: string;
+      total_quotation: number;
+      status: 'Active' | 'Inactive';
+    }>;
+    year: number;
+  };
+}
+
 export interface SidebarProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
+  onLogout?: () => void;
+  isAdmin?: boolean;
+  allowedTabs?: TabType[];
 }
 
 export interface ChatSectionProps {
@@ -179,6 +223,7 @@ export interface MessageBubbleProps {
 export interface QuotationTableProps {
   quotation: Quotation;
   companyInfo: CompanyInfo | null;
+  selectedClient?: Client | null;
 }
 
 // ============================================
@@ -221,8 +266,12 @@ export interface UseCompanyInfoReturn {
 
 export interface Client {
   id: number;
-  name: string;
+  customer_name: string;
+  company_name: string;
+  phone_number: string;
   email: string;
+  address: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -233,8 +282,12 @@ export interface ClientListResponse {
 }
 
 export interface ClientCreateRequest {
-  name: string;
+  customer_name: string;
+  company_name?: string;
+  phone_number?: string;
   email: string;
+  address?: string;
+  is_active?: boolean;
 }
 
 export interface ClientCreateResponse {
@@ -244,8 +297,12 @@ export interface ClientCreateResponse {
 }
 
 export interface ClientUpdateRequest {
-  name: string;
+  customer_name: string;
+  company_name?: string;
+  phone_number?: string;
   email: string;
+  address?: string;
+   is_active?: boolean;
 }
 
 export interface ClientUpdateResponse {
@@ -255,6 +312,76 @@ export interface ClientUpdateResponse {
 }
 
 export interface ClientDeleteResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+// ============================================
+// USER TYPES
+// ============================================
+
+export interface User {
+  id: number;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  is_active: boolean;
+  is_admin: boolean;
+  permissions: string[]; // Array of TabType values
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserListResponse {
+  users: User[];
+  count: number;
+}
+
+export interface UserCreateRequest {
+  email: string;
+  password: string;
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  is_admin?: boolean;
+  permissions?: string[];
+}
+
+export interface UserCreateResponse {
+  success: boolean;
+  user: User;
+  error?: string;
+}
+
+export interface UserUpdateRequest {
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  is_admin?: boolean;
+  permissions?: string[];
+}
+
+export interface UserUpdateResponse {
+  success: boolean;
+  user: User;
+  error?: string;
+}
+
+export interface UserDeleteResponse {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+export interface UserPasswordResetRequest {
+  new_password: string;
+  confirm_password: string;
+}
+
+export interface UserPasswordResetResponse {
   success: boolean;
   message: string;
   error?: string;
@@ -280,5 +407,32 @@ export interface LoginResponse {
   success: boolean;
   message?: string;
   error?: string;
+  access_token?: string;
+  refresh_token?: string;
+  token_type?: string;
+  expires_in?: number;
+  user_type?: 'user' | 'company';
+  is_admin?: boolean;
+  permissions?: string[];
+  user?: {
+    email: string;
+    user_type: 'user' | 'company';
+    is_admin: boolean;
+    permissions: string[];
+  };
+}
+
+export interface LogoutResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export interface CheckAuthResponse {
+  authenticated: boolean;
+  user_email: string | null;
+  is_admin?: boolean;
+  permissions?: string[];
+  user_name?: string | null;
 }
 

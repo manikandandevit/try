@@ -56,7 +56,83 @@
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }
 
-@media (max-width: 768px) {
+/* Large Desktop (1440px and above) */
+@media (min-width: 1440px) {
+  .previewHeaderBanner {
+    padding: 24px 28px;
+  }
+  
+  .previewCompanyName {
+    font-size: 20px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 10px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 10px !important;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 18px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 16px 18px;
+  }
+}
+
+/* Desktop (1024px - 1439px) */
+@media (max-width: 1439px) and (min-width: 1024px) {
+  .previewHeaderBanner {
+    padding: 20px 24px;
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .previewHeaderBanner {
+    padding: 18px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .previewHeaderTable {
+    font-size: 11px;
+  }
+  
+  .previewCompanyName {
+    font-size: 17px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 9px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 9px !important;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 14px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 12px 14px;
+  }
+  
+  .quotationTableContainer {
+    padding: 20px;
+  }
+}
+
+/* Large Mobile (480px - 767px) */
+@media (max-width: 767px) and (min-width: 480px) {
   .previewHeaderBanner {
     padding: 16px;
     border-radius: 8px;
@@ -64,7 +140,7 @@
   }
   
   .previewHeaderTable {
-    font-size: 12px;
+    font-size: 10px;
   }
   
   .previewCompanyName {
@@ -77,6 +153,144 @@
   
   .previewContactItem {
     font-size: 8px !important;
+  }
+  
+  .previewLogoBox {
+    width: 55px;
+    height: 55px;
+    min-width: 55px;
+    min-height: 55px;
+    max-width: 55px;
+    max-height: 55px;
+  }
+  
+  .previewLogoImg {
+    width: 51px;
+    height: 51px;
+    max-width: 51px;
+    max-height: 51px;
+    min-width: 51px;
+    min-height: 51px;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 12px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+  
+  .quotationTableContainer {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  
+  .label {
+    font-size: 12px;
+  }
+  
+  .amount {
+    font-size: 12px;
+  }
+  
+  .grandTotalRow .label,
+  .grandTotalRow .amount {
+    font-size: 12px;
+  }
+}
+
+/* Mobile (max-width: 479px) */
+@media (max-width: 479px) {
+  .previewHeaderBanner {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .previewHeaderTable {
+    font-size: 9px;
+  }
+  
+  .previewCompanyName {
+    font-size: 14px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 7px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 7px !important;
+  }
+  
+  .previewLogoBox {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    min-height: 45px;
+    max-width: 45px;
+    max-height: 45px;
+  }
+  
+  .previewLogoImg {
+    width: 41px;
+    height: 41px;
+    max-width: 41px;
+    max-height: 41px;
+    min-width: 41px;
+    min-height: 41px;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 10px 8px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 8px;
+  }
+  
+  .quotationTableContainer {
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .label {
+    font-size: 12px;
+  }
+  
+  .amount {
+    font-size: 12px;
+  }
+  
+  .grandTotalRow .label,
+  .grandTotalRow .amount {
+    font-size: 12px;
+  }
+  
+  .keyFeaturesTitle {
+    font-size: 12px;
+  }
+  
+  .keyFeatureItem {
+    font-size: 12px;
+  }
+  
+  .footer {
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+  
+  .footerWebsiteLink {
+    font-size: 10px;
+  }
+  
+  .footerCopyright {
+    font-size: 9px;
   }
 }
 
@@ -175,40 +389,175 @@
   color: white;
 }
 
+/* Date Section - At Top */
 .dateSection {
-  padding: 0 0 20px 0;
-  margin-bottom: 24px;
-  clear: both;
-  overflow: hidden;
-}
-
-.dateSection::after {
-  content: '';
-  display: table;
-  clear: both;
+  padding: 0 0 16px 0;
+  margin-bottom: 20px;
+  text-align: right;
+  padding-right: 20px;
 }
 
 .dateSection p {
-  text-align: right;
-  font-size: 14px;
+  font-size: 12px;
   margin: 0;
   color: #64748b;
-  font-weight: 500;
-  padding: 12px 16px;
-  background: #f1f5f9;
-  border-radius: 8px;
+  font-weight: 400;
   display: inline-block;
-  float: right;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-@media (max-width: 768px) {
-  .dateSection p {
-    float: none;
-    display: block;
+/* Quotation Info Section - Two Column Layout */
+.quotationInfoSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 0 0 20px 0;
+  margin-bottom: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Quotation By Section (Left) - Moved slightly right */
+.quotationBySection {
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.quotationByLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+.quotationByDetails {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Quotation To Section (Right) */
+.quotationToSection {
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.quotationToLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+.quotationToDetails {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Detail Items - Common styling for both sections */
+.detailItem {
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.7;
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+
+.detailItem:last-child {
+  margin-bottom: 0;
+}
+
+.detailItem strong {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Placeholder text styling */
+.detailItemPlaceholder {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.6;
+  text-align: left;
+  padding: 4px 0;
+}
+
+
+/* Tablet and below - stack vertically */
+@media (max-width: 1023px) {
+  .quotationInfoSection {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .quotationByLabel,
+  .quotationToLabel {
+    font-size: 12px;
+  }
+  
+  .detailItem {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  
+  .detailItem strong {
+    font-size: 12px;
+  }
+  
+  .dateSection {
     text-align: center;
-    width: 100%;
+  }
+  
+  .dateSection p {
+    font-size: 12px;
   }
 }
+
+/* Mobile - smaller fonts */
+@media (max-width: 479px) {
+  .quotationInfoSection {
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .quotationByLabel,
+  .quotationToLabel {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .detailItem {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 5px;
+  }
+  
+  .detailItem strong {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+  
+  .dateSection {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .dateSection p {
+    font-size: 12px;
+  }
+}
+
 
 .quotationTableContainer {
   margin-top: 0;
@@ -232,12 +581,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-@media (max-width: 768px) {
-  .quotationTableContainer {
-    padding: 16px;
-    border-radius: 8px;
-  }
-}
+/* Responsive padding already handled in mobile breakpoints above */
 
 .quotationTable {
   width: 100%;
@@ -258,12 +602,11 @@
   padding: 16px;
   text-align: left;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 12px;
   color: white;
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  font-size: 13px;
   letter-spacing: 0.5px;
 }
 
@@ -276,7 +619,7 @@
 .quotationTable td {
   padding: 14px 16px;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 15px;
+  font-size: 12px;
   color: #1e293b;
   font-weight: 400;
   transition: background-color 0.2s ease;
@@ -309,7 +652,7 @@
 
 .keyFeaturesTitle {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 12px;
   color: #1e293b;
   margin-bottom: 16px;
   text-transform: uppercase;
@@ -324,7 +667,7 @@
 }
 
 .keyFeatureItem {
-  font-size: 14px;
+  font-size: 12px;
   color: #475569;
   line-height: 1.8;
   padding: 8px 0;
@@ -345,19 +688,38 @@
   color: #64748b;
 }
 
-@media (max-width: 768px) {
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .keyFeaturesSection {
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+  
+  .keyFeatureItem {
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  
+  .keyFeaturesTitle {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+}
+
+/* Mobile (max-width: 767px) */
+@media (max-width: 767px) {
   .keyFeaturesSection {
     margin-top: 20px;
     padding-top: 16px;
   }
   
   .keyFeatureItem {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.6;
   }
   
   .keyFeaturesTitle {
-    font-size: 14px;
+    font-size: 12px;
     margin-bottom: 12px;
   }
   
@@ -387,7 +749,8 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-@media (max-width: 768px) {
+/* Tablet and below - full width totals */
+@media (max-width: 1023px) {
   .totalsTable {
     max-width: 100%;
   }
@@ -405,20 +768,20 @@
 .label {
   text-align: right;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 12px;
   color: #000000;
 }
 
 .amount {
   text-align: right;
-  font-size: 17px;
+  font-size: 12px;
   color: #000000;
   font-weight: 500;
 }
 
 .grandTotalRow .label,
 .grandTotalRow .amount {
-  font-size: 20px;
+  font-size: 12px;
   font-weight: bold;
   color: #1e293b;
   border-top: 2px solid #2563eb;
@@ -458,13 +821,41 @@
   margin-right: 0;
 }
 
-@media (max-width: 768px) {
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .footer {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  
+  .footerWebsiteLink {
+    font-size: 11px;
+  }
+  
+  .footerCopyright {
+    font-size: 9px;
+  }
+}
+
+/* Large Mobile (480px - 767px) */
+@media (max-width: 767px) and (min-width: 480px) {
   .footer {
     padding: 12px 16px;
     border-radius: 8px;
     margin-top: 16px;
   }
+  
+  .footerWebsiteLink {
+    font-size: 11px;
+  }
+  
+  .footerCopyright {
+    font-size: 9px;
+  }
 }
+
+/* Mobile (max-width: 479px) - handled in main mobile breakpoint above */
 
 /* For PDF generation: Footer at bottom of page */
 @media print {

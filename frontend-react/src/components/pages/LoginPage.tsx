@@ -1,10 +1,8 @@
 /**
- * Login Page Component - Split Screen Design
+ * Login Page Component
  */
 
-import React, { useState, FormEvent, useEffect } from 'react';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { apiService } from '@/services/api';
 import styles from './LoginPage.module.css';
 
@@ -13,51 +11,118 @@ export interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+  const [companyImage, setCompanyImage] = useState<string | null>(null);
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [emailError, setEmailError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [loginLogo, setLoginLogo] = useState<string | null>(null);
-  const [loginImage, setLoginImage] = useState<string | null>(null);
-  const [defaultEmail, setDefaultEmail] = useState<string>('');
+  const [loginError, setLoginError] = useState<string>('');
+  const [isAlreadyLoggedIn, setIsAlreadyLoggedIn] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  // Load company login data
+  // Check if user is already logged in
   useEffect(() => {
-    const loadCompanyLogin = async () => {
+    const checkAuthStatus = async () => {
       try {
-        const data = await apiService.getCompanyLogin();
-        if (data.login_logo_url) {
-          setLoginLogo(data.login_logo_url);
-        }
-        if (data.login_image_url) {
-          setLoginImage(data.login_image_url);
-        }
-        if (data.email) {
-          setDefaultEmail(data.email);
-          setEmail(data.email);
+        const authStatus = await apiService.checkAuth();
+        if (authStatus.authenticated) {
+          setIsAlreadyLoggedIn(true);
+          setUserEmail(authStatus.user_email);
         }
       } catch (error) {
-        console.error('Error loading company login data:', error);
+        console.error('Error checking auth status:', error);
+        // If check fails, assume not logged in
+        setIsAlreadyLoggedIn(false);
       }
     };
-    loadCompanyLogin();
+    checkAuthStatus();
   }, []);
 
+  // Load company image, logo, and email
+  useEffect(() => {
+    const loadCompanyData = async () => {
+      try {
+        const data = await apiService.getCompanyLogin();
+        if (data.login_image_url) {
+          setCompanyImage(data.login_image_url);
+        }
+        if (data.login_logo_url) {
+          setCompanyLogo(data.login_logo_url);
+        }
+        if (data.email && !isAlreadyLoggedIn) {
+          setEmail(data.email); // Pre-fill email if available and not already logged in
+        }
+      } catch (error) {
+        console.error('Error loading company data:', error);
+        if (!isAlreadyLoggedIn) {
+          setLoginError('Failed to load company data. Please refresh the page.');
+        }
+      }
+    };
+    loadCompanyData();
+  }, [isAlreadyLoggedIn]);
+
+  // Email validation
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    // Reset errors
+  // Handle logout
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLoginError('');
+
+    try {
+      const response = await apiService.logout();
+      if (response.success) {
+        // Logout successful - reset state
+        setIsAlreadyLoggedIn(false);
+        setUserEmail(null);
+        setPassword(''); // Clear password for security
+        // Reload page or reset form
+        window.location.reload(); // Simple approach - reload to ensure clean state
+      } else {
+        setLoginError(response.error || 'Failed to logout. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      
+      // Handle different error types
+      if (error?.message) {
+        setLoginError(error.message);
+      } else if (error?.data?.error) {
+        setLoginError(error.data.error);
+      } else {
+        setLoginError('An error occurred during logout. Please try again.');
+      }
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  // Handle login
+  const handleLogin = async (e?: FormEvent<HTMLFormElement>) => {
+    if (e) {
+      e.preventDefault();
+    }
+
+    // Check if already logged in
+    if (isAlreadyLoggedIn) {
+      setLoginError('You are already logged in. Please logout first for security.');
+      return;
+    }
+
+    // Reset all errors
     setEmailError('');
     setPasswordError('');
+    setLoginError('');
 
-    // Validation
+    // Client-side validation
     let isValid = true;
 
     if (!email.trim()) {
@@ -77,113 +142,186 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       return;
     }
 
-    // Handle login
+    // Start loading
     setIsLoading(true);
+    setLoginError('');
+
     try {
-      const response = await apiService.login(email, password);
-      
+      // Call login API - backend will validate against company credentials
+      const response = await apiService.login(email.trim(), password);
+
       if (response.success) {
-        // On success, call the onLogin callback
+        // Store access token if provided
+        if (response.access_token) {
+          localStorage.setItem('access_token', response.access_token);
+        }
+        if (response.refresh_token) {
+          localStorage.setItem('refresh_token', response.refresh_token);
+        }
+        
+        // Login successful
+        setIsAlreadyLoggedIn(true);
         if (onLogin) {
           onLogin();
         }
       } else {
-        setEmailError(response.error || 'Invalid email or password');
+        // Login failed - show error message
+        setLoginError(response.error || response.message || 'Invalid email or password. Please try again.');
       }
     } catch (error: any) {
+      // Production-level exception handling
       console.error('Login error:', error);
-      setEmailError(error.message || 'Invalid email or password');
+      
+      // Handle different error types
+      // ApiError from fetchWithCsrf has error.message and error.data
+      if (error?.message) {
+        // Check if error is about already being logged in
+        if (error.message.includes('already logged in')) {
+          setIsAlreadyLoggedIn(true);
+          setLoginError(error.message);
+        } else {
+          setLoginError(error.message);
+        }
+      } else if (error?.data?.error) {
+        if (error.data.error.includes('already logged in')) {
+          setIsAlreadyLoggedIn(true);
+          setLoginError(error.data.error);
+        } else {
+          setLoginError(error.data.error);
+        }
+      } else if (error?.response?.data?.error) {
+        setLoginError(error.response.data.error);
+      } else if (error?.response?.data?.message) {
+        setLoginError(error.response.data.message);
+      } else if (typeof error === 'string') {
+        setLoginError(error);
+      } else {
+        // Generic error message for production
+        setLoginError('An unexpected error occurred. Please try again later or contact support.');
+      }
     } finally {
+      // Always stop loading
       setIsLoading(false);
     }
   };
 
+  // Enable scrolling for login page
+  useEffect(() => {
+    document.body.classList.add('login-page-active');
+    const root = document.getElementById('root');
+    if (root) {
+      root.classList.add('login-page-active');
+    }
+    
+    return () => {
+      document.body.classList.remove('login-page-active');
+      if (root) {
+        root.classList.remove('login-page-active');
+      }
+    };
+  }, []);
+
   return (
-    <div className={styles.loginContainer}>
-      {/* Left Side - Illustration */}
-      <div className={styles.leftSection}>
-        {loginImage ? (
-          <img src={loginImage} alt="Login Illustration" className={styles.loginImage} />
-        ) : (
-          <div className={styles.illustration}>
-            {/* Person with Laptop */}
-            <div className={styles.personLaptop}>
-              <div className={styles.person}>
-                <div className={styles.head}></div>
-                <div className={styles.body}></div>
-              </div>
-              <div className={styles.laptop}></div>
-            </div>
-            
-            {/* Invoice Document */}
-            <div className={styles.invoice}>
-              <div className={styles.invoiceText}>INVOICE</div>
-              <div className={styles.invoiceLines}>
-                <div className={styles.invoiceLine}></div>
-                <div className={styles.invoiceLine}></div>
-                <div className={styles.invoiceLine}></div>
-              </div>
-            </div>
-            
-            {/* Paper Airplane */}
-            <div className={styles.paperAirplane}>
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
-              </svg>
-            </div>
-            
-            {/* Dashed Line */}
-            <div className={styles.dashedLine}></div>
+    <div className={styles.container}>
+      {/* Left Card */}
+      <div className={styles.leftCard}>
+        <div className={styles.leftCardContent}>
+          {companyImage && (
+            <img 
+              src={companyImage} 
+              alt="Company" 
+              className={styles.companyImage}
+            />
+          )}
+          {/* Branding */}
+          <div className={styles.branding}>
+            <h1 className={styles.brandName}>syn<span className={styles.boldQ}>Q</span>uot</h1>
+            <p className={styles.tagline}>Smart Quotes, Made Simple.</p>
           </div>
-        )}
-        
-        {/* Branding */}
-        <div className={styles.branding}>
-          <h1 className={styles.brandName}>syn<span className={styles.boldQ}>Q</span>uot</h1>
-          <p className={styles.tagline}>Smart Quotes, Made Simple.</p>
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className={styles.rightSection}>
-        <div className={styles.formContainer}>
+      {/* Right Card */}
+      <div className={styles.rightCard}>
+        <div className={styles.rightCardContent}>
           {/* Company Logo */}
-          {loginLogo && (
+          {companyLogo && (
             <div className={styles.logoContainer}>
-              <img src={loginLogo} alt="Company Logo" className={styles.companyLogo} />
+              <img 
+                src={companyLogo} 
+                alt="Company Logo" 
+                className={styles.companyLogo}
+              />
             </div>
           )}
           
-          {!loginLogo && (
-            <div className={styles.logoContainer}>
-              <div className={styles.defaultLogo}>
-                <div className={styles.logoIcon}></div>
-                <div className={styles.logoText}>
-                  <div className={styles.logoTitle}>SYNGRID</div>
-                  <div className={styles.logoSubtitle}>Digital Solution Architects</div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Welcome Text */}
           <h2 className={styles.welcomeText}>Welcome!</h2>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className={styles.loginForm}>
+          {/* Already Logged In Message */}
+          {isAlreadyLoggedIn && (
+            <div className={styles.alreadyLoggedInMessage}>
+              <div className={styles.loggedInInfo}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 6L9 17l-5-5"></path>
+                </svg>
+                <span>You are already logged in as <strong>{userEmail || 'User'}</strong></span>
+              </div>
+              <p className={styles.logoutPrompt}>
+                For security, please logout first before logging in with a different account.
+              </p>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className={styles.logoutButton}
+                disabled={isLoggingOut}
+              >
+                {isLoggingOut ? (
+                  <span className={styles.buttonContent}>
+                    <svg className={styles.spinner} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                      <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+                    </svg>
+                    Logging out...
+                  </span>
+                ) : (
+                  'Logout'
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Login Error Message */}
+          {loginError && !isAlreadyLoggedIn && (
+            <div className={styles.errorMessage}>
+              {loginError}
+            </div>
+          )}
+
+          {/* Login Form - Hide if already logged in */}
+          {!isAlreadyLoggedIn && (
+            <form onSubmit={handleLogin} className={styles.loginForm}>
+            {/* Email Input */}
             <div className={styles.inputGroup}>
-              <Input
+              <label className={styles.label}>Email</label>
+              <input
                 type="email"
-                label="Email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={emailError}
-                className={styles.input}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError('');
+                  setLoginError('');
+                }}
+                className={`${styles.input} ${emailError ? styles.inputError : ''}`}
                 disabled={isLoading}
               />
+              {emailError && (
+                <span className={styles.fieldError}>{emailError}</span>
+              )}
             </div>
 
+            {/* Password Input */}
             <div className={styles.inputGroup}>
               <label className={styles.label}>Password</label>
               <div className={styles.passwordWrapper}>
@@ -191,16 +329,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={styles.input}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError('');
+                    setLoginError('');
+                  }}
+                  className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
                   disabled={isLoading}
                 />
                 <button
                   type="button"
                   className={styles.passwordToggle}
                   onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -215,22 +357,36 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   )}
                 </button>
               </div>
-              {passwordError && <span className={styles.errorMessage}>{passwordError}</span>}
+              {passwordError && (
+                <span className={styles.fieldError}>{passwordError}</span>
+              )}
             </div>
 
-            <Button
+            {/* Login Button */}
+            <button
               type="submit"
-              variant="primary"
-              size="large"
               className={styles.loginButton}
               disabled={isLoading}
             >
-              {isLoading ? 'Logging in...' : 'Login'}
-            </Button>
+              {isLoading ? (
+                <span className={styles.buttonContent}>
+                  <svg className={styles.spinner} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                    <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+                  </svg>
+                  Logging in...
+                </span>
+              ) : (
+                'Login'
+              )}
+            </button>
           </form>
+          )}
 
-          {/* Support Link */}
-          <a href="#" className={styles.supportLink}>Need a Support?</a>
+          {/* Need Support Link */}
+          {!isAlreadyLoggedIn && (
+            <a href="#" className={styles.supportLink}>Need Support?</a>
+          )}
         </div>
       </div>
     </div>
