@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation System</title>
+    <script>
+        // Redirect to React frontend if running on different port
+        // Otherwise, you can serve the React build from Django static files
+        if (window.location.port === '8000') {
+            window.location.href = 'http://localhost:3000';
+        }
+    </script>
+</head>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h1>Quotation System</h1>
+        <p>If you're seeing this page, the React frontend may not be running.</p>
+        <p>Please start the React development server or configure Django to serve the React build.</p>
+        <p><a href="http://localhost:3000">Go to React Frontend</a></p>
+    </div>
+</body>
+</html>
+
+

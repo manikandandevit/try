@@ -1,0 +1,237 @@
+"""
+Models for quotations app.
+"""
+from django.db import models
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
+import json
+
+
+class Quotation(models.Model):
+    """Model to store quotation data."""
+    quotation_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Quotation {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def get_services(self):
+        """Get services from quotation data."""
+        return self.quotation_data.get('services', [])
+    
+    def get_subtotal(self):
+        """Get subtotal from quotation data."""
+        return self.quotation_data.get('subtotal', 0)
+    
+    def get_grand_total(self):
+        """Get grand total from quotation data."""
+        return self.quotation_data.get('grand_total', 0)
+
+
+class Company(models.Model):
+    """Model to store single company login credentials and images."""
+    company_name = models.CharField(max_length=255, blank=True, null=True, help_text="Company Name")
+    email = models.EmailField(help_text="Company Email")
+    password = models.CharField(max_length=255, help_text="Company Password")
+    tagline = models.CharField(max_length=255, blank=True, null=True, help_text="Company Tagline")
+    phone_number = models.CharField(max_length=20, blank=True, null=True, help_text="Company Phone Number")
+    address = models.TextField(blank=True, null=True, help_text="Company Address")
+    sendemail = models.EmailField(blank=True, null=True, help_text="Send Email Address")
+    sendpassword = models.CharField(max_length=255, blank=True, null=True, help_text="Send Email Password")
+    sendnumber = models.CharField(max_length=20, blank=True, null=True, help_text="Send WhatsApp Number")
+    openrouter_api_key = models.CharField(max_length=500, blank=True, null=True, help_text="OpenRouter API Key")
+    openrouter_model = models.CharField(max_length=255, blank=True, null=True, help_text="OpenRouter Model Name", default='google/gemini-flash-1.5:free')
+    login_logo = models.ImageField(upload_to='company_login/', blank=True, null=True, help_text="Login Logo")
+    login_image = models.ImageField(upload_to='company_login/', blank=True, null=True, help_text="Login Image")
+    quotation_logo = models.ImageField(upload_to='company_quotation/', blank=True, null=True, help_text="Quotation Logo")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Company Details'
+        verbose_name_plural = 'Company Details'
+        ordering = ['-created_at']
+    
+    def save(self, *args, **kwargs):
+        """Ensure only one company instance exists."""
+        # If this is a new instance and one already exists, update the existing one instead
+        if not self.pk and Company.objects.exists():
+            # Get the existing company and update it
+            existing_company = Company.objects.first()
+            existing_company.company_name = self.company_name
+            existing_company.email = self.email
+            existing_company.password = self.password
+            existing_company.tagline = self.tagline
+            existing_company.phone_number = self.phone_number
+            existing_company.address = self.address
+            existing_company.sendemail = self.sendemail
+            existing_company.sendpassword = self.sendpassword
+            existing_company.sendnumber = self.sendnumber
+            existing_company.openrouter_api_key = self.openrouter_api_key
+            existing_company.openrouter_model = self.openrouter_model
+            existing_company.login_logo = self.login_logo
+            existing_company.login_image = self.login_image
+            existing_company.quotation_logo = self.quotation_logo
+            existing_company.save()
+            return
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.email
+    
+    @classmethod
+    def get_company(cls):
+        """Get the single company instance, create if doesn't exist."""
+        company, created = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                'email': '',
+                'password': '',
+                'sendemail': '',
+                'sendpassword': '',
+                'openrouter_model': 'google/gemini-flash-1.5:free'
+            }
+        )
+        return company
+
+
+class Client(models.Model):
+    """Model to store customer information."""
+    customer_name = models.CharField(max_length=255, help_text="Customer Name")
+    company_name = models.CharField(max_length=255, help_text="Company Name", blank=True, null=True)
+    phone_number = models.CharField(max_length=20, help_text="Phone Number", blank=True, null=True)
+    email = models.EmailField(help_text="Customer Email")
+    address = models.TextField(help_text="Customer Address", blank=True, null=True)
+    is_active = models.BooleanField(default=True, help_text="Is this customer active/enabled in dashboard toggle")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Customer'
+        verbose_name_plural = 'Customers'
+    
+    def __str__(self):
+        return f"{self.customer_name} ({self.email})"
+
+
+class User(models.Model):
+    """Model to store user information with authentication."""
+    email = models.EmailField(unique=True, help_text="User Email")
+    password = models.CharField(max_length=255, help_text="Hashed Password")
+    first_name = models.CharField(max_length=150, blank=True, null=True, help_text="First Name")
+    last_name = models.CharField(max_length=150, blank=True, null=True, help_text="Last Name")
+    is_active = models.BooleanField(default=True, help_text="Active Status")
+    is_admin = models.BooleanField(default=False, help_text="Admin Access - Full permissions")
+    permissions = models.JSONField(default=list, help_text="List of allowed tab IDs (e.g., ['dashboard', 'quotation'])")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+    
+    def __str__(self):
+        name = self.get_full_name() or self.email
+        return f"{name} ({self.email})"
+    
+    def has_permission(self, tab_id):
+        """Check if user has permission to access a tab."""
+        if self.is_admin:
+            return True
+        return tab_id in (self.permissions or [])
+    
+    def get_full_name(self):
+        """Get full name from first_name and last_name."""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        return None
+    
+    def set_password(self, raw_password):
+        """Hash and set password."""
+        self.password = make_password(raw_password)
+    
+    def check_password(self, raw_password):
+        """Check if provided password matches."""
+        return check_password(raw_password, self.password)
+    
+    def save(self, *args, **kwargs):
+        """Override save to hash password if it's not already hashed."""
+        # Check if password is already hashed (starts with pbkdf2_sha256$ or similar)
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+
+
+class RefreshToken(models.Model):
+    """Model to store refresh tokens securely for JWT authentication."""
+    token = models.CharField(max_length=500, unique=True, db_index=True, help_text="Refresh Token")
+    user_email = models.EmailField(db_index=True, help_text="User Email")
+    user_type = models.CharField(max_length=20, help_text="User type: 'user' or 'company'")
+    user_id = models.IntegerField(null=True, blank=True, help_text="User ID if user_type is 'user'")
+    is_active = models.BooleanField(default=True, help_text="Token active status")
+    expires_at = models.DateTimeField(help_text="Token expiration time")
+    created_at = models.DateTimeField(default=timezone.now)
+    last_used_at = models.DateTimeField(null=True, blank=True, help_text="Last time token was used")
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address of token creation")
+    user_agent = models.CharField(max_length=500, blank=True, null=True, help_text="User agent of token creation")
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Refresh Token'
+        verbose_name_plural = 'Refresh Tokens'
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['user_email', 'is_active']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def __str__(self):
+        return f"RefreshToken for {self.user_email} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def is_expired(self):
+        """Check if token is expired."""
+        return timezone.now() > self.expires_at
+    
+    def revoke(self):
+        """Revoke the token."""
+        self.is_active = False
+        self.save()
+
+
+class QuotationSend(models.Model):
+    """Model to track quotation sends via email and WhatsApp."""
+    SEND_TYPE_CHOICES = [
+        ('email', 'Email'),
+        ('whatsapp', 'WhatsApp'),
+    ]
+    
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='sends', help_text="Quotation that was sent")
+    send_type = models.CharField(max_length=10, choices=SEND_TYPE_CHOICES, help_text="Type of send: email or whatsapp")
+    recipient_email = models.EmailField(blank=True, null=True, help_text="Recipient email (for email sends)")
+    recipient_phone = models.CharField(max_length=20, blank=True, null=True, help_text="Recipient phone (for WhatsApp sends)")
+    user_id = models.IntegerField(null=True, blank=True, help_text="User ID who sent this quotation (null for admin/company sends)")
+    sent_at = models.DateTimeField(default=timezone.now, help_text="When the quotation was sent")
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        ordering = ['-sent_at']
+        verbose_name = 'Quotation Send'
+        verbose_name_plural = 'Quotation Sends'
+        indexes = [
+            models.Index(fields=['quotation', 'send_type'], name='qsend_quotation_type_idx'),
+            models.Index(fields=['sent_at'], name='qsend_sent_at_idx'),
+            models.Index(fields=['user_id'], name='qsend_user_id_idx'),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_send_type_display()} send for Quotation {self.quotation.id} - {self.sent_at.strftime('%Y-%m-%d %H:%M')}"

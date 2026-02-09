@@ -1,0 +1,2159 @@
+"""
+Views for quotations app.
+"""
+import json
+import base64
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.conf import settings
+from django.db.models import Q, Count
+from django.utils import timezone
+from django.db.models.functions import TruncMonth
+from .services import OpenRouterService, QuotationManager
+
+
+def index(request):
+    """API Documentation - List all available endpoints."""
+    # Define all API endpoints manually for clarity
+    all_endpoints = [
+        # Authentication
+        {'path': '/api/login/', 'method': 'POST', 'name': 'login', 'description': 'Login and get JWT tokens', 'category': 'Authentication', 'auth_required': False},
+        {'path': '/api/logout/', 'method': 'POST', 'name': 'logout', 'description': 'Logout and revoke refresh token', 'category': 'Authentication', 'auth_required': False},
+        {'path': '/api/refresh-token/', 'method': 'POST', 'name': 'refresh_token', 'description': 'Get new access token using refresh token', 'category': 'Authentication', 'auth_required': False},
+        {'path': '/api/check-auth/', 'method': 'GET', 'name': 'check_auth', 'description': 'Check if access token is valid', 'category': 'Authentication', 'auth_required': True},
+        
+        # Quotation Management
+        {'path': '/api/chat/', 'method': 'POST', 'name': 'chat', 'description': 'Chat with AI for quotation', 'category': 'Quotation Management', 'auth_required': True},
+        {'path': '/api/quotation/', 'method': 'GET', 'name': 'get_quotation', 'description': 'Get current quotation', 'category': 'Quotation Management', 'auth_required': True},
+        {'path': '/api/reset/', 'method': 'POST', 'name': 'reset_quotation', 'description': 'Reset quotation to empty state', 'category': 'Quotation Management', 'auth_required': True},
+        {'path': '/api/sync-quotation/', 'method': 'POST', 'name': 'sync_quotation', 'description': 'Sync quotation state from frontend', 'category': 'Quotation Management', 'auth_required': True},
+        {'path': '/api/conversation-history/', 'method': 'GET', 'name': 'get_conversation_history', 'description': 'Get conversation history', 'category': 'Quotation Management', 'auth_required': True},
+        {'path': '/api/sync-conversation-history/', 'method': 'POST', 'name': 'sync_conversation_history', 'description': 'Sync conversation history from frontend', 'category': 'Quotation Management', 'auth_required': True},
+        
+        # Company Info
+        {'path': '/api/company-info/', 'method': 'GET', 'name': 'get_company_info', 'description': 'Get company information', 'category': 'Company Info', 'auth_required': False},
+        {'path': '/api/company-login/', 'method': 'GET', 'name': 'get_company_login', 'description': 'Get company login page data', 'category': 'Company Info', 'auth_required': False},
+        
+        # Client Management
+        {'path': '/api/clients/', 'method': 'GET', 'name': 'list_clients', 'description': 'List all clients (with optional search)', 'category': 'Client Management', 'auth_required': True},
+        {'path': '/api/clients/', 'method': 'POST', 'name': 'create_client', 'description': 'Create a new client', 'category': 'Client Management', 'auth_required': True},
+        {'path': '/api/clients/<id>/', 'method': 'PUT', 'name': 'update_client', 'description': 'Update a client', 'category': 'Client Management', 'auth_required': True},
+        {'path': '/api/clients/<id>/', 'method': 'DELETE', 'name': 'delete_client', 'description': 'Delete a client', 'category': 'Client Management', 'auth_required': True},
+        
+        # User Management
+        {'path': '/api/users/', 'method': 'GET', 'name': 'list_users', 'description': 'List all users (with optional search)', 'category': 'User Management', 'auth_required': True},
+        {'path': '/api/users/', 'method': 'POST', 'name': 'create_user', 'description': 'Create a new user', 'category': 'User Management', 'auth_required': True},
+        {'path': '/api/users/<id>/', 'method': 'PUT', 'name': 'update_user', 'description': 'Update a user', 'category': 'User Management', 'auth_required': True},
+        {'path': '/api/users/<id>/', 'method': 'DELETE', 'name': 'delete_user', 'description': 'Delete a user', 'category': 'User Management', 'auth_required': True},
+        {'path': '/api/users/<id>/reset-password/', 'method': 'POST', 'name': 'reset_user_password', 'description': 'Reset user password', 'category': 'User Management', 'auth_required': True},
+        
+        # Email
+        {'path': '/api/send-quotation-email/', 'method': 'POST', 'name': 'send_quotation_email', 'description': 'Send quotation PDF via email', 'category': 'Email', 'auth_required': True},
+    ]
+    
+    # Organize by category
+    organized_apis = {}
+    for endpoint in all_endpoints:
+        category = endpoint['category']
+        if category not in organized_apis:
+            organized_apis[category] = []
+        organized_apis[category].append(endpoint)
+
+    # Explicit order for documentation display so that
+    # login/authentication comes first, then customer/client APIs.
+    category_order = [
+        'Authentication',
+        'Client Management',
+        'User Management',
+        'Quotation Management',
+        'Company Info',
+        'Email',
+    ]
+    
+    # Determine response format
+    accept_header = request.META.get('HTTP_ACCEPT', '')
+    if 'application/json' in accept_header or request.GET.get('format') == 'json':
+        # Return JSON format
+        return JsonResponse({
+            'message': 'Kattappa API Endpoints',
+            'base_url': request.build_absolute_uri('/'),
+            'endpoints': organized_apis,
+            'total_endpoints': len(all_endpoints)
+        }, json_dumps_params={'indent': 2})
+    else:
+        # Return HTML format
+        html_content = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kattappa API Documentation</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }}
+        .header {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }}
+        .header h1 {{
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }}
+        .header p {{
+            font-size: 1.1em;
+            opacity: 0.9;
+        }}
+        .content {{
+            padding: 40px;
+        }}
+        .section {{
+            margin-bottom: 40px;
+        }}
+        .section-title {{
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }}
+        .endpoint {{
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }}
+        .endpoint:hover {{
+            background: #e9ecef;
+            transform: translateX(5px);
+        }}
+        .endpoint-path {{
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }}
+        .endpoint-name {{
+            color: #666;
+            font-size: 0.9em;
+        }}
+        .endpoint-view {{
+            color: #999;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+            margin-top: 5px;
+        }}
+        .info-box {{
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }}
+        .info-box h3 {{
+            color: #1976D2;
+            margin-bottom: 10px;
+        }}
+        .info-box p {{
+            color: #555;
+            line-height: 1.6;
+        }}
+        .format-links {{
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+        }}
+        .format-links a {{
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }}
+        .format-links a:hover {{
+            background: #5568d3;
+        }}
+        .stats {{
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }}
+        .stat-item {{
+            text-align: center;
+        }}
+        .stat-number {{
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }}
+        .stat-label {{
+            color: #666;
+            font-size: 0.9em;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Kattappa API Documentation</h1>
+            <p>Complete list of all available API endpoints</p>
+        </div>
+        <div class="content">
+            <div class="info-box">
+                <h3>📋 API Information</h3>
+                <p><strong>Base URL:</strong> {request.build_absolute_uri('/')}</p>
+                <p><strong>Total Endpoints:</strong> {len(all_endpoints)}</p>
+                <p><strong>Flow:</strong> First call the <code>/api/login/</code> endpoint to get your JWT tokens, then call the customer/client and other protected APIs using the access token.</p>
+                <p><strong>Format:</strong> All endpoints return JSON. Use <code>Authorization: Bearer &lt;token&gt;</code> header for protected endpoints.</p>
+                <p><strong>JWT Authentication:</strong> Access tokens expire in 15 minutes. Use refresh token to get new access token.</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">{len(organized_apis.get('Authentication', []))}</div>
+                    <div class="stat-label">Authentication APIs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{len(organized_apis.get('Client Management', []))}</div>
+                    <div class="stat-label">Customer / Client APIs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{len(organized_apis.get('User Management', []))}</div>
+                    <div class="stat-label">User APIs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{len(organized_apis.get('Quotation Management', []))}</div>
+                    <div class="stat-label">Quotation APIs</div>
+                </div>
+            </div>
+"""
+        
+        # Add each category (using the explicit order defined above)
+        for category in category_order:
+            endpoints = organized_apis.get(category, [])
+            if endpoints:
+                html_content += f"""
+            <div class="section">
+                <h2 class="section-title">{category}</h2>
+"""
+                for endpoint in endpoints:
+                    auth_badge = '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 10px;">🔒 Auth Required</span>' if endpoint['auth_required'] else '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 10px;">Public</span>'
+                    method_badge = f'<span style="background: #007bff; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-right: 10px; font-weight: bold;">{endpoint["method"]}</span>'
+                    html_content += f"""
+                <div class="endpoint">
+                    <div class="endpoint-path">{method_badge}{endpoint['path']}{auth_badge}</div>
+                    <div class="endpoint-name">{endpoint['description']}</div>
+                    <div class="endpoint-view">Endpoint: {endpoint['name']}</div>
+                </div>
+"""
+                html_content += "            </div>"
+        
+        html_content += """
+            <div class="format-links">
+                <a href="?format=json">View as JSON</a>
+                <a href="/admin/">Django Admin</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+        return HttpResponse(html_content)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def chat(request):
+    """Handle chat messages and return AI response with updated quotation."""
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message', '').strip()
+        
+        if not user_message:
+            return JsonResponse({
+                'error': 'Message is required'
+            }, status=400)
+        
+        # Get conversation history from session
+        conversation_history = request.session.get('conversation_history', [])
+        
+        # Get current quotation from session
+        current_quotation = request.session.get('quotation', None)
+        if current_quotation is None:
+            current_quotation = QuotationManager.initialize_quotation()
+        
+        # If conversation was reset (only welcome message or very short), ensure quotation is fresh
+        # This prevents old quotation data from being used after reset
+        if len(conversation_history) <= 1:
+            current_quotation = QuotationManager.initialize_quotation()
+        
+        # Process message with AI
+        openrouter_service = OpenRouterService()
+        message, updated_quotation = openrouter_service.process_user_message(
+            user_message=user_message,
+            current_quotation=current_quotation,
+            conversation_history=conversation_history
+        )
+        
+        # Normalize and validate quotation (already done in process_user_message, but do it again for safety)
+        updated_quotation = QuotationManager.normalize_quotation(updated_quotation)
+        
+        # Validate after normalization
+        if not QuotationManager.validate_quotation(updated_quotation):
+            # If still invalid after normalization, keep current quotation
+            updated_quotation = QuotationManager.normalize_quotation(current_quotation)
+            # Update message to indicate issue
+            if "issue" not in message.lower() and "error" not in message.lower():
+                message = message + " (Note: Some quotation data was invalid and has been corrected.)"
+        
+        # Save to session
+        request.session['quotation'] = updated_quotation
+        
+        # Update conversation history (keep last 20 messages for better context)
+        conversation_history.append({
+            "role": "user",
+            "content": user_message
+        })
+        conversation_history.append({
+            "role": "assistant",
+            "content": message
+        })
+        # Keep last 20 messages (optimized by ConversationOptimizer in service)
+        request.session['conversation_history'] = conversation_history[-20:]
+        
+        return JsonResponse({
+            'response': message,
+            'quotation': updated_quotation
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Server error: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def get_quotation(request):
+    """Get current quotation from session."""
+    quotation = request.session.get('quotation', QuotationManager.initialize_quotation())
+    return JsonResponse({
+        'quotation': quotation
+    })
+
+
+@require_http_methods(["GET"])
+def get_conversation_history(request):
+    """Get conversation history from session."""
+    conversation_history = request.session.get('conversation_history', [])
+    return JsonResponse({
+        'messages': conversation_history
+    })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def sync_conversation_history(request):
+    """Sync conversation history from frontend."""
+    try:
+        data = json.loads(request.body)
+        messages = data.get('messages', [])
+        
+        if not isinstance(messages, list):
+            return JsonResponse({
+                'error': 'Messages must be an array'
+            }, status=400)
+        
+        # Convert frontend format to backend format (role/content only)
+        conversation_history = []
+        for msg in messages:
+            if isinstance(msg, dict) and 'role' in msg and 'content' in msg:
+                conversation_history.append({
+                    'role': msg['role'],
+                    'content': msg['content']
+                })
+        
+        # If conversation is reset to just welcome message (1 message), also reset quotation
+        # This ensures quotation and conversation stay in sync after reset
+        if len(conversation_history) <= 1:
+            request.session['quotation'] = QuotationManager.initialize_quotation()
+        
+        # Save to session (keep last 50 messages to match frontend)
+        request.session['conversation_history'] = conversation_history[-50:]
+        
+        return JsonResponse({
+            'success': True,
+            'messages': conversation_history
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Server error: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["POST"])
+def reset_quotation(request):
+    """Reset quotation to empty state."""
+    request.session['quotation'] = QuotationManager.initialize_quotation()
+    request.session['conversation_history'] = []
+    return JsonResponse({
+        'success': True,
+        'quotation': QuotationManager.initialize_quotation()
+    })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def sync_quotation(request):
+    """Sync quotation state from frontend (for instant updates)."""
+    try:
+        data = json.loads(request.body)
+        quotation = data.get('quotation', None)
+        
+        if not quotation:
+            return JsonResponse({
+                'error': 'Quotation data is required'
+            }, status=400)
+        
+        # Normalize and validate quotation
+        quotation = QuotationManager.normalize_quotation(quotation)
+        
+        # Validate after normalization
+        if not QuotationManager.validate_quotation(quotation):
+            return JsonResponse({
+                'error': 'Invalid quotation structure'
+            }, status=400)
+        
+        # Save to session
+        request.session['quotation'] = quotation
+        
+        return JsonResponse({
+            'success': True,
+            'quotation': quotation
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Server error: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def get_company_info(request):
+    """Get company information for header display."""
+    try:
+        from .models import Company
+        from django.conf import settings
+        
+        # Get company from database
+        company = Company.get_company()
+        
+        # Get quotation logo URL
+        quotation_logo_url = None
+        if company.quotation_logo:
+            try:
+                logo_url = company.quotation_logo.url
+                if logo_url and logo_url.strip():
+                    logo_url = logo_url.strip()
+                    if not logo_url.startswith('/'):
+                        logo_url = '/' + logo_url
+                    quotation_logo_url = logo_url
+            except (AttributeError, ValueError):
+                quotation_logo_url = None
+        
+        # Return company information from database with quotation logo
+        company_info = {
+            'company_name': company.company_name or 'MAKLOGISTICS',
+            'tagline': company.tagline or 'DIGITAL SOLUTION ARCHITECTS',
+            'website': '',
+            'phone_number': company.phone_number or '9042510714',
+            'email': company.email or 'maklogistics@gmail.com',
+            'address': company.address or 'TBI@TCE, Thiruparankundaram, Madurai – 625 015',
+            'logo_url': quotation_logo_url  # Use quotation_logo instead of logo_url
+        }
+        
+        return JsonResponse(company_info)
+    except Exception as e:
+        # Fallback to hardcoded info if error
+        company_info = {
+            'company_name': 'MAKLOGISTICS',
+            'tagline': 'DIGITAL SOLUTION ARCHITECTS',
+            'website': '',
+            'phone_number': '9042510714',
+            'email': 'maklogistics@gmail.com',
+            'address': 'TBI@TCE, Thiruparankundaram, Madurai – 625 015',
+            'logo_url': None
+        }
+        return JsonResponse(company_info)
+
+
+@require_http_methods(["GET"])
+def get_company_login(request):
+    """Get company login credentials and images for login page."""
+    try:
+        from .models import Company
+        from django.conf import settings
+        
+        # Default values
+        login_data = {
+            'email': '',
+            'login_logo_url': None,
+            'login_image_url': None
+        }
+        
+        company = Company.get_company()
+        
+        if company:
+            login_data['email'] = company.email or login_data['email']
+            
+            # Get login logo URL
+            if company.login_logo:
+                try:
+                    logo_url = company.login_logo.url
+                    if logo_url and logo_url.strip():
+                        logo_url = logo_url.strip()
+                        if not logo_url.startswith('/'):
+                            logo_url = '/' + logo_url
+                        login_data['login_logo_url'] = logo_url
+                except (AttributeError, ValueError):
+                    login_data['login_logo_url'] = None
+            
+            # Get login image URL
+            if company.login_image:
+                try:
+                    image_url = company.login_image.url
+                    if image_url and image_url.strip():
+                        image_url = image_url.strip()
+                        if not image_url.startswith('/'):
+                            image_url = '/' + image_url
+                        login_data['login_image_url'] = image_url
+                except (AttributeError, ValueError):
+                    login_data['login_image_url'] = None
+        
+        return JsonResponse(login_data)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Error fetching company login data: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def login(request):
+    """Handle login authentication with JWT - validates user credentials against Company or User model."""
+    try:
+        from .models import Company, User
+        from .jwt_utils import (
+            create_access_token, create_refresh_token,
+            get_client_ip, get_user_agent
+        )
+        
+        # Parse request data
+        data = json.loads(request.body)
+        user_email = data.get('email', '').strip()
+        user_password = data.get('password', '').strip()
+        
+        # Validate input
+        if not user_email:
+            return JsonResponse({
+                'success': False,
+                'error': 'Email is required'
+            }, status=400)
+        
+        if not user_password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Password is required'
+            }, status=400)
+        
+        # First, try to authenticate as User
+        try:
+            user = User.objects.get(email__iexact=user_email)
+            if user.is_active and user.check_password(user_password):
+                # User login successful - generate JWT tokens
+                access_token = create_access_token(
+                    user_email=user.email,
+                    user_type='user',
+                    user_id=user.id,
+                    is_admin=user.is_admin,
+                    permissions=user.permissions if not user.is_admin else []
+                )
+                
+                refresh_token = create_refresh_token(
+                    user_email=user.email,
+                    user_type='user',
+                    user_id=user.id,
+                    ip_address=get_client_ip(request),
+                    user_agent=get_user_agent(request)
+                )
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Login successful',
+                    'access_token': access_token,
+                    'refresh_token': refresh_token,
+                    'token_type': 'Bearer',
+                    'expires_in': 900,  # 15 minutes in seconds
+                    'user': {
+                        'email': user.email,
+                        'user_type': 'user',
+                        'is_admin': user.is_admin,
+                        'permissions': user.permissions if not user.is_admin else [],
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'full_name': user.get_full_name()
+                    }
+                })
+        except User.DoesNotExist:
+            pass
+        
+        # If not a user, try company login
+        company = Company.get_company()
+        
+        # Check if company credentials are configured
+        if not company.email or not company.password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid email or password'
+            }, status=401)
+        
+        # Validate credentials: Compare user input with company credentials
+        email_match = company.email.lower().strip() == user_email.lower().strip()
+        password_match = company.password == user_password
+        
+        if email_match and password_match:
+            # Company login successful - generate JWT tokens
+            access_token = create_access_token(
+                user_email=company.email,
+                user_type='company',
+                user_id=None,
+                is_admin=True,
+                permissions=[]
+            )
+            
+            refresh_token = create_refresh_token(
+                user_email=company.email,
+                user_type='company',
+                user_id=None,
+                ip_address=get_client_ip(request),
+                user_agent=get_user_agent(request)
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Login successful',
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+                'token_type': 'Bearer',
+                'expires_in': 900,  # 15 minutes in seconds
+                'user': {
+                    'email': company.email,
+                    'user_type': 'company',
+                    'is_admin': True,
+                    'permissions': []
+                }
+            })
+        else:
+            # Login failed - credentials don't match
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid email or password'
+            }, status=401)
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        # Production-level exception handling
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Login error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'An unexpected error occurred. Please try again later.'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def logout(request):
+    """Handle logout - revokes refresh token."""
+    try:
+        from .jwt_utils import revoke_refresh_token
+        
+        # Parse request data
+        data = json.loads(request.body)
+        refresh_token = data.get('refresh_token', '').strip()
+        
+        if not refresh_token:
+            return JsonResponse({
+                'success': False,
+                'error': 'Refresh token is required'
+            }, status=400)
+        
+        # Revoke refresh token
+        revoked = revoke_refresh_token(refresh_token)
+        
+        if not revoked:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid or already revoked refresh token'
+            }, status=400)
+        
+        # Log logout action (optional, for security auditing)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f'User logged out - refresh token revoked')
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Logout successful'
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        # Production-level exception handling
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Logout error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred during logout.'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def refresh_token(request):
+    """Refresh access token using refresh token."""
+    try:
+        from .jwt_utils import (
+            verify_refresh_token, create_access_token,
+            rotate_refresh_token, get_client_ip, get_user_agent
+        )
+        
+        # Parse request data
+        data = json.loads(request.body)
+        refresh_token_string = data.get('refresh_token', '').strip()
+        
+        if not refresh_token_string:
+            return JsonResponse({
+                'success': False,
+                'error': 'Refresh token is required'
+            }, status=400)
+        
+        # Verify refresh token
+        refresh_token_obj = verify_refresh_token(refresh_token_string)
+        
+        if not refresh_token_obj:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid or expired refresh token'
+            }, status=401)
+        
+        # Get user info from refresh token
+        user_email = refresh_token_obj.user_email
+        user_type = refresh_token_obj.user_type
+        user_id = refresh_token_obj.user_id
+        
+        # Get user details for permissions
+        is_admin = False
+        permissions = []
+        
+        if user_type == 'user' and user_id:
+            from .models import User
+            try:
+                user = User.objects.get(id=user_id)
+                is_admin = user.is_admin
+                permissions = user.permissions if not user.is_admin else []
+            except User.DoesNotExist:
+                pass
+        elif user_type == 'company':
+            is_admin = True
+        
+        # Generate new access token
+        access_token = create_access_token(
+            user_email=user_email,
+            user_type=user_type,
+            user_id=user_id,
+            is_admin=is_admin,
+            permissions=permissions
+        )
+        
+        # Rotate refresh token for enhanced security (optional but recommended)
+        new_refresh_token = None
+        if getattr(settings, 'ENABLE_TOKEN_ROTATION', True):
+            new_refresh_token = rotate_refresh_token(
+                refresh_token_string,
+                ip_address=get_client_ip(request),
+                user_agent=get_user_agent(request)
+            )
+        
+        response_data = {
+            'success': True,
+            'access_token': access_token,
+            'token_type': 'Bearer',
+            'expires_in': 900,  # 15 minutes in seconds
+        }
+        
+        # Include new refresh token if rotated
+        if new_refresh_token:
+            response_data['refresh_token'] = new_refresh_token
+        
+        return JsonResponse(response_data)
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Refresh token error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred while refreshing token.'
+        }, status=500)
+
+
+def get_user_from_token(request):
+    """Helper function to extract user info from JWT token in request."""
+    try:
+        from .jwt_utils import verify_access_token
+        
+        # Get token from Authorization header
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        
+        if not auth_header.startswith('Bearer '):
+            return None
+        
+        token = auth_header.split('Bearer ')[1].strip()
+        
+        # Verify token
+        payload = verify_access_token(token)
+        
+        if not payload:
+            return None
+        
+        # Extract user info from token
+        return {
+            'user_email': payload.get('user_email'),
+            'is_admin': payload.get('is_admin', False),
+            'permissions': payload.get('permissions', []),
+            'user_type': payload.get('user_type', 'user'),
+            'user_id': payload.get('user_id')
+        }
+    except Exception:
+        return None
+
+
+def check_auth(request):
+    """Check if user is authenticated via JWT."""
+    try:
+        from .jwt_utils import verify_access_token
+        
+        # Get token from Authorization header
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({
+                'authenticated': False,
+                'user_email': None
+            })
+        
+        token = auth_header.split('Bearer ')[1].strip()
+        
+        # Verify token
+        payload = verify_access_token(token)
+        
+        if not payload:
+            return JsonResponse({
+                'authenticated': False,
+                'user_email': None
+            })
+        
+        # Extract user info from token
+        user_email = payload.get('user_email')
+        is_admin = payload.get('is_admin', False)
+        permissions = payload.get('permissions', [])
+        user_type = payload.get('user_type', 'user')
+        user_id = payload.get('user_id')
+        user_details = None
+        
+        # Verify user still exists in database
+        if user_type == 'user' and user_id:
+            try:
+                from .models import User
+                user = User.objects.filter(id=user_id).first()
+                if not user:
+                    # User was deleted - return unauthenticated
+                    return JsonResponse({
+                        'authenticated': False,
+                        'user_email': None,
+                        'error': 'User account has been deleted'
+                    })
+                # Check if user is active
+                if not user.is_active:
+                    return JsonResponse({
+                        'authenticated': False,
+                        'user_email': None,
+                        'error': 'User account is inactive'
+                    })
+                # User exists and is active - get user name
+                user_name = user.get_full_name() or user.email
+                # Update permissions and admin status from database (in case they changed)
+                is_admin = user.is_admin
+                permissions = user.permissions if not user.is_admin else []
+                # Get additional user details for profile
+                user_details = {
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'is_active': user.is_active,
+                    'created_at': user.created_at.isoformat() if user.created_at else None,
+                    'updated_at': user.updated_at.isoformat() if user.updated_at else None,
+                }
+            except Exception:
+                # Error checking user - return unauthenticated for security
+                return JsonResponse({
+                    'authenticated': False,
+                    'user_email': None
+                })
+        elif user_type == 'company':
+            # For company type, verify company still exists
+            try:
+                from .models import Company
+                company = Company.get_company()
+                if not company or not company.email:
+                    return JsonResponse({
+                        'authenticated': False,
+                        'user_email': None,
+                        'error': 'Company account not found'
+                    })
+                user_name = "Admin"
+                # Get company details for admin profile
+                user_details = {
+                    'company_email': company.email,
+                    'send_email': company.sendemail,
+                    'send_number': company.sendnumber,
+                    'created_at': company.created_at.isoformat() if company.created_at else None,
+                    'updated_at': company.updated_at.isoformat() if company.updated_at else None,
+                }
+            except Exception:
+                return JsonResponse({
+                    'authenticated': False,
+                    'user_email': None
+                })
+        else:
+            # Unknown user type
+            return JsonResponse({
+                'authenticated': False,
+                'user_email': None
+            })
+        
+        response_data = {
+            'authenticated': True,
+            'user_email': user_email,
+            'is_admin': is_admin,
+            'permissions': permissions,
+            'user_name': user_name,
+            'user_type': user_type
+        }
+        
+        # Add user details if available
+        if user_details:
+            response_data['user_details'] = user_details
+        
+        return JsonResponse(response_data)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Check auth error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'authenticated': False,
+            'user_email': None
+        })
+
+
+# ============================================
+# CLIENT CRUD OPERATIONS
+# ============================================
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def list_clients(request):
+    """List all clients (GET) or create a new client (POST)."""
+    from .models import Client
+    
+    if request.method == 'GET':
+        # List clients with optional search
+        try:
+            search_query = request.GET.get('search', '').strip()
+            clients = Client.objects.all()
+            
+            # Apply search filter if provided
+            if search_query:
+                # Base filters: search across multiple text fields
+                search_filters = (
+                    Q(customer_name__icontains=search_query)
+                    | Q(company_name__icontains=search_query)
+                    | Q(email__icontains=search_query)
+                    | Q(phone_number__icontains=search_query)
+                    | Q(address__icontains=search_query)
+                )
+
+                # If search query is numeric, also search by ID
+                try:
+                    search_id = int(search_query)
+                    search_filters |= Q(id=search_id)
+                except ValueError:
+                    # Not a number, skip ID search
+                    pass
+
+                clients = clients.filter(search_filters)
+            
+            clients_list = [
+                {
+                    'id': client.id,
+                    'customer_name': client.customer_name,
+                    'company_name': client.company_name or '',
+                    'phone_number': client.phone_number or '',
+                    'email': client.email,
+                    'address': client.address or '',
+                    'is_active': client.is_active,
+                    'created_at': client.created_at.isoformat(),
+                    'updated_at': client.updated_at.isoformat()
+                }
+                for client in clients
+            ]
+            
+            return JsonResponse({
+                'clients': clients_list,
+                'count': len(clients_list)
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error fetching clients: {str(e)}'
+            }, status=500)
+    
+    elif request.method == 'POST':
+        # Create a new customer
+        try:
+            data = json.loads(request.body)
+            customer_name = data.get('customer_name', '').strip()
+            company_name = data.get('company_name', '').strip() or None
+            phone_number = data.get('phone_number', '').strip() or None
+            email = data.get('email', '').strip()
+            address = data.get('address', '').strip() or None
+            
+            # Validation
+            if not customer_name:
+                return JsonResponse({
+                    'error': 'Customer Name is required'
+                }, status=400)
+            
+            if not email:
+                return JsonResponse({
+                    'error': 'Email is required'
+                }, status=400)
+            
+            # Check if email already exists
+            if Client.objects.filter(email=email).exists():
+                return JsonResponse({
+                    'error': 'Customer with this email already exists'
+                }, status=400)
+            
+            # Create customer
+            client = Client.objects.create(
+                customer_name=customer_name,
+                company_name=company_name,
+                phone_number=phone_number,
+                email=email,
+                address=address,
+                # New customers are active by default; can be toggled later
+                is_active=True,
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'client': {
+                    'id': client.id,
+                    'customer_name': client.customer_name,
+                    'company_name': client.company_name or '',
+                    'phone_number': client.phone_number or '',
+                    'email': client.email,
+                    'address': client.address or '',
+                    'created_at': client.created_at.isoformat(),
+                    'updated_at': client.updated_at.isoformat()
+                }
+            }, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'error': 'Invalid JSON in request body'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error creating client: {str(e)}'
+            }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["PUT", "DELETE"])
+def client_detail(request, client_id):
+    """Update (PUT) or delete (DELETE) a client."""
+    from .models import Client
+    
+    # Get client
+    try:
+        client = Client.objects.get(id=client_id)
+    except Client.DoesNotExist:
+        return JsonResponse({
+            'error': 'Client not found'
+        }, status=404)
+    
+    if request.method == 'DELETE':
+        # Delete client
+        try:
+            client.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'Client deleted successfully'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error deleting client: {str(e)}'
+            }, status=500)
+    
+    elif request.method == 'PUT':
+        # Update customer
+        try:
+            data = json.loads(request.body)
+            customer_name = data.get('customer_name', '').strip()
+            company_name = data.get('company_name', '').strip() or None
+            phone_number = data.get('phone_number', '').strip() or None
+            email = data.get('email', '').strip()
+            address = data.get('address', '').strip() or None
+            
+            # Validation
+            if not customer_name:
+                return JsonResponse({
+                    'error': 'Customer Name is required'
+                }, status=400)
+            
+            if not email:
+                return JsonResponse({
+                    'error': 'Email is required'
+                }, status=400)
+            
+            # Check if email already exists (excluding current client)
+            if Client.objects.filter(email=email).exclude(id=client_id).exists():
+                return JsonResponse({
+                    'error': 'Customer with this email already exists'
+                }, status=400)
+            
+            # Update customer
+            client.customer_name = customer_name
+            client.company_name = company_name
+            client.phone_number = phone_number
+            client.email = email
+            client.address = address
+            # If is_active is provided in payload, update it; otherwise keep current value
+            if 'is_active' in data:
+                client.is_active = bool(data.get('is_active'))
+            client.save()
+            
+            return JsonResponse({
+                'success': True,
+                'client': {
+                    'id': client.id,
+                    'customer_name': client.customer_name,
+                    'company_name': client.company_name or '',
+                    'phone_number': client.phone_number or '',
+                    'email': client.email,
+                    'address': client.address or '',
+                    'created_at': client.created_at.isoformat(),
+                    'updated_at': client.updated_at.isoformat()
+                }
+            })
+        
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'error': 'Invalid JSON in request body'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error updating client: {str(e)}'
+            }, status=500)
+
+
+# ============================================
+# USER CRUD OPERATIONS
+# ============================================
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def list_users(request):
+    """List all users (GET) or create a new user (POST)."""
+    from .models import User
+    
+    if request.method == 'GET':
+        # List users with optional search
+        try:
+            search_query = request.GET.get('search', '').strip()
+            users = User.objects.all()
+            
+            # Apply search filter if provided
+            if search_query:
+                users = users.filter(
+                    Q(email__icontains=search_query) | 
+                    Q(first_name__icontains=search_query) |
+                    Q(last_name__icontains=search_query)
+                )
+            
+            users_list = [
+                {
+                    'id': user.id,
+                    'email': user.email,
+                    'first_name': user.first_name or '',
+                    'last_name': user.last_name or '',
+                    'full_name': user.get_full_name() or '',
+                    'is_active': user.is_active,
+                    'is_admin': user.is_admin,
+                    'permissions': user.permissions or [],
+                    'created_at': user.created_at.isoformat(),
+                    'updated_at': user.updated_at.isoformat()
+                }
+                for user in users
+            ]
+            
+            return JsonResponse({
+                'users': users_list,
+                'count': len(users_list)
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error fetching users: {str(e)}'
+            }, status=500)
+    
+    elif request.method == 'POST':
+        # Create a new user
+        try:
+            data = json.loads(request.body)
+            email = data.get('email', '').strip()
+            password = data.get('password', '').strip()
+            first_name = data.get('first_name', '').strip() or None
+            last_name = data.get('last_name', '').strip() or None
+            is_active = data.get('is_active', True)
+            is_admin = data.get('is_admin', False)
+            permissions = data.get('permissions', [])
+            
+            # Validation
+            if not email:
+                return JsonResponse({
+                    'error': 'Email is required'
+                }, status=400)
+            
+            if not password:
+                return JsonResponse({
+                    'error': 'Password is required'
+                }, status=400)
+            
+            if len(password) < 6:
+                return JsonResponse({
+                    'error': 'Password must be at least 6 characters long'
+                }, status=400)
+            
+            # Validate permissions
+            if not isinstance(permissions, list):
+                return JsonResponse({
+                    'error': 'Permissions must be an array'
+                }, status=400)
+            
+            # If admin, set permissions to empty (admin has all access)
+            if is_admin:
+                permissions = []
+            
+            # Check if email already exists
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({
+                    'error': 'User with this email already exists'
+                }, status=400)
+            
+            # Create user with hashed password
+            user = User.objects.create(
+                email=email,
+                password=password,  # Will be hashed in save() method
+                first_name=first_name,
+                last_name=last_name,
+                is_active=is_active,
+                is_admin=is_admin,
+                permissions=permissions
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'first_name': user.first_name or '',
+                    'last_name': user.last_name or '',
+                    'full_name': user.get_full_name() or '',
+                    'is_active': user.is_active,
+                    'is_admin': user.is_admin,
+                    'permissions': user.permissions or [],
+                    'created_at': user.created_at.isoformat(),
+                    'updated_at': user.updated_at.isoformat()
+                }
+            }, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'error': 'Invalid JSON in request body'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error creating user: {str(e)}'
+            }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["PUT", "DELETE"])
+def user_detail(request, user_id):
+    """Update (PUT) or delete (DELETE) a user."""
+    from .models import User
+    
+    # Get user
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found'
+        }, status=404)
+    
+    if request.method == 'DELETE':
+        # Delete user
+        try:
+            user.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'User deleted successfully'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error deleting user: {str(e)}'
+            }, status=500)
+    
+    elif request.method == 'PUT':
+        # Update user
+        try:
+            data = json.loads(request.body)
+            email = data.get('email', '').strip()
+            first_name = data.get('first_name', '').strip() or None
+            last_name = data.get('last_name', '').strip() or None
+            is_active = data.get('is_active', True)
+            # Ensure is_admin is boolean (handle string 'true'/'false' from frontend)
+            is_admin = bool(data.get('is_admin', False)) if data.get('is_admin') is not None else False
+            permissions = data.get('permissions', [])
+            
+            # Validation
+            if not email:
+                return JsonResponse({
+                    'error': 'Email is required'
+                }, status=400)
+            
+            # Validate permissions
+            if not isinstance(permissions, list):
+                return JsonResponse({
+                    'error': 'Permissions must be an array'
+                }, status=400)
+            
+            # Check if email already exists (excluding current user)
+            if User.objects.filter(email=email).exclude(id=user_id).exists():
+                return JsonResponse({
+                    'error': 'User with this email already exists'
+                }, status=400)
+            
+            # If admin, set permissions to empty (admin has all access)
+            if is_admin:
+                permissions = []
+            
+            # Update user (password is not updated here, use reset_password endpoint)
+            user.email = email
+            user.first_name = first_name
+            user.last_name = last_name
+            user.is_active = is_active
+            user.is_admin = bool(is_admin)  # Ensure boolean value
+            user.permissions = permissions
+            user.save()
+            
+            # Force refresh from database to ensure changes are saved
+            user.refresh_from_db()
+            
+            return JsonResponse({
+                'success': True,
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'first_name': user.first_name or '',
+                    'last_name': user.last_name or '',
+                    'full_name': user.get_full_name() or '',
+                    'is_active': user.is_active,
+                    'is_admin': user.is_admin,
+                    'permissions': user.permissions or [],
+                    'created_at': user.created_at.isoformat(),
+                    'updated_at': user.updated_at.isoformat()
+                }
+            })
+        
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'error': 'Invalid JSON in request body'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error updating user: {str(e)}'
+            }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def reset_user_password(request, user_id):
+    """Reset password for a user."""
+    from .models import User
+    
+    # Get user
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found'
+        }, status=404)
+    
+    try:
+        data = json.loads(request.body)
+        new_password = data.get('new_password', '').strip()
+        confirm_password = data.get('confirm_password', '').strip()
+        
+        # Validation
+        if not new_password:
+            return JsonResponse({
+                'error': 'New password is required'
+            }, status=400)
+        
+        if len(new_password) < 6:
+            return JsonResponse({
+                'error': 'Password must be at least 6 characters long'
+            }, status=400)
+        
+        # Check if passwords match
+        if new_password != confirm_password:
+            return JsonResponse({
+                'error': 'Passwords do not match'
+            }, status=400)
+        
+        # Reset password (will be hashed in save() method)
+        user.set_password(new_password)
+        user.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Password reset successfully'
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Error resetting password: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def send_quotation_email(request):
+    """Send quotation PDF via email using SMTP."""
+    try:
+        from .models import Company
+        
+        # Parse request data
+        data = json.loads(request.body)
+        recipient_email = data.get('recipient_email', '').strip()
+        customer_name = data.get('customer_name', '').strip()
+        pdf_base64 = data.get('pdf_base64', '').strip()
+        pdf_filename = data.get('pdf_filename', 'quotation.pdf')
+        
+        # Validation
+        if not recipient_email:
+            return JsonResponse({
+                'error': 'Recipient email is required'
+            }, status=400)
+        
+        if not pdf_base64:
+            return JsonResponse({
+                'error': 'PDF data is required'
+            }, status=400)
+        
+        # Get company email credentials
+        company = Company.get_company()
+        
+        if not company.sendemail or not company.sendpassword:
+            return JsonResponse({
+                'error': 'Email credentials not configured. Please configure sendemail and sendpassword in admin panel.'
+            }, status=400)
+        
+        # Decode PDF from base64
+        try:
+            pdf_data = base64.b64decode(pdf_base64)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Invalid PDF data: {str(e)}'
+            }, status=400)
+        
+        # Extract email domain to determine SMTP server
+        email_domain = company.sendemail.split('@')[1].lower()
+        
+        # Common SMTP server configurations
+        smtp_configs = {
+            'gmail.com': {
+                'host': 'smtp.gmail.com',
+                'port': 587,
+                'use_tls': True
+            },
+            'outlook.com': {
+                'host': 'smtp-mail.outlook.com',
+                'port': 587,
+                'use_tls': True
+            },
+            'hotmail.com': {
+                'host': 'smtp-mail.outlook.com',
+                'port': 587,
+                'use_tls': True
+            },
+            'yahoo.com': {
+                'host': 'smtp.mail.yahoo.com',
+                'port': 587,
+                'use_tls': True
+            }
+        }
+        
+        # Default SMTP config (Gmail-like)
+        smtp_config = smtp_configs.get(email_domain, {
+            'host': 'smtp.gmail.com',
+            'port': 587,
+            'use_tls': True
+        })
+        
+        # Create email message
+        msg = MIMEMultipart()
+        msg['From'] = company.sendemail
+        msg['To'] = recipient_email
+        msg['Subject'] = f'Quotation for {customer_name or "Customer"}'
+        
+        # Email body (using company name from database)
+        company_name = company.company_name or 'MAKLOGISTICS'
+        
+        body = f"""Dear {customer_name or 'Customer'},
+
+Please find the quotation attached to this email.
+
+If you have any questions or need further assistance, please don't hesitate to contact us.
+
+Best regards,
+{company_name}
+"""
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach PDF
+        attachment = MIMEBase('application', 'pdf')
+        attachment.set_payload(pdf_data)
+        encoders.encode_base64(attachment)
+        attachment.add_header(
+            'Content-Disposition',
+            f'attachment; filename= {pdf_filename}'
+        )
+        msg.attach(attachment)
+        
+        # Send email via SMTP
+        try:
+            server = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
+            if smtp_config['use_tls']:
+                server.starttls()
+            server.login(company.sendemail, company.sendpassword)
+            server.send_message(msg)
+            server.quit()
+            
+            # Track email send in database
+            try:
+                from .models import Quotation, QuotationSend
+                # Get quotation from session
+                quotation_data = request.session.get('quotation', None)
+                
+                if quotation_data:
+                    # Save quotation to database if not already saved
+                    # Check if we should create a new quotation or use existing one
+                    # For now, create a new quotation record for each send
+                    quotation = Quotation.objects.create(
+                        quotation_data=quotation_data
+                    )
+                    
+                    # Get user info from token to track who sent this
+                    user_info = get_user_from_token(request)
+                    user_id = None
+                    if user_info and user_info.get('user_type') == 'user' and user_info.get('user_id'):
+                        user_id = user_info.get('user_id')
+                    
+                    # Create QuotationSend record to track this send
+                    QuotationSend.objects.create(
+                        quotation=quotation,
+                        send_type='email',
+                        recipient_email=recipient_email,
+                        user_id=user_id,
+                        sent_at=timezone.now()
+                    )
+            except Exception as track_error:
+                # Log but don't fail the email send if tracking fails
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f'Failed to track email send: {str(track_error)}')
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Quotation sent successfully to {recipient_email}'
+            })
+        except smtplib.SMTPAuthenticationError:
+            return JsonResponse({
+                'error': 'Email authentication failed. Please check your email and password in admin panel.'
+            }, status=401)
+        except smtplib.SMTPException as e:
+            return JsonResponse({
+                'error': f'SMTP error: {str(e)}'
+            }, status=500)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error sending email: {str(e)}'
+            }, status=500)
+    
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Email send error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'error': f'Error sending email: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def dashboard_stats(request):
+    """Get dashboard statistics including KPIs and chart data."""
+    try:
+        from .models import Quotation, Client, User, QuotationSend
+        
+        # Get user info from token to filter by user
+        user_info = get_user_from_token(request)
+        user_id = None
+        is_admin = False
+        user_type = 'user'
+        if user_info:
+            user_id = user_info.get('user_id')
+            is_admin = user_info.get('is_admin', False)
+            user_type = user_info.get('user_type', 'user')
+        
+        # Filter logic:
+        # - Company email login (user_type == 'company') → See ALL sends (from all users and admin)
+        # - User with full access (user_type == 'user' and is_admin == True) → See ALL sends (from all users and admin)
+        # - Regular user (user_type == 'user' and is_admin == False) → See only their sends (user_id = their_id)
+        
+        # Get current year for filtering
+        current_year = timezone.now().year
+        year_param = request.GET.get('year', str(current_year))
+        try:
+            year = int(year_param)
+        except ValueError:
+            year = current_year
+        
+        # Base queryset for QuotationSend - filter based on user type
+        quotation_send_filter = {}
+        if user_type == 'company':
+            # Company admin sees ONLY admin sends (user_id IS NULL) - not user sends
+            quotation_send_filter['user_id__isnull'] = True
+        elif user_type == 'user' and is_admin:
+            # User with full access sees ALL sends (from all users and admin)
+            # No filter - show everything (they have admin-like permissions)
+            quotation_send_filter = {}
+        elif user_type == 'user' and user_id:
+            # Regular users see only their sends
+            quotation_send_filter['user_id'] = user_id
+        
+        # KPI Cards - filter based on user type
+        if user_type == 'company':
+            # Company admin sees only admin quotations (user_id IS NULL)
+            total_quotations = Quotation.objects.filter(
+                sends__user_id__isnull=True
+            ).distinct().count()
+            total_customers = Client.objects.count()
+            active_customers = Client.objects.filter(is_active=True).count()
+            inactive_customers = Client.objects.filter(is_active=False).count()
+            total_users = User.objects.filter(is_active=True).count()
+        elif user_type == 'user' and is_admin:
+            # User with full access sees all quotations (from all users and admin)
+            total_quotations = Quotation.objects.count()
+            total_customers = Client.objects.count()
+            active_customers = Client.objects.filter(is_active=True).count()
+            inactive_customers = Client.objects.filter(is_active=False).count()
+            total_users = User.objects.filter(is_active=True).count()
+        elif user_type == 'user' and user_id:
+            # Regular users see only their data
+            total_quotations = Quotation.objects.filter(
+                sends__user_id=user_id
+            ).distinct().count()
+            # Users see all customers (they can send to any customer)
+            total_customers = Client.objects.count()
+            active_customers = Client.objects.filter(is_active=True).count()
+            inactive_customers = Client.objects.filter(is_active=False).count()
+            # For users, show count of quotations they sent, not user count
+            total_users = QuotationSend.objects.filter(user_id=user_id).count()
+        else:
+            # Fallback for unauthenticated or invalid users
+            total_quotations = 0
+            total_customers = 0
+            active_customers = 0
+            inactive_customers = 0
+            total_users = 0
+        
+        # Monthly Quotation SENT counts data (for bar chart)
+        # Get all quotations SENT in the selected year, grouped by month
+        # Format monthly data for chart (all 12 months)
+        months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+        monthly_data = []
+        
+        for month_num in range(1, 13):
+            # Get sends for this month, filtered by user if not admin
+            month_sends_all = QuotationSend.objects.filter(
+                sent_at__year=year,
+                sent_at__month=month_num,
+                **quotation_send_filter
+            )
+            
+            # Count email and whatsapp sends
+            email_count = month_sends_all.filter(send_type='email').count()
+            whatsapp_count = month_sends_all.filter(send_type='whatsapp').count()
+            
+            # Total quotations sent in this month (total sends, not unique)
+            total_sent = month_sends_all.count()
+            
+            monthly_data.append({
+                'month': months[month_num - 1],
+                'email': email_count,
+                'whatsapp': whatsapp_count,
+                'total': total_sent  # Total quotations sent in this month
+            })
+        
+        # Total Email vs WhatsApp breakdown (for pie chart) - filter by user if not admin
+        email_sends = QuotationSend.objects.filter(
+            send_type='email',
+            **quotation_send_filter
+        ).select_related('quotation')
+        whatsapp_sends = QuotationSend.objects.filter(
+            send_type='whatsapp',
+            **quotation_send_filter
+        ).select_related('quotation')
+        
+        total_email_sends = email_sends.count()
+        total_whatsapp_sends = whatsapp_sends.count()
+        total_sends = total_email_sends + total_whatsapp_sends
+        
+        # Calculate grand total amounts for email and whatsapp sends
+        email_grand_total = 0
+        for send in email_sends:
+            try:
+                grand_total = send.quotation.get_grand_total()
+                if grand_total:
+                    email_grand_total += float(grand_total)
+            except (AttributeError, ValueError, TypeError):
+                pass
+        
+        whatsapp_grand_total = 0
+        for send in whatsapp_sends:
+            try:
+                grand_total = send.quotation.get_grand_total()
+                if grand_total:
+                    whatsapp_grand_total += float(grand_total)
+            except (AttributeError, ValueError, TypeError):
+                pass
+        
+        total_grand_total = email_grand_total + whatsapp_grand_total
+        
+        # Calculate percentages (for pie chart visualization)
+        email_percentage = round((total_email_sends / total_sends * 100) if total_sends > 0 else 0, 1)
+        whatsapp_percentage = round((total_whatsapp_sends / total_sends * 100) if total_sends > 0 else 0, 1)
+        
+        # Get customer list with quotation counts and user breakdown
+        # Customer card is UNIVERSAL - show ALL quotations sent to each customer (from all users)
+        customers_list = []
+        for client in Client.objects.all().order_by('-created_at')[:10]:  # Get latest 10 customers
+            # Count ALL quotations sent to this customer (by email) - UNIVERSAL count (not filtered)
+            all_quotation_sends = QuotationSend.objects.filter(
+                recipient_email__iexact=client.email,
+                send_type='email'
+            )
+            quotation_count = all_quotation_sends.count()  # Universal count - all users' sends
+            
+            # Get user breakdown for this customer (who sent how many)
+            # Customer card is UNIVERSAL - show breakdown by ALL users for everyone
+            user_breakdown = []
+            from django.db.models import Count
+            # Always get ALL sends for breakdown (universal)
+            user_sends = all_quotation_sends.values('user_id').annotate(count=Count('id'))
+            for send_data in user_sends:
+                send_user_id = send_data['user_id']
+                send_count = send_data['count']
+                if send_user_id is None:
+                    user_breakdown.append({'user_name': 'Admin', 'count': send_count})
+                else:
+                    try:
+                        send_user = User.objects.get(id=send_user_id)
+                        user_name = send_user.get_full_name() or send_user.email
+                        user_breakdown.append({'user_name': user_name, 'count': send_count})
+                    except User.DoesNotExist:
+                        user_breakdown.append({'user_name': f'User {send_user_id}', 'count': send_count})
+            
+            customers_list.append({
+                'id': client.id,
+                'customer_name': client.customer_name,
+                'company_name': client.company_name or '',
+                'email': client.email,
+                'phone_number': client.phone_number or '',
+                'total_quotation': quotation_count,
+                'status': 'Active' if client.is_active else 'Inactive',
+                'user_breakdown': user_breakdown  # Who sent how many
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'kpis': {
+                    'total_quotations': total_quotations,
+                    'total_customers': total_customers,
+                    'active_customers': active_customers,
+                    'inactive_customers': inactive_customers,
+                    'total_users': total_users
+                },
+                'monthly_sends': monthly_data,
+                'send_breakdown': {
+                    'email': {
+                        'count': total_email_sends,
+                        'percentage': email_percentage,
+                        'grand_total': round(email_grand_total, 2)
+                    },
+                    'whatsapp': {
+                        'count': total_whatsapp_sends,
+                        'percentage': whatsapp_percentage,
+                        'grand_total': round(whatsapp_grand_total, 2)
+                    },
+                    'total': total_sends,
+                    'total_grand_total': round(total_grand_total, 2)
+                },
+                'customers': customers_list,
+                'year': year
+            }
+        })
+    
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Dashboard stats error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'error': f'Error fetching dashboard stats: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_company_details(request):
+    """Get all company details for settings page."""
+    try:
+        from .models import Company
+        from django.conf import settings
+        
+        # Check authentication - only authenticated users can view company details
+        user_info = get_user_from_token(request)
+        if not user_info:
+            return JsonResponse({
+                'success': False,
+                'error': 'Authentication required'
+            }, status=401)
+        
+        company = Company.get_company()
+        
+        # Get image URLs
+        login_logo_url = None
+        login_image_url = None
+        quotation_logo_url = None
+        
+        if company.login_logo:
+            try:
+                logo_url = company.login_logo.url
+                if logo_url and logo_url.strip():
+                    logo_url = logo_url.strip()
+                    if not logo_url.startswith('/'):
+                        logo_url = '/' + logo_url
+                    login_logo_url = logo_url
+            except (AttributeError, ValueError):
+                login_logo_url = None
+        
+        if company.login_image:
+            try:
+                image_url = company.login_image.url
+                if image_url and image_url.strip():
+                    image_url = image_url.strip()
+                    if not image_url.startswith('/'):
+                        image_url = '/' + image_url
+                    login_image_url = image_url
+            except (AttributeError, ValueError):
+                login_image_url = None
+        
+        if company.quotation_logo:
+            try:
+                logo_url = company.quotation_logo.url
+                if logo_url and logo_url.strip():
+                    logo_url = logo_url.strip()
+                    if not logo_url.startswith('/'):
+                        logo_url = '/' + logo_url
+                    quotation_logo_url = logo_url
+            except (AttributeError, ValueError):
+                quotation_logo_url = None
+        
+        return JsonResponse({
+            'success': True,
+            'company': {
+                'company_name': company.company_name or '',
+                'email': company.email or '',
+                'tagline': company.tagline or '',
+                'phone_number': company.phone_number or '',
+                'address': company.address or '',
+                'sendemail': company.sendemail or '',
+                'sendpassword': company.sendpassword or '',
+                'sendnumber': company.sendnumber or '',
+                'openrouter_api_key': company.openrouter_api_key or '',
+                'openrouter_model': company.openrouter_model or 'google/gemini-flash-1.5:free',
+                'login_logo_url': login_logo_url,
+                'login_image_url': login_image_url,
+                'quotation_logo_url': quotation_logo_url,
+                'created_at': company.created_at.isoformat() if company.created_at else None,
+                'updated_at': company.updated_at.isoformat() if company.updated_at else None
+            }
+        })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Get company details error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'success': False,
+            'error': f'Error fetching company details: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def update_company_details(request):
+    """Update company details."""
+    try:
+        from .models import Company
+        
+        # Check authentication - only authenticated users can update company details
+        user_info = get_user_from_token(request)
+        if not user_info:
+            return JsonResponse({
+                'success': False,
+                'error': 'Authentication required'
+            }, status=401)
+        
+        data = json.loads(request.body)
+        company = Company.get_company()
+        
+        # Update fields (password is not updated here, use separate endpoint if needed)
+        company_name = data.get('company_name', '').strip() or None
+        email = data.get('email', '').strip()
+        tagline = data.get('tagline', '').strip() or None
+        phone_number = data.get('phone_number', '').strip() or None
+        address = data.get('address', '').strip() or None
+        sendemail = data.get('sendemail', '').strip() or None
+        sendpassword = data.get('sendpassword', '').strip() or None
+        sendnumber = data.get('sendnumber', '').strip() or None
+        openrouter_api_key = data.get('openrouter_api_key', '').strip() or None
+        openrouter_model = data.get('openrouter_model', '').strip() or None
+        
+        # Validation
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'error': 'Company email is required'
+            }, status=400)
+        
+        # Update company - save all fields permanently
+        if company_name is not None:
+            company.company_name = company_name
+        company.email = email
+        if tagline is not None:
+            company.tagline = tagline
+        if phone_number is not None:
+            company.phone_number = phone_number
+        if address is not None:
+            company.address = address
+        if sendemail is not None:
+            company.sendemail = sendemail
+        if sendpassword is not None:
+            company.sendpassword = sendpassword
+        if sendnumber is not None:
+            company.sendnumber = sendnumber
+        if openrouter_api_key is not None:
+            company.openrouter_api_key = openrouter_api_key
+        if openrouter_model is not None:
+            company.openrouter_model = openrouter_model
+        
+        # Save to database permanently
+        company.save()
+        
+        # Get updated image URLs
+        login_logo_url = None
+        login_image_url = None
+        quotation_logo_url = None
+        
+        if company.login_logo:
+            try:
+                logo_url = company.login_logo.url
+                if logo_url and logo_url.strip():
+                    logo_url = logo_url.strip()
+                    if not logo_url.startswith('/'):
+                        logo_url = '/' + logo_url
+                    login_logo_url = logo_url
+            except (AttributeError, ValueError):
+                pass
+        
+        if company.login_image:
+            try:
+                image_url = company.login_image.url
+                if image_url and image_url.strip():
+                    image_url = image_url.strip()
+                    if not image_url.startswith('/'):
+                        image_url = '/' + image_url
+                    login_image_url = image_url
+            except (AttributeError, ValueError):
+                pass
+        
+        if company.quotation_logo:
+            try:
+                logo_url = company.quotation_logo.url
+                if logo_url and logo_url.strip():
+                    logo_url = logo_url.strip()
+                    if not logo_url.startswith('/'):
+                        logo_url = '/' + logo_url
+                    quotation_logo_url = logo_url
+            except (AttributeError, ValueError):
+                pass
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Company details updated successfully',
+            'company': {
+                'company_name': company.company_name or '',
+                'email': company.email or '',
+                'tagline': company.tagline or '',
+                'phone_number': company.phone_number or '',
+                'address': company.address or '',
+                'sendemail': company.sendemail or '',
+                'sendpassword': company.sendpassword or '',
+                'sendnumber': company.sendnumber or '',
+                'openrouter_api_key': company.openrouter_api_key or '',
+                'openrouter_model': company.openrouter_model or 'google/gemini-flash-1.5:free',
+                'login_logo_url': login_logo_url,
+                'login_image_url': login_image_url,
+                'quotation_logo_url': quotation_logo_url,
+                'created_at': company.created_at.isoformat() if company.created_at else None,
+                'updated_at': company.updated_at.isoformat() if company.updated_at else None
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Update company details error: {str(e)}', exc_info=True)
+        
+        return JsonResponse({
+            'success': False,
+            'error': f'Error updating company details: {str(e)}'
+        }, status=500)
+
