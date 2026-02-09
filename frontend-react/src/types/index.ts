@@ -150,6 +150,11 @@ export interface ServiceUpdatePattern {
 // COMPONENT PROP TYPES
 // ============================================
 
+export interface CustomerUserBreakdown {
+  user_name: string;
+  count: number;
+}
+
 export interface DashboardStatsResponse {
   success: boolean;
   data: {
@@ -170,12 +175,15 @@ export interface DashboardStatsResponse {
       email: {
         count: number;
         percentage: number;
+        grand_total: number;
       };
       whatsapp: {
         count: number;
         percentage: number;
+        grand_total: number;
       };
       total: number;
+      total_grand_total: number;
     };
     customers: Array<{
       id: number;
@@ -185,14 +193,15 @@ export interface DashboardStatsResponse {
       phone_number: string;
       total_quotation: number;
       status: 'Active' | 'Inactive';
+      user_breakdown?: CustomerUserBreakdown[];
     }>;
     year: number;
   };
 }
 
 export interface SidebarProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
+  activeTab: TabType | 'profile';
+  onTabChange: (tab: TabType | 'profile') => void;
   onLogout?: () => void;
   isAdmin?: boolean;
   allowedTabs?: TabType[];
@@ -398,6 +407,44 @@ export interface CompanyLoginData {
   error?: string;
 }
 
+export interface CompanyDetails {
+  company_name: string;
+  email: string;
+  tagline: string;
+  phone_number: string;
+  address: string;
+  sendemail: string;
+  sendpassword: string;
+  sendnumber: string;
+  openrouter_api_key: string;
+  openrouter_model: string;
+  login_logo_url: string | null;
+  login_image_url: string | null;
+  quotation_logo_url: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface CompanyDetailsResponse {
+  success: boolean;
+  company?: CompanyDetails;
+  message?: string;
+  error?: string;
+}
+
+export interface CompanyDetailsUpdateRequest {
+  company_name?: string;
+  email: string;
+  tagline?: string;
+  phone_number?: string;
+  address?: string;
+  sendemail?: string;
+  sendpassword?: string;
+  sendnumber?: string;
+  openrouter_api_key?: string;
+  openrouter_model?: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -434,5 +481,16 @@ export interface CheckAuthResponse {
   is_admin?: boolean;
   permissions?: string[];
   user_name?: string | null;
+  user_type?: 'user' | 'company';
+  user_details?: {
+    first_name?: string | null;
+    last_name?: string | null;
+    is_active?: boolean;
+    created_at?: string | null;
+    updated_at?: string | null;
+    company_email?: string | null;
+    send_email?: string | null;
+    send_number?: string | null;
+  };
 }
 

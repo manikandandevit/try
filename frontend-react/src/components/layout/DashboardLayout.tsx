@@ -10,8 +10,8 @@ import type { TabType } from '@/types';
 import styles from './DashboardLayout.module.css';
 
 export interface DashboardLayoutProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
+  activeTab: TabType | 'profile';
+  onTabChange: (tab: TabType | 'profile') => void;
   children: React.ReactNode;
   userName?: string;
   userRole?: string;

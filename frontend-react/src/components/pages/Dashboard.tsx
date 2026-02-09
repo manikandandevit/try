@@ -98,9 +98,6 @@ export const Dashboard: React.FC = () => {
   const centerX = 100;
   const centerY = 100;
   
-  // Update pie chart SVG viewBox to match new center
-  const pieViewBox = "0 0 200 200";
-  
   // Calculate angles for pie slices
   const emailAngle = (emailPercentage / 100) * 360;
   const whatsappAngle = (whatsappPercentage / 100) * 360;
@@ -108,6 +105,11 @@ export const Dashboard: React.FC = () => {
   
   // Convert angles to radians and calculate path
   const getPieSlicePath = (startAngle: number, endAngle: number) => {
+    // Handle full circle case (360 degrees)
+    if (endAngle - startAngle >= 360) {
+      return `M ${centerX} ${centerY} m -${radius} 0 a ${radius} ${radius} 0 1 1 ${radius * 2} 0 a ${radius} ${radius} 0 1 1 -${radius * 2} 0 Z`;
+    }
+    
     const startRad = ((startAngle - 90) * Math.PI) / 180;
     const endRad = ((endAngle - 90) * Math.PI) / 180;
     const x1 = centerX + radius * Math.cos(startRad);
@@ -294,7 +296,7 @@ export const Dashboard: React.FC = () => {
           <div className={styles.pieChart}>
             <div className={styles.pieChartContainer}>
               <svg width="200" height="200" viewBox="0 0 200 200" className={styles.pieSvg}>
-                {/* Email slice */}
+                {/* Email slice - always render if percentage > 0 */}
                 {emailPercentage > 0 && (
                   <path
                     d={getPieSlicePath(emailStartAngle, emailEndAngle)}
@@ -302,6 +304,10 @@ export const Dashboard: React.FC = () => {
                     className={styles.pieSlice}
                     stroke="#fff"
                     strokeWidth="2"
+                    style={{ 
+                      opacity: emailPercentage > 0 ? 1 : 0,
+                      transition: 'opacity 0.3s ease'
+                    }}
                   />
                 )}
                 {/* WhatsApp slice */}
@@ -312,6 +318,10 @@ export const Dashboard: React.FC = () => {
                     className={styles.pieSlice}
                     stroke="#fff"
                     strokeWidth="2"
+                    style={{ 
+                      opacity: whatsappPercentage > 0 ? 1 : 0,
+                      transition: 'opacity 0.3s ease'
+                    }}
                   />
                 )}
                 {/* Not Sent slice (if any) */}
@@ -322,6 +332,10 @@ export const Dashboard: React.FC = () => {
                     className={styles.pieSlice}
                     stroke="#fff"
                     strokeWidth="2"
+                    style={{ 
+                      opacity: notSentPercentage > 0 ? 1 : 0,
+                      transition: 'opacity 0.3s ease'
+                    }}
                   />
                 )}
                 {/* Center circle for donut effect */}
@@ -338,13 +352,13 @@ export const Dashboard: React.FC = () => {
               <div className={styles.legendItem}>
                 <span className={`${styles.legendDot} ${styles.legendDotBlue}`}></span>
                 <span className={styles.legendText}>
-                  <strong>Email</strong> - {emailPercentage}% ({stats.send_breakdown.email.count})
+                  <strong>Email</strong> - ₹{stats.send_breakdown.email.grand_total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({stats.send_breakdown.email.count})
                 </span>
               </div>
               <div className={styles.legendItem}>
                 <span className={`${styles.legendDot} ${styles.legendDotTeal}`}></span>
                 <span className={styles.legendText}>
-                  <strong>WhatsApp</strong> - {whatsappPercentage}% ({stats.send_breakdown.whatsapp.count})
+                  <strong>WhatsApp</strong> - ₹{stats.send_breakdown.whatsapp.grand_total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({stats.send_breakdown.whatsapp.count})
                 </span>
               </div>
               {notSentPercentage > 0 && (
@@ -449,7 +463,20 @@ export const Dashboard: React.FC = () => {
                     <td>{customer.company_name || '-'}</td>
                     <td>{customer.email}</td>
                     <td>{customer.phone_number || '-'}</td>
-                    <td>{customer.total_quotation}</td>
+                    <td>
+                      <div className={styles.quotationCount}>
+                        {customer.total_quotation}
+                        {customer.user_breakdown && customer.user_breakdown.length > 0 && (
+                          <div className={styles.userBreakdown}>
+                            {customer.user_breakdown.map((user, idx) => (
+                              <span key={idx} className={styles.userBreakdownItem}>
+                                {user.user_name}: {user.count}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <span className={`${styles.statusBadge} ${customer.status === 'Active' ? styles.statusActive : styles.statusInactive}`}>
                         <span className={styles.statusDot}></span>

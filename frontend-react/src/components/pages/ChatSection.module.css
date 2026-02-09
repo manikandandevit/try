@@ -166,6 +166,43 @@
   }
 }
 
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .chatHeader {
+    padding: 6px 10px;
+  }
+
+  .headerTitle {
+    font-size: 13px;
+  }
+
+  .chatMessages {
+    padding: 6px 10px 4px 10px;
+    gap: 8px;
+  }
+
+  .chatInputContainer {
+    padding: 6px 10px 8px 10px;
+  }
+
+  .chatInputWrapper {
+    padding: 0 4px 0 12px;
+  }
+
+  .chatInput {
+    font-size: 12px;
+  }
+
+  .sendButton {
+    width: 30px;
+    height: 30px;
+  }
+
+  .sendButton .material-icons {
+    font-size: 14px;
+  }
+}
+
 .chatMessages {
   flex: 1;
   overflow-y: auto;

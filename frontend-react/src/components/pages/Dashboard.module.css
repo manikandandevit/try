@@ -580,6 +580,26 @@
   border-bottom: none;
 }
 
+.quotationCount {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.userBreakdownItem {
+  display: block;
+  padding: 2px 0;
+}
+
 .statusBadge {
   display: inline-flex;
   align-items: center;
@@ -623,45 +643,479 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .chartsRow {
-    grid-template-columns: 1fr;
+
+/* Large Desktop (1440px and above) */
+@media (min-width: 1440px) {
+  .dashboard {
+    padding: 32px;
+  }
+
+  .kpiCards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .chartCard {
+    padding: 28px;
   }
 }
 
-@media (max-width: 768px) {
+/* Desktop (1024px - 1439px) */
+@media (max-width: 1439px) and (min-width: 1024px) {
+  .dashboard {
+    padding: 24px;
+  }
+
+  .kpiCards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Tablet Landscape (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .kpiCards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .chartsRow {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .chartCard {
+    padding: 20px;
+  }
+
+  .kpiCard {
+    padding: 20px;
+  }
+
+  .kpiValue {
+    font-size: 28px;
+  }
+
+  .kpiIcon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .tableCard {
+    padding: 20px;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dataTable {
+    min-width: 800px;
+  }
+}
+
+/* Tablet Portrait / Large Mobile (480px - 767px) */
+@media (max-width: 767px) and (min-width: 480px) {
   .dashboard {
     padding: 16px;
   }
 
   .kpiCards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .kpiCard {
+    padding: 16px;
+  }
+
+  .kpiTitle {
+    font-size: 13px;
+  }
+
+  .kpiValue {
+    font-size: 24px;
+  }
+
+  .kpiIcon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .kpiIcon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .chartsRow {
     grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .chartCard {
+    padding: 16px;
+  }
+
+  .chartHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .chartTitle {
+    font-size: 16px;
+  }
+
+  .chartSubtitle {
+    font-size: 11px;
   }
 
   .barChart {
     flex-direction: column;
+    gap: 12px;
   }
 
   .barChartYAxis {
-    min-width: auto;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
   }
 
   .yAxisLabel {
     writing-mode: horizontal-tb;
     text-orientation: mixed;
     height: auto;
-    margin-bottom: 8px;
+    margin: 0;
+    padding-right: 12px;
   }
 
-  .yAxisValues {
-    flex-direction: row;
-    height: auto;
-    justify-content: space-between;
-    padding: 0;
+  .barChartContent {
+    width: 100%;
+    padding-bottom: 40px;
   }
 
   .barsContainer {
     height: 250px;
+    gap: 2px;
+  }
+
+  .bar {
+    max-width: 30px;
+    min-width: 15px;
+  }
+
+  .barLabel {
+    font-size: 10px;
+    bottom: -30px;
+  }
+
+  .pieChart {
+    gap: 16px;
+  }
+
+  .pieChartContainer {
+    height: 180px;
+  }
+
+  .pieSvg {
+    width: 180px;
+    height: 180px;
+  }
+
+  .pieLegend {
+    max-width: 100%;
+  }
+
+  .legendText {
+    font-size: 12px;
+  }
+
+  .tableCard {
+    padding: 16px;
+    margin-top: 20px;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .tableTitle {
+    font-size: 16px;
+  }
+
+  .statusToggle {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .toggleButton {
+    flex: 1;
+    padding: 10px 16px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dataTable {
+    min-width: 700px;
+    font-size: 13px;
+  }
+
+  .dataTable th,
+  .dataTable td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Mobile (max-width: 479px) */
+@media (max-width: 479px) {
+  .dashboard {
+    padding: 12px;
+  }
+
+  .kpiCards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpiCard {
+    padding: 16px;
+  }
+
+  .kpiContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .kpiInfo {
+    width: 100%;
+  }
+
+  .kpiTitle {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .kpiValue {
+    font-size: 28px;
+  }
+
+  .kpiIcon {
+    width: 50px;
+    height: 50px;
+    align-self: flex-end;
+  }
+
+  .kpiIcon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .chartsRow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .chartCard {
+    padding: 12px;
+  }
+
+  .chartHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .chartTitle {
+    font-size: 15px;
+  }
+
+  .chartSubtitle {
+    font-size: 10px;
+  }
+
+  .yearSelector {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .updateTime {
+    font-size: 11px;
+  }
+
+  .barChart {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .barChartYAxis {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .yAxisLabel {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    height: auto;
+    margin: 0;
+    padding-right: 10px;
+    font-size: 11px;
+  }
+
+  .barChartContent {
+    width: 100%;
+    padding-bottom: 35px;
+  }
+
+  .barsContainer {
+    height: 200px;
+    gap: 2px;
+  }
+
+  .bar {
+    max-width: 25px;
+    min-width: 12px;
+  }
+
+  .barValue {
+    font-size: 10px;
+    top: -24px;
+    padding: 2px 6px;
+  }
+
+  .barLabel {
+    font-size: 9px;
+    bottom: -28px;
+  }
+
+  .pieChart {
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .pieChartContainer {
+    height: 160px;
+  }
+
+  .pieSvg {
+    width: 160px;
+    height: 160px;
+  }
+
+  .pieCenterText {
+    font-size: 12px;
+  }
+
+  .pieCenterValue {
+    font-size: 18px;
+  }
+
+  .pieLegend {
+    max-width: 100%;
+    gap: 10px;
+  }
+
+  .legendItem {
+    padding: 6px 10px;
+    gap: 10px;
+  }
+
+  .legendDot {
+    width: 14px;
+    height: 14px;
+  }
+
+  .legendText {
+    font-size: 11px;
+  }
+
+  .tableCard {
+    padding: 12px;
+    margin-top: 16px;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .tableTitle {
+    font-size: 15px;
+  }
+
+  .statusToggle {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .toggleButton {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+
+  .dataTable {
+    min-width: 600px;
+    font-size: 12px;
+  }
+
+  .dataTable th {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .dataTable td {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .statusBadge {
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+
+  .sortIcon {
+    font-size: 10px;
+    right: 6px;
   }
 }
 

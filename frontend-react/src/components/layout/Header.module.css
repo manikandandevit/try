@@ -227,22 +227,135 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 769px) {
   .header {
     left: 0;
   }
 
   .headerContent {
+    padding: 0 20px;
+  }
+
+  .userName {
+    font-size: 13px;
+  }
+
+  .userRole {
+    font-size: 11px;
+  }
+}
+
+/* Mobile (max-width: 768px) */
+@media (max-width: 768px) {
+  .header {
+    left: 0;
+    height: 60px;
+  }
+
+  .headerContent {
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 12px;
   }
 
   .mobileMenuButton {
     display: flex;
+    padding: 6px;
+    margin-right: 12px;
+  }
+
+  .mobileMenuButton .material-icons {
+    font-size: 22px;
+  }
+
+  .headerRight {
+    gap: 12px;
+  }
+
+  .notificationButton {
+    padding: 6px;
+  }
+
+  .notificationButton svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .notificationBadge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: 2px;
+    right: 2px;
+  }
+
+  .notificationDropdown {
+    width: 280px;
+    right: -10px;
+    max-height: 350px;
+  }
+
+  .userProfile {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .avatar,
+  .avatarPlaceholder {
+    width: 36px;
+    height: 36px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 14px;
   }
 
   .userInfo {
     display: none;
+  }
+}
+
+/* Small Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .header {
+    height: 56px;
+  }
+
+  .headerContent {
+    padding: 0 8px;
+  }
+
+  .mobileMenuButton {
+    margin-right: 8px;
+    padding: 4px;
+  }
+
+  .headerRight {
+    gap: 8px;
+  }
+
+  .notificationButton {
+    padding: 4px;
+  }
+
+  .notificationDropdown {
+    width: calc(100vw - 32px);
+    right: -8px;
+  }
+
+  .userProfile {
+    padding: 4px 6px;
+  }
+
+  .avatar,
+  .avatarPlaceholder {
+    width: 32px;
+    height: 32px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 12px;
   }
 }
 

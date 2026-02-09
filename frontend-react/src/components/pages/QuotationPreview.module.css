@@ -731,6 +731,64 @@
   }
 }
 
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .quotationHeader {
+    padding: 6px 10px;
+  }
+
+  .quotationHeader h2 {
+    font-size: 14px;
+  }
+
+  .headerSubtitle {
+    font-size: 9px;
+    margin-top: 2px;
+  }
+
+  .quotationPreview {
+    padding: 6px 10px 10px 10px;
+  }
+
+  .downloadButton {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 5px !important;
+  }
+
+  .downloadButton .material-icons {
+    font-size: 14px !important;
+  }
+
+  .reviewLink {
+    width: 30px;
+    height: 30px;
+    padding: 3px;
+  }
+
+  .reviewLink .material-icons {
+    font-size: 14px;
+    width: 20px;
+    height: 20px;
+    padding: 3px;
+  }
+
+  .clientDropdownButton {
+    min-width: 120px;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .shareButton {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .actionGroup {
+    gap: 6px;
+  }
+}
+
 .quotationPreview {
   flex: 1;
   padding: 12px 18px 16px 18px;

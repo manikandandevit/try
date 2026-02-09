@@ -541,6 +541,7 @@
   
   .leftCard {
     padding: 12px;
+    min-height: 40vh;
   }
   
   .leftCardContent {
@@ -557,5 +558,43 @@
   
   .rightCard {
     padding: 12px;
+    min-height: 60vh;
+  }
+
+  .rightCardContent {
+    padding: 24px 20px;
+    gap: 20px;
+  }
+
+  .welcomeText {
+    font-size: 24px;
+  }
+
+  .loginForm {
+    gap: 16px;
+  }
+
+  .label {
+    font-size: 13px;
+  }
+
+  .input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .loginButton,
+  .logoutButton {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .errorMessage {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .fieldError {
+    font-size: 11px;
   }
 }

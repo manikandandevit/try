@@ -1535,3 +1535,79 @@
     min-height: 28px;
   }
 }
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .header {
+    padding: 10px;
+  }
+
+  .title {
+    font-size: 17px;
+  }
+
+  .headerActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .searchInputWrapper {
+    width: 100%;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+
+  .mobileCardView {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .mobileCard {
+    padding: 12px;
+  }
+
+  .mobileCardName {
+    font-size: 14px;
+  }
+
+  .mobileCardLabel {
+    font-size: 11px;
+  }
+
+  .mobileCardValue {
+    font-size: 13px;
+  }
+
+  .pagination {
+    padding: 10px;
+  }
+
+  .paginationLeft {
+    font-size: 12px;
+  }
+
+  .pageButton {
+    min-width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .panelHeader {
+    padding: 10px;
+  }
+
+  .panelHeader h2 {
+    font-size: 16px;
+  }
+
+  .formContent {
+    padding: 12px;
+    padding-bottom: 150px;
+  }
+
+  .formActions {
+    padding: 10px;
+  }
+}

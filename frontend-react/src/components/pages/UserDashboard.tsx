@@ -92,7 +92,7 @@ export const UserDashboard: React.FC = () => {
         last_name: user.last_name || '',
         password: '',
         is_active: user.is_active !== undefined ? user.is_active : true,
-        is_admin: user.is_admin || false,
+        is_admin: !!user.is_admin, // Ensure boolean
         permissions: user.permissions || []
       });
     } else {
@@ -204,14 +204,16 @@ export const UserDashboard: React.FC = () => {
     try {
       if (editingUser) {
         // Update user
-        await apiService.updateUser(editingUser.id, {
+        const updateData = {
           email: formData.email.trim(),
           first_name: formData.first_name.trim() || undefined,
           last_name: formData.last_name.trim() || undefined,
           is_active: formData.is_active,
-          is_admin: formData.is_admin,
+          is_admin: !!formData.is_admin, // Ensure boolean
           permissions: formData.is_admin ? [] : formData.permissions,
-        });
+        };
+        console.log('Updating user with data:', updateData); // Debug log
+        await apiService.updateUser(editingUser.id, updateData);
       } else {
         // Create user
         await apiService.createUser({

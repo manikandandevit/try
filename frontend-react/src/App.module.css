@@ -167,3 +167,28 @@
   }
 }
 
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .container {
+    margin: 0 4px 4px 4px;
+  }
+
+  .mainContent {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .tabPage {
+    margin: 4px;
+    padding: 12px;
+  }
+  
+  .tabPage h1 {
+    font-size: 18px;
+  }
+  
+  .tabPage p {
+    font-size: 12px;
+  }
+}
+

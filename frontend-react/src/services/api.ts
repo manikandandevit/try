@@ -30,6 +30,8 @@ import type {
   UserPasswordResetRequest,
   UserPasswordResetResponse,
   CompanyLoginData,
+  CompanyDetailsResponse,
+  CompanyDetailsUpdateRequest,
   LoginRequest,
   LoginResponse,
   LogoutResponse,
@@ -344,6 +346,25 @@ export const apiService = {
       : `${API_BASE_URL}/dashboard-stats/`;
     return fetchWithCsrf<DashboardStatsResponse>(url, {
       method: 'GET',
+    });
+  },
+
+  /**
+   * Get company details for settings
+   */
+  getCompanyDetails: async (): Promise<CompanyDetailsResponse> => {
+    return fetchWithCsrf<CompanyDetailsResponse>(`${API_BASE_URL}/company-details/`, {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Update company details
+   */
+  updateCompanyDetails: async (data: CompanyDetailsUpdateRequest): Promise<CompanyDetailsResponse> => {
+    return fetchWithCsrf<CompanyDetailsResponse>(`${API_BASE_URL}/company-details/update/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   },
 };

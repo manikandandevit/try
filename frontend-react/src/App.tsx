@@ -12,6 +12,8 @@ import { ClientDashboard } from '@/components/pages/ClientDashboard';
 import { UserDashboard } from '@/components/pages/UserDashboard';
 import { LoginPage } from '@/components/pages/LoginPage';
 import { Dashboard } from '@/components/pages/Dashboard';
+import { Profile } from '@/components/pages/Profile';
+import { Settings } from '@/components/pages/Settings';
 import { useQuotation } from '@/hooks/useQuotation';
 import { useChat } from '@/hooks/useChat';
 import { useCompanyInfo } from '@/hooks/useCompanyInfo';
@@ -118,11 +120,12 @@ const TabPage: React.FC<{ title: string; description: string }> = ({ title, desc
 };
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>(TabTypeEnum.DASHBOARD);
+  const [activeTab, setActiveTab] = useState<TabType | 'profile'>(TabTypeEnum.DASHBOARD);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [companyEmail, setCompanyEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [userType, setUserType] = useState<'user' | 'company'>('user');
   const [permissions, setPermissions] = useState<string[]>([]);
 
   // Load company email
@@ -164,9 +167,12 @@ export const App: React.FC = () => {
           // Store role and permissions
           const adminFlag = !!authStatus.is_admin;
           const perms = Array.isArray(authStatus.permissions) ? authStatus.permissions : [];
+          const uType = authStatus.user_type || 'user';
           setIsAdmin(adminFlag);
+          setUserType(uType);
           setPermissions(perms);
           localStorage.setItem('isAdmin', adminFlag ? 'true' : 'false');
+          localStorage.setItem('userType', uType);
           localStorage.setItem('permissions', JSON.stringify(perms));
         } else {
           // No valid backend session - user is not authenticated
@@ -187,6 +193,7 @@ export const App: React.FC = () => {
         const localAuth = localStorage.getItem('isAuthenticated');
         const storedEmail = localStorage.getItem('userEmail');
           const storedIsAdmin = localStorage.getItem('isAdmin');
+          const storedUserType = localStorage.getItem('userType');
           const storedPermissions = localStorage.getItem('permissions');
         if (localAuth === 'true') {
           setIsAuthenticated(true);
@@ -194,6 +201,7 @@ export const App: React.FC = () => {
             setUserEmail(storedEmail);
           }
           setIsAdmin(storedIsAdmin === 'true');
+          setUserType((storedUserType as 'user' | 'company') || 'user');
           if (storedPermissions) {
             try {
               const parsed = JSON.parse(storedPermissions);
@@ -291,16 +299,21 @@ export const App: React.FC = () => {
       }
       const adminFlag = !!authStatus.is_admin;
       const perms = Array.isArray(authStatus.permissions) ? authStatus.permissions : [];
+      const uType = authStatus.user_type || 'user';
       setIsAdmin(adminFlag);
+      setUserType(uType);
       setPermissions(perms);
       localStorage.setItem('isAdmin', adminFlag ? 'true' : 'false');
+      localStorage.setItem('userType', uType);
       localStorage.setItem('permissions', JSON.stringify(perms));
     } catch (error) {
       console.error('Error getting auth status:', error);
       // On error, try to get from localStorage as fallback
       const storedIsAdmin = localStorage.getItem('isAdmin');
+      const storedUserType = localStorage.getItem('userType');
       const storedPermissions = localStorage.getItem('permissions');
       setIsAdmin(storedIsAdmin === 'true');
+      setUserType((storedUserType as 'user' | 'company') || 'user');
       if (storedPermissions) {
         try {
           const parsed = JSON.parse(storedPermissions);
@@ -357,10 +370,19 @@ export const App: React.FC = () => {
           .join(' ');
       }
     }
-    return isAdmin ? 'Admin' : 'User';
+    return userType === 'company' ? 'Admin' : 'User';
+  };
+
+  // Get user role for navbar - only company admin shows as "Admin", users with full access show as "User"
+  const getUserRole = (): string => {
+    return userType === 'company' ? 'Admin' : 'User';
   };
 
   const renderTabContent = () => {
+    if (activeTab === 'profile') {
+      return <Profile />;
+    }
+    
     switch (activeTab) {
       case TabTypeEnum.DASHBOARD:
         return <Dashboard />;
@@ -371,7 +393,7 @@ export const App: React.FC = () => {
       case TabTypeEnum.HISTORY:
         return <UserDashboard />;
       case TabTypeEnum.SETTINGS:
-        return <TabPage title="Settings" description="Configure your application settings here." />;
+        return <Settings />;
       default:
         return <Dashboard />;
     }
@@ -388,9 +410,9 @@ export const App: React.FC = () => {
       activeTab={activeTab}
       onTabChange={setActiveTab}
       userName={getDisplayName()}
-      userRole={isAdmin ? 'Admin' : 'User'}
+      userRole={getUserRole()}
       onLogout={handleLogout}
-      isAdmin={isAdmin}
+      isAdmin={isAdmin || userType === 'company'}
       allowedTabs={permissions as TabType[]}
     >
       {renderTabContent()}

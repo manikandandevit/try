@@ -68,9 +68,12 @@ export const Sidebar: React.FC<SidebarProps & {
       return;
     }
 
-    if (typeof tabId === 'string' && tabId !== 'profile') {
+    if (tabId === 'profile') {
+      // Handle profile tab - pass as string to onTabChange
+      (onTabChange as (tab: TabType | 'profile') => void)(tabId);
+    } else if (typeof tabId === 'string') {
       onTabChange(tabId as TabType);
-    } else if (typeof tabId !== 'string') {
+    } else {
       onTabChange(tabId);
     }
     // Close mobile menu when tab is selected
@@ -137,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps & {
           {BOTTOM_NAV_ITEMS.map((item) => (
             (() => {
               const disabled = item.id !== 'profile' && !isTabAllowed(item.id as TabType);
-              const isActive = activeTab === item.id;
+              const isActive = item.id === 'profile' ? activeTab === 'profile' : activeTab === item.id;
               return (
             <button
               key={item.id}
