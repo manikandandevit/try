@@ -1,0 +1,99 @@
+.dashboardLayout {
+  display: flex;
+  min-height: 100vh;
+  background: #f9fafb;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.mainContent {
+  margin-left: 260px; /* Sidebar width - exactly aligned */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100vh;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.contentArea {
+  margin-top: 70px; /* Start below fixed header */
+  flex: 1;
+  padding: 0 24px 24px 24px; /* Remove top padding since we use margin-top */
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #ffffff;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  height: calc(100vh - 70px); /* Full height minus header */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive */
+
+/* Large Desktop (1440px and above) */
+@media (min-width: 1440px) {
+  .contentArea {
+    padding: 0 32px 32px 32px;
+  }
+  
+  .mainContent {
+    margin-left: 260px;
+  }
+}
+
+/* Desktop (1024px - 1439px) */
+@media (max-width: 1439px) and (min-width: 1024px) {
+  .contentArea {
+    padding: 0 24px 24px 24px;
+  }
+  
+  .mainContent {
+    margin-left: 260px;
+  }
+}
+
+/* Tablet Landscape / Small Laptop (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 769px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentArea {
+    margin-top: 70px;
+    padding: 0 20px 20px 20px;
+    height: calc(100vh - 70px);
+  }
+}
+
+/* Tablet Portrait / Large Mobile (480px - 768px) */
+@media (max-width: 768px) and (min-width: 481px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentArea {
+    margin-top: 60px;
+    padding: 0 12px 12px 12px;
+    height: calc(100vh - 60px);
+  }
+}
+
+/* Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .mainContent {
+    margin-left: 0;
+  }
+
+  .contentArea {
+    margin-top: 56px;
+    padding: 0 8px 8px 8px;
+    height: calc(100vh - 56px);
+  }
+}
+
+

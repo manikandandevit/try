@@ -1,0 +1,920 @@
+.quotationPreview {
+  background: transparent;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  color: #000000;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Content wrapper that expands to fill available space */
+.quotationContentWrapper {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  flex-grow: 1;
+  width: 100%;
+  max-width: 100%;
+  /* Ensure header can be full-width */
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+.previewHeaderBanner {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  padding: 20px 24px;
+  color: white;
+  margin: 0 0 24px 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+  position: relative;
+  left: 0;
+  right: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  /* Ensure full-width edge-to-edge */
+  transform: translateX(0);
+  transition: box-shadow 0.3s ease;
+}
+
+.previewHeaderBanner:hover {
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+/* Large Desktop (1440px and above) */
+@media (min-width: 1440px) {
+  .previewHeaderBanner {
+    padding: 24px 28px;
+  }
+  
+  .previewCompanyName {
+    font-size: 20px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 10px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 10px !important;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 18px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 16px 18px;
+  }
+}
+
+/* Desktop (1024px - 1439px) */
+@media (max-width: 1439px) and (min-width: 1024px) {
+  .previewHeaderBanner {
+    padding: 20px 24px;
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .previewHeaderBanner {
+    padding: 18px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .previewHeaderTable {
+    font-size: 11px;
+  }
+  
+  .previewCompanyName {
+    font-size: 17px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 9px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 9px !important;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 14px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 12px 14px;
+  }
+  
+  .quotationTableContainer {
+    padding: 20px;
+  }
+}
+
+/* Large Mobile (480px - 767px) */
+@media (max-width: 767px) and (min-width: 480px) {
+  .previewHeaderBanner {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .previewHeaderTable {
+    font-size: 10px;
+  }
+  
+  .previewCompanyName {
+    font-size: 16px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 8px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 8px !important;
+  }
+  
+  .previewLogoBox {
+    width: 55px;
+    height: 55px;
+    min-width: 55px;
+    min-height: 55px;
+    max-width: 55px;
+    max-height: 55px;
+  }
+  
+  .previewLogoImg {
+    width: 51px;
+    height: 51px;
+    max-width: 51px;
+    max-height: 51px;
+    min-width: 51px;
+    min-height: 51px;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 12px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+  
+  .quotationTableContainer {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  
+  .label {
+    font-size: 12px;
+  }
+  
+  .amount {
+    font-size: 12px;
+  }
+  
+  .grandTotalRow .label,
+  .grandTotalRow .amount {
+    font-size: 12px;
+  }
+}
+
+/* Mobile (max-width: 479px) */
+@media (max-width: 479px) {
+  .previewHeaderBanner {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .previewHeaderTable {
+    font-size: 9px;
+  }
+  
+  .previewCompanyName {
+    font-size: 14px !important;
+  }
+  
+  .previewCompanyTagline {
+    font-size: 7px !important;
+  }
+  
+  .previewContactItem {
+    font-size: 7px !important;
+  }
+  
+  .previewLogoBox {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    min-height: 45px;
+    max-width: 45px;
+    max-height: 45px;
+  }
+  
+  .previewLogoImg {
+    width: 41px;
+    height: 41px;
+    max-width: 41px;
+    max-height: 41px;
+    min-width: 41px;
+    min-height: 41px;
+  }
+  
+  .quotationTable th {
+    font-size: 12px;
+    padding: 10px 8px;
+  }
+  
+  .quotationTable td {
+    font-size: 12px;
+    padding: 8px;
+  }
+  
+  .quotationTableContainer {
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .label {
+    font-size: 12px;
+  }
+  
+  .amount {
+    font-size: 12px;
+  }
+  
+  .grandTotalRow .label,
+  .grandTotalRow .amount {
+    font-size: 12px;
+  }
+  
+  .keyFeaturesTitle {
+    font-size: 12px;
+  }
+  
+  .keyFeatureItem {
+    font-size: 12px;
+  }
+  
+  .footer {
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+  
+  .footerWebsiteLink {
+    font-size: 10px;
+  }
+  
+  .footerCopyright {
+    font-size: 9px;
+  }
+}
+
+.previewHeaderTable {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.previewHeaderLogo {
+  width: 90px;
+  vertical-align: middle;
+  padding-right: 10px;
+}
+
+.previewLogoBox {
+  width: 65px;
+  height: 65px;
+  min-width: 65px;
+  min-height: 65px;
+  max-width: 65px;
+  max-height: 65px;
+  background: white;
+  border-radius: 8px;
+  padding: 2px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.previewLogoImg {
+  width: 61px;
+  height: 61px;
+  object-fit: contain;
+  display: block;
+  max-width: 61px;
+  max-height: 61px;
+  min-width: 61px;
+  min-height: 61px;
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+  margin: 0 auto;
+}
+
+.logoPlaceholder {
+  width: 61px;
+  height: 61px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+}
+
+.logoPlaceholder .material-icons {
+  font-size: 32px;
+  opacity: 0.7;
+}
+
+.previewHeaderCompany {
+  padding-left: 10px;
+  vertical-align: middle;
+}
+
+.previewCompanyName {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: white;
+}
+
+.previewCompanyTagline {
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  margin-top: 1px;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: white;
+}
+
+.previewHeaderContact {
+  text-align: right;
+  font-size: 9px;
+  line-height: 1.5;
+  vertical-align: middle;
+  padding-left: 15px;
+}
+
+.previewContactItem {
+  margin-bottom: 3px;
+  color: white;
+}
+
+/* Date Section - At Top */
+.dateSection {
+  padding: 0 0 16px 0;
+  margin-bottom: 20px;
+  text-align: right;
+  padding-right: 20px;
+}
+
+.dateSection p {
+  font-size: 12px;
+  margin: 0;
+  color: #64748b;
+  font-weight: 400;
+  display: inline-block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Quotation Info Section - Two Column Layout */
+.quotationInfoSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 0 0 20px 0;
+  margin-bottom: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Quotation By Section (Left) - Moved slightly right */
+.quotationBySection {
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.quotationByLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+.quotationByDetails {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Quotation To Section (Right) */
+.quotationToSection {
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.quotationToLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+.quotationToDetails {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Detail Items - Common styling for both sections */
+.detailItem {
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.7;
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+
+.detailItem:last-child {
+  margin-bottom: 0;
+}
+
+.detailItem strong {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Placeholder text styling */
+.detailItemPlaceholder {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.6;
+  text-align: left;
+  padding: 4px 0;
+}
+
+
+/* Tablet and below - stack vertically */
+@media (max-width: 1023px) {
+  .quotationInfoSection {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .quotationByLabel,
+  .quotationToLabel {
+    font-size: 12px;
+  }
+  
+  .detailItem {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  
+  .detailItem strong {
+    font-size: 12px;
+  }
+  
+  .dateSection {
+    text-align: center;
+  }
+  
+  .dateSection p {
+    font-size: 12px;
+  }
+}
+
+/* Mobile - smaller fonts */
+@media (max-width: 479px) {
+  .quotationInfoSection {
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .quotationByLabel,
+  .quotationToLabel {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .detailItem {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 5px;
+  }
+  
+  .detailItem strong {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+  
+  .dateSection {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .dateSection p {
+    font-size: 12px;
+  }
+}
+
+
+.quotationTableContainer {
+  margin-top: 0;
+  padding: 24px;
+  padding-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  flex: 1;
+  min-height: 0;
+  /* Ensure container expands to fill available space */
+  display: flex;
+  flex-direction: column;
+  page-break-inside: avoid;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.quotationTableContainer:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive padding already handled in mobile breakpoints above */
+
+.quotationTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.quotationTable thead {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+}
+
+.quotationTable th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: white;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quotationTable th:nth-child(2),
+.quotationTable th:nth-child(3),
+.quotationTable th:nth-child(4) {
+  text-align: right;
+}
+
+.quotationTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 12px;
+  color: #1e293b;
+  font-weight: 400;
+  transition: background-color 0.2s ease;
+}
+
+.textRight {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.quotationTable tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.quotationTable tbody tr:hover {
+  background-color: #f8fafc;
+  transform: translateX(2px);
+}
+
+.quotationTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.keyFeaturesSection {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 2px solid #e2e8f0;
+  page-break-inside: avoid;
+}
+
+.keyFeaturesTitle {
+  font-weight: 600;
+  font-size: 12px;
+  color: #1e293b;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #2563eb;
+}
+
+.keyFeaturesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keyFeatureItem {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.8;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.keyFeatureItem:last-child {
+  border-bottom: none;
+}
+
+.serviceName {
+  font-weight: 600;
+  color: #1e293b;
+  margin-right: 8px;
+}
+
+.featuresText {
+  color: #64748b;
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .keyFeaturesSection {
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+  
+  .keyFeatureItem {
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  
+  .keyFeaturesTitle {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+}
+
+/* Mobile (max-width: 767px) */
+@media (max-width: 767px) {
+  .keyFeaturesSection {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+  
+  .keyFeatureItem {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  
+  .keyFeaturesTitle {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .serviceName {
+    display: block;
+    margin-bottom: 4px;
+    margin-right: 0;
+  }
+}
+
+.totalsSection {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 2px solid #e2e8f0;
+  page-break-inside: avoid;
+}
+
+.totalsTable {
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  border-collapse: collapse;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Tablet and below - full width totals */
+@media (max-width: 1023px) {
+  .totalsTable {
+    max-width: 100%;
+  }
+}
+
+.totalsTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.totalsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.label {
+  text-align: right;
+  font-weight: 600;
+  font-size: 12px;
+  color: #000000;
+}
+
+.amount {
+  text-align: right;
+  font-size: 12px;
+  color: #000000;
+  font-weight: 500;
+}
+
+.grandTotalRow .label,
+.grandTotalRow .amount {
+  font-size: 12px;
+  font-weight: bold;
+  color: #1e293b;
+  border-top: 2px solid #2563eb;
+  padding-top: 16px;
+  background: linear-gradient(to right, transparent, #f8fafc, transparent);
+}
+
+.grandTotalRow .amount {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.footer {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  padding: 16px 24px;
+  color: white;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  grid-row: 3;
+  left: 0;
+  right: 0;
+  border-radius: 12px;
+  margin-top: 24px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  /* PDF-specific: Ensure footer stays at bottom */
+  page-break-inside: avoid;
+  page-break-before: avoid;
+  break-inside: avoid;
+  break-before: avoid;
+  /* Prevent footer from floating */
+  flex-shrink: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .footer {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  
+  .footerWebsiteLink {
+    font-size: 11px;
+  }
+  
+  .footerCopyright {
+    font-size: 9px;
+  }
+}
+
+/* Large Mobile (480px - 767px) */
+@media (max-width: 767px) and (min-width: 480px) {
+  .footer {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+  
+  .footerWebsiteLink {
+    font-size: 11px;
+  }
+  
+  .footerCopyright {
+    font-size: 9px;
+  }
+}
+
+/* Mobile (max-width: 479px) - handled in main mobile breakpoint above */
+
+/* For PDF generation: Footer at bottom of page */
+@media print {
+  .footer {
+    position: relative;
+    margin-top: auto;
+    grid-row: 3;
+  }
+}
+
+.footerContent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.footerLogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footerLogoImg {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  background: white;
+  border-radius: 4px;
+  padding: 2px;
+  display: block;
+}
+
+.footerLinks {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footerWebsiteLink {
+  color: white;
+  text-decoration: underline;
+  font-size: 12px;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.footerWebsiteLink:hover {
+  color: #e0e7ff;
+  text-decoration: none;
+}
+
+.footerCopyright {
+  font-size: 10px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  margin-top: 2px;
+}
+

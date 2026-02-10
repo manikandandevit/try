@@ -1,0 +1,1430 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 70px);
+  background: #ffffff;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Dashboard scrollbar styling */
+.dashboard::-webkit-scrollbar {
+  width: 10px;
+}
+
+.dashboard::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 5px;
+}
+
+.dashboard::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+  transition: background 0.2s ease;
+}
+
+.dashboard::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 20px 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.searchInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.searchInputWrapper .material-icons {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  font-size: 20px;
+  pointer-events: none;
+  z-index: 2;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 14px 10px 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: #00085E;
+  box-shadow: 0 0 0 3px rgba(0, 8, 94, 0.1);
+}
+
+.searchInput::placeholder {
+  color: #94a3b8;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #00085E;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.addButton:hover {
+  background: #00064a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 8, 94, 0.2);
+}
+
+.addButton .material-icons {
+  font-size: 16px;
+  margin-left: 2px;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 32px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 14px;
+  border-bottom: 1px solid #fecaca;
+}
+
+.errorBanner .material-icons {
+  font-size: 20px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+}
+
+/* Table Container */
+.tableContainer {
+  flex: 1;
+  overflow: visible;
+  padding: 0;
+  background: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tableWrapper {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 8px 16px 0 16px;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  min-height: 0;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 5px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+  transition: background 0.2s ease;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Table with Fixed Column Widths */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: none;
+  margin: 0;
+  table-layout: fixed;
+  min-width: 1000px;
+}
+
+/* Ensure table is visible on laptops */
+@media (min-width: 769px) {
+  .mobileCardView {
+    display: none;
+  }
+
+  .tableWrapper {
+    display: block;
+  }
+}
+
+/* Column Width Definitions */
+.colSno {
+  width: 70px;
+}
+
+.colEmail {
+  width: 250px;
+}
+
+.colAccess {
+  width: 180px;
+}
+
+.colName {
+  width: 200px;
+}
+
+.colStatus {
+  width: 120px;
+}
+
+.colAction {
+  width: 200px;
+}
+
+.table thead {
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table thead tr {
+  border-bottom: none;
+}
+
+.table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: none;
+  letter-spacing: 0.1px;
+  border: none;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable .material-icons {
+  font-size: 18px;
+  color: #94a3b8;
+  opacity: 0.6;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.sortable:hover .material-icons {
+  opacity: 1;
+  color: #64748b;
+}
+
+.actionHeader {
+  text-align: center;
+}
+
+.table td {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #1e293b;
+  border: none;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table td:last-child {
+  white-space: normal;
+}
+
+.table tbody tr td {
+  background: #ffffff;
+}
+
+.table tbody tr:hover td {
+  background: #f8f9fa;
+}
+
+/* Cell-specific styles */
+.cellSno {
+  text-align: center;
+}
+
+.cellAction {
+  text-align: center;
+}
+
+/* Status Badge */
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.statusActive {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusInactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.statusAdmin {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.permissionsText {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.cellAccess {
+  text-align: center;
+}
+
+/* Actions Column */
+.actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.actionButton:hover {
+  background: #f1f5f9;
+  color: #00085E;
+}
+
+.actionButton .material-icons {
+  font-size: 18px;
+  color: inherit;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+.emptyState .material-icons {
+  font-size: 64px;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+}
+
+.emptyState p {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
+  gap: 0;
+  flex-shrink: 0;
+  margin-top: 24px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.paginationLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #475569;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.pageSizeSelect {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  background: #ffffff;
+  cursor: pointer;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-width: 60px;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pageSizeSelect:hover {
+  border-color: #00085E;
+  background: #ffffff;
+}
+
+.pageSizeSelect:focus {
+  outline: none;
+  border-color: #00085E;
+  box-shadow: 0 0 0 2px rgba(0, 8, 94, 0.1);
+}
+
+.paginationRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.pageButton {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #64748b;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.pageButton:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageButton.active {
+  background: #00085E;
+  color: #ffffff;
+  border-color: #00085E;
+}
+
+.pageButton.active:hover {
+  background: #00064a;
+}
+
+.pageButton .material-icons {
+  font-size: 20px;
+}
+
+.ellipsis {
+  padding: 0 4px;
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+}
+
+/* Right Side Panel Styles */
+.panelOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.formPanel {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  width: 480px;
+  max-width: 90vw;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.panelHeader h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.closeButton .material-icons {
+  font-size: 24px;
+}
+
+.form {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.formContent {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  min-height: 0;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.cancelButton {
+  padding: 12px 24px;
+  border: 1.5px solid #00085E;
+  background: #ffffff;
+  color: #00085E;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.cancelButton:hover {
+  background: #f9fafb;
+  border-color: #00064a;
+  color: #00064a;
+}
+
+.submitButton {
+  padding: 12px 24px;
+  border: none;
+  background: #00085E;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #00064a;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submitButton .material-icons {
+  font-size: 18px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  color: #1e293b;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #00085E;
+  box-shadow: 0 0 0 3px rgba(0, 8, 94, 0.1);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.errorText {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: -4px;
+}
+
+/* Permissions Dropdown */
+.permissionsDropdown {
+  position: relative;
+  width: 100%;
+}
+
+.permissionsToggle {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #1e293b;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.permissionsToggle:hover {
+  border-color: #00085E;
+}
+
+.permissionsToggle:focus {
+  outline: none;
+  border-color: #00085E;
+  box-shadow: 0 0 0 3px rgba(0, 8, 94, 0.1);
+}
+
+.permissionsToggle .material-icons {
+  font-size: 20px;
+  color: #64748b;
+  transition: transform 0.2s ease;
+}
+
+.permissionsMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.permissionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.permissionItem:last-child {
+  border-bottom: none;
+}
+
+.permissionItem:hover {
+  background: #f9fafb;
+}
+
+.permissionItem input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #00085E;
+}
+
+.permissionItem .material-icons {
+  font-size: 20px;
+  color: #64748b;
+}
+
+.permissionItem span:last-child {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Mobile Card View */
+.mobileCardView {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  min-height: 0;
+}
+
+.mobileCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.mobileCard:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mobileCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobileCardTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.mobileCardSno {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.mobileCardName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.mobileCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.mobileCardRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobileCardLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.mobileCardValue {
+  font-size: 14px;
+  color: #1e293b;
+  word-break: break-word;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.mobileCardActions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mobileActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.mobileActionButton:active {
+  transform: scale(0.96);
+  background: #f1f5f9;
+}
+
+.mobileActionButton .material-icons {
+  font-size: 18px;
+}
+
+.mobileActionButtonDanger {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.mobileActionButtonDanger:active {
+  background: #fee2e2;
+}
+
+/* Responsive Design */
+@media (max-width: 1440px) and (min-width: 1281px) {
+  .dashboard {
+    width: 100%;
+    margin: 0;
+  }
+
+  .header {
+    padding: 18px 24px;
+    flex-wrap: nowrap;
+  }
+
+  .headerActions {
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .tableWrapper {
+    padding: 16px 24px;
+  }
+
+  .table {
+    min-width: 950px;
+  }
+
+  .formPanel {
+    width: 420px;
+    max-width: 35vw;
+  }
+
+  .searchInputWrapper {
+    width: 250px;
+    flex-shrink: 0;
+  }
+
+  .addButton {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 1280px) and (min-width: 1025px) {
+  .dashboard {
+    width: 100%;
+    margin: 0;
+  }
+
+  .header {
+    padding: 16px 20px;
+    flex-wrap: nowrap;
+  }
+
+  .headerActions {
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .searchInputWrapper {
+    width: 220px;
+    min-width: 180px;
+    flex-shrink: 1;
+  }
+
+  .addButton {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .tableWrapper {
+    padding: 14px 20px;
+  }
+
+  .table {
+    min-width: 900px;
+  }
+
+  .formPanel {
+    width: 400px;
+    max-width: 42vw;
+  }
+
+  .colEmail {
+    width: 220px;
+  }
+
+  .colAccess {
+    width: 160px;
+  }
+
+  .colName {
+    width: 180px;
+  }
+
+  .colStatus {
+    width: 100px;
+  }
+
+  .colAction {
+    width: 180px;
+  }
+
+  .table th,
+  .table td {
+    padding: 11px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 993px) {
+  .dashboard {
+    width: 100%;
+    margin: 0;
+  }
+
+  .header {
+    padding: 16px 18px;
+  }
+
+  .headerActions {
+    gap: 8px;
+  }
+
+  .searchInputWrapper {
+    width: 200px;
+    min-width: 160px;
+  }
+
+  .tableWrapper {
+    padding: 12px 18px;
+  }
+
+  .table {
+    min-width: 850px;
+  }
+
+  .formPanel {
+    width: 380px;
+    max-width: 45vw;
+  }
+
+  .pagination {
+    padding: 12px 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .paginationLeft,
+  .paginationRight {
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 11px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    margin: 0;
+    width: 100%;
+  }
+
+  .header {
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .headerActions {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0;
+    flex-direction: row;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .searchInputWrapper {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .addButton {
+    padding: 10px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    min-width: auto;
+  }
+
+  .tableWrapper {
+    display: none;
+  }
+
+  .mobileCardView {
+    display: flex;
+  }
+
+  .tableContainer {
+    padding: 0;
+  }
+
+  .pagination {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .paginationLeft {
+    width: 100%;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .paginationRight {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pageButton {
+    min-width: 44px;
+    height: 44px;
+    font-size: 14px;
+    touch-action: manipulation;
+  }
+
+  .pageSizeSelect {
+    min-height: 44px;
+    padding: 8px 12px;
+    touch-action: manipulation;
+  }
+
+  .formPanel {
+    top: 70px;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .panelHeader {
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #ffffff;
+  }
+
+  .panelHeader h2 {
+    font-size: 20px;
+  }
+
+  .form {
+    padding: 16px;
+    padding-bottom: 120px;
+  }
+
+  .formActions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+
+  .input,
+  .textarea {
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px;
+  }
+
+  .headerActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .searchInputWrapper {
+    width: 100%;
+  }
+
+  .addButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mobileCardView {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .mobileCard {
+    padding: 14px;
+  }
+
+  .mobileCardName {
+    font-size: 15px;
+  }
+
+  .mobileCardActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobileActionButton {
+    width: 100%;
+  }
+
+  .pagination {
+    padding: 12px;
+  }
+
+  .paginationLeft {
+    font-size: 13px;
+  }
+
+  .pageButton {
+    min-width: 40px;
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .panelHeader {
+    padding: 12px;
+  }
+
+  .panelHeader h2 {
+    font-size: 18px;
+  }
+
+  .form {
+    padding: 12px;
+    padding-bottom: 140px;
+  }
+
+  .formActions {
+    padding: 12px;
+  }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .header {
+    padding: 10px;
+  }
+
+  .headerActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .searchInputWrapper {
+    width: 100%;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+
+  .mobileCardView {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .mobileCard {
+    padding: 12px;
+  }
+
+  .mobileCardName {
+    font-size: 14px;
+  }
+
+  .mobileCardLabel {
+    font-size: 11px;
+  }
+
+  .mobileCardValue {
+    font-size: 13px;
+  }
+
+  .pagination {
+    padding: 10px;
+  }
+
+  .paginationLeft {
+    font-size: 12px;
+  }
+
+  .pageButton {
+    min-width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .panelHeader {
+    padding: 10px;
+  }
+
+  .panelHeader h2 {
+    font-size: 16px;
+  }
+
+  .formContent {
+    padding: 12px;
+    padding-bottom: 150px;
+  }
+
+  .formActions {
+    padding: 10px;
+  }
+}
+
