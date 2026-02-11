@@ -31,7 +31,7 @@ const QuotationPanel = () => {
       </div>
 
       {/* Template Area */}
-      <div className="flex-1 mt-2 overflow-y-auto">
+      <div className="flex-1 mt-2 overflow-y-auto hide-scrollbar">
         <QuotationTemplate />
       </div>
 

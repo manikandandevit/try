@@ -6,11 +6,11 @@ export const quotationData = {
     address: "Chennai, Tamil Nadu",
     phone: "+91 9876543210",
     email: "info@syngrid.com",
-    logo: Images.fullLogo, // replace with your image path
+    logo: Images.smLogo, // replace with your image path
   },
 
   quotationInfo: {
-    date: "11-02-2026",
+    date: "04-Feb-2026",
     quotationNo: "QUO001",
   },
 
