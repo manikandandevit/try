@@ -1,1 +1,1 @@
-# asset-management-frontend
+# synquote-frontend
