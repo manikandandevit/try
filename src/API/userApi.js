@@ -3,10 +3,23 @@ import { handleSuccess, handleError } from "./apiHelper";
 
 /* ===================== USER ===================== */
 
-// CREATE / UPDATE USER
-export const addUpdateUserApi = async (data) => {
+// CREATE USER
+export const addUserApi = async (data) => {
   try {
-    const response = await API.post("/master/user", data);
+    const response = await API.post("/users/", data);
+    const res = handleSuccess(response);
+    return res;
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+
+
+// UPDATE USER
+export const updateUserApi = async (id, data) => {
+  try {
+    const response = await API.put(`/users/${id}/`, data);
     const res = handleSuccess(response);
     return res;
   } catch (err) {
@@ -17,7 +30,7 @@ export const addUpdateUserApi = async (data) => {
 // GET ALL USERS
 export const getAllUsersApi = async ({ page, limit, search, isActive }) => {
   try {
-    const response = await API.get("/master/get-all-users", {
+    const response = await API.get("/get-all-users/", {
       params: { page, limit, search, isActive },
     });
     const res = handleSuccess(response);
@@ -30,7 +43,7 @@ export const getAllUsersApi = async ({ page, limit, search, isActive }) => {
 // GET USER BY ID
 export const getUserByIdApi = async (id) => {
   try {
-    const response = await API.get(`/master/user/${id}`);
+    const response = await API.get(`/user/${id}/`);
     const res = handleSuccess(response);
     return res;
   } catch (err) {
@@ -41,7 +54,7 @@ export const getUserByIdApi = async (id) => {
 // UPDATE USER STATUS (Activate / Deactivate)
 export const updateUserStatusApi = async (id) => {
   try {
-    const response = await API.put(`/master/user/status/${id}`);
+    const response = await API.put(`/user/status/${id}/`);
     const res = handleSuccess(response);
     return res;
   } catch (err) {
@@ -52,7 +65,7 @@ export const updateUserStatusApi = async (id) => {
 // GET ACTIVE DEPARTMENTS (for dropdown in user form)
 export const getActiveDepartmentsApi = async () => {
     try {
-        const response = await API.get("/master/get-active-departments");
+        const response = await API.get("/get-active-departments/");
         return handleSuccess(response);
     } catch (err) {
         return handleError(err);

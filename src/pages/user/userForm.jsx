@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
 /* -------------------- ZOD SCHEMA -------------------- */
@@ -14,6 +14,7 @@ const userSchema = z.object({
   phone: z
     .string()
     .min(10, "Phone number must be at least 10 digits")
+    .max(15, "Phone number must be at most 15 digits")
     .regex(/^[0-9]+$/, "Phone number must contain only numbers"),
 
   password: z
@@ -22,6 +23,8 @@ const userSchema = z.object({
 });
 
 const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
+
+  /* ---------------- STATES ---------------- */
   const [form, setForm] = useState({
     id: null,
     name: "",
@@ -31,18 +34,26 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [isEditPassword, setIsEditPassword] = useState(false);
 
   /* ---------------- LOAD EDIT DATA ---------------- */
   useEffect(() => {
+
     if (mode === "edit" && editData) {
+
       setForm({
         id: editData.id,
         name: editData.name || "",
         email: editData.email || "",
         phone: editData.phone || "",
-        password: "", // password empty while editing
+        password: "********",
       });
+
+      setIsEditPassword(false);
+
     } else {
+
       setForm({
         id: null,
         name: "",
@@ -50,33 +61,60 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
         phone: "",
         password: "",
       });
+
+      setIsEditPassword(false);
     }
+
   }, [mode, editData]);
 
   if (!open) return null;
 
   /* ---------------- HANDLE CHANGE ---------------- */
   const handleChange = (e) => {
+
     const { name, value } = e.target;
 
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
   /* ---------------- HANDLE SUBMIT ---------------- */
   const handleSubmit = () => {
-    const result = userSchema.safeParse(form);
+
+    let submitData = { ...form };
+
+    // If edit mode & password not changed → remove
+    if (mode === "edit" && !isEditPassword) {
+      delete submitData.password;
+    }
+
+    // Validate
+    const result = userSchema.safeParse(
+      mode === "edit" && !isEditPassword
+        ? { ...submitData, password: "123456" } // dummy password
+        : submitData
+    );
 
     if (!result.success) {
+
       const fieldErrors = {};
+
       result.error.issues.forEach((issue) => {
         fieldErrors[issue.path[0]] = issue.message;
       });
+
       setErrors(fieldErrors);
       return;
     }
 
-    onSubmit(form);
+    onSubmit(submitData);
     onClose();
   };
 
@@ -105,6 +143,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
             <label className="text-sm font-medium">
               Name <span className="text-red-500">*</span>
             </label>
+
             <input
               name="name"
               value={form.name}
@@ -112,6 +151,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
               onChange={handleChange}
               className="w-full mt-1 border border-lineColor rounded-md px-3 py-2 focus:ring-1 focus:ring-primary"
             />
+
             {errors.name && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.name}
@@ -124,6 +164,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
             <label className="text-sm font-medium">
               Email <span className="text-red-500">*</span>
             </label>
+
             <input
               type="email"
               name="email"
@@ -132,6 +173,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
               onChange={handleChange}
               className="w-full mt-1 border border-lineColor rounded-md px-3 py-2 focus:ring-1 focus:ring-primary"
             />
+
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.email}
@@ -144,6 +186,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
             <label className="text-sm font-medium">
               Phone <span className="text-red-500">*</span>
             </label>
+
             <input
               name="phone"
               value={form.phone}
@@ -151,6 +194,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
               onChange={handleChange}
               className="w-full mt-1 border border-lineColor rounded-md px-3 py-2 focus:ring-1 focus:ring-primary"
             />
+
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.phone}
@@ -163,25 +207,58 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
             <label className="text-sm font-medium">
               Password <span className="text-red-500">*</span>
             </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              placeholder="Enter Password"
-              onChange={handleChange}
-              className="w-full mt-1 border border-lineColor rounded-md px-3 py-2 focus:ring-1 focus:ring-primary"
-            />
+
+            <div className="relative mt-1">
+
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={form.password}
+                placeholder="Enter Password"
+                onChange={(e) => {
+
+                  setForm((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }));
+
+                  if (mode === "edit") {
+                    setIsEditPassword(true);
+                  }
+
+                  setErrors((prev) => ({
+                    ...prev,
+                    password: "",
+                  }));
+                }}
+                className="w-full border border-lineColor rounded-md px-3 py-2 pr-10 focus:ring-1 focus:ring-primary"
+              />
+
+              {/* Eye Icon */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+              </button>
+
+            </div>
+
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.password}
               </p>
             )}
           </div>
+
         </div>
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-gray-200 bg-white">
+
           <div className="flex gap-3">
+
             <button
               onClick={handleSubmit}
               className="flex items-center gap-2 bg-primary text-white px-4 py-2 text-sm"
@@ -196,8 +273,11 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
             >
               Cancel
             </button>
+
           </div>
+
         </div>
+
       </div>
     </>
   );
