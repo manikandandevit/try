@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+/* ✅ Theme variables */
+@theme base {
+  --color-primary: #00085e;
+  --color-bgColor: #fafcff;
+  --color-bgColor1: #f7f7f7;
+  --color-textPrimary: #1d2129;
+  --color-textSecondary: #86909c;
+  --color-borderColor: #ababab;
+  --color-lineColor: #eaecf0;
+  --color-lightGrey: #e4e4e4;
+}
+
+/* Global font */
+body {
+  font-family: "Outfit", sans-serif;
+}
+
+@layer base {
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+/* hide scroll line but keep scroll functional */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+input,
+select {
+  background-color: white !important;
+}
+
+.tooltip {
+  @apply absolute bottom-[120%] left-1/2 -translate-x-1/2
+  bg-black text-white text-xs px-2 py-1 rounded
+  whitespace-nowrap opacity-0 pointer-events-none
+  transition group-hover:opacity-100;
+}
+.tooltip::after {
+  content: "";
+  @apply absolute top-full left-1/2 -translate-x-1/2
+  w-0 h-0 border-8 border-t-black border-r-transparent
+  border-b-transparent border-l-transparent;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out forwards;
+}

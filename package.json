@@ -1,0 +1,68 @@
+{
+  "name": "synquot",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "local": "vite --mode localenv",
+    "dev": "vite --mode dev",
+    "build:dev": "vite build --mode dev",
+    "build:prod": "vite build --mode prod",
+    "preview": "vite preview --mode prod",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@headlessui/react": "^2.2.9",
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-checkbox": "^1.3.3",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-switch": "^1.2.6",
+    "@ramonak/react-progress-bar": "^5.4.0",
+    "@tailwindcss/cli": "^4.1.14",
+    "@tailwindcss/vite": "^4.1.14",
+    "axios": "^1.13.2",
+    "lucide-react": "^0.561.0",
+    "notistack": "^3.0.2",
+    "react": "^19.1.1",
+    "react-data-table-component": "^7.7.0",
+    "react-datepicker": "^9.1.0",
+    "react-dom": "^19.1.1",
+    "react-hook-form": "^7.68.0",
+    "react-icons": "^5.5.0",
+    "react-modal": "^3.16.3",
+    "react-player": "^3.3.3",
+    "react-router-dom": "^7.9.3",
+    "react-select": "^5.10.2",
+    "react-spinners": "^0.17.0",
+    "recharts": "^3.2.1",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/node": "^24.6.2",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "tailwindcss": "^4.1.14",
+    "vite": "^7.1.9"
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syngrid/evergreen-erp-admin-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/syngrid/evergreen-erp-admin-frontend/issues"
+  },
+  "homepage": "https://github.com/syngrid/evergreen-erp-admin-frontend#readme"
+}
