@@ -1,25 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CommonTable from "../../common/table";
 import { PencilLine, Eye } from "lucide-react";
 import UserForm from "./userForm";
+import { getAllUsersApi, addUserApi, updateUserApi, updateUserStatusApi } from "../../API/userApi";
+import toast from "../../common/toast";
 
 const Users = () => {
     const [search, setSearch] = useState("");
-
-    const [users, setUsers] = useState([
-        {
-            id: 1,
-            name: "Mohammed Azarudeen",
-            email: "azar@gmail.com",
-            phone: "9876543210",
-            active: true,
-        },
-    ]);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     /* ---------------- FORM STATE ---------------- */
     const [openForm, setOpenForm] = useState(false);
     const [mode, setMode] = useState("add");
     const [editData, setEditData] = useState(null);
+
+    /* ---------------- FETCH USERS ---------------- */
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const response = await getAllUsersApi({
+                page: page,
+                limit: 10,
+                search: search,
+                isActive: "",
+            });
+            if (response.success) {
+                setUsers(response.data || []);
+                if (response.pagination) {
+                    setTotalPages(response.pagination.pages || 1);
+                }
+            } else {
+                toast.error(response.message || "Failed to fetch users");
+            }
+        } catch (error) {
+            toast.error("Error fetching users");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, [page, search]);
 
     /* ---------------- OPEN ADD ---------------- */
     const handleAdd = () => {
@@ -36,30 +61,52 @@ const Users = () => {
     };
 
     /* ---------------- SAVE ---------------- */
-    const handleSave = (formData) => {
-        if (mode === "add") {
-            const newUser = {
-                ...formData,
-                id: users.length + 1,
-                active: true,
-            };
-            setUsers((prev) => [...prev, newUser]);
-        } else {
-            setUsers((prev) =>
-                prev.map((item) =>
-                    item.id === formData.id ? { ...item, ...formData } : item
-                )
-            );
+    const handleSave = async (formData) => {
+        try {
+            let response;
+            if (mode === "add") {
+                response = await addUserApi({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    password: formData.password,
+                    is_active: true,
+                });
+            } else {
+                response = await updateUserApi(formData.id, {
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    password: formData.password || undefined,
+                    is_active: editData?.active ?? true,
+                });
+            }
+
+            if (response.success) {
+                toast.success(mode === "add" ? "User added successfully" : "User updated successfully");
+                setOpenForm(false);
+                fetchUsers();
+            } else {
+                toast.error(response.message || "Failed to save user");
+            }
+        } catch (error) {
+            toast.error("Error saving user");
         }
     };
 
     /* ---------------- TOGGLE STATUS ---------------- */
-    const toggleStatus = (id) => {
-        setUsers((prev) =>
-            prev.map((item) =>
-                item.id === id ? { ...item, active: !item.active } : item
-            )
-        );
+    const toggleStatus = async (id) => {
+        try {
+            const response = await updateUserStatusApi(id);
+            if (response.success) {
+                toast.success(response.message || "User status updated successfully");
+                fetchUsers();
+            } else {
+                toast.error(response.message || "Failed to update user status");
+            }
+        } catch (error) {
+            toast.error("Error updating user status");
+        }
     };
 
     /* ---------------- TABLE COLUMNS ---------------- */
@@ -143,11 +190,11 @@ const Users = () => {
                         <button
                             onClick={handleAdd}
                             className="bg-primary text-white px-4 py-2 text-sm">
-
                             + Add User
                         </button>
                     }
                     noPagination={false}
+                    loading={loading}
                 />
             </div>
 

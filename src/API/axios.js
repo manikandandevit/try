@@ -48,10 +48,25 @@ API.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await API.post("/refresh-token");
-        const newAccessToken = res.data.data.accessToken;
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) {
+          throw new Error("No refresh token available");
+        }
 
-        localStorage.setItem("accessToken", newAccessToken);
+        const res = await API.post("/refresh-token/", {
+          refresh_token: refreshToken
+        });
+        
+        const newAccessToken = res.data.data?.accessToken || res.data.accessToken || res.data.access_token;
+        const newRefreshToken = res.data.data?.refreshToken || res.data.refreshToken || res.data.refresh_token;
+
+        if (newAccessToken) {
+          localStorage.setItem("accessToken", newAccessToken);
+        }
+        if (newRefreshToken) {
+          localStorage.setItem("refreshToken", newRefreshToken);
+        }
+
         processQueue(null, newAccessToken);
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -60,6 +75,7 @@ API.interceptors.response.use(
       } catch (err) {
         processQueue(err);
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         window.location.href = "/";
         return Promise.reject(err);
 

@@ -4,12 +4,21 @@ import { handleSuccess, handleError } from "./apiHelper";
 // Login API
 export const loginApi = async (data) => {
     try {
-        const response = await API.post("/login", data);
+        const response = await API.post("/login/", data);
         const res = handleSuccess(response);
         console.log('resssssssssssss: ', res);
 
         if (res.success) {
-            localStorage.setItem("accessToken", res.data.accessToken);
+            // Store both access token and refresh token
+            const accessToken = res.data.accessToken || res.data.access_token;
+            const refreshToken = res.data.refreshToken || res.data.refresh_token;
+            
+            if (accessToken) {
+                localStorage.setItem("accessToken", accessToken);
+            }
+            if (refreshToken) {
+                localStorage.setItem("refreshToken", refreshToken);
+            }
         }
 
         return res;
@@ -21,15 +30,23 @@ export const loginApi = async (data) => {
 // Logout API
 export const logoutApi = async () => {
     try {
-        await API.post(
-            "/logout",
-            {},
-            { withCredentials: true }
-        );
+        // Get refresh token from localStorage
+        const refreshToken = localStorage.getItem("refreshToken");
+        
+        // Send refresh token to backend for revocation
+        if (refreshToken) {
+            await API.post(
+                "/logout/",
+                { refresh_token: refreshToken },
+                { withCredentials: true }
+            );
+        }
     } catch (err) {
         console.error("Logout failed", err);
     } finally {
+        // Always remove tokens from localStorage, even if API call fails
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
     }
 };
 
