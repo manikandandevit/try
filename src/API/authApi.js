@@ -6,12 +6,17 @@ export const loginApi = async (data) => {
     try {
         const response = await API.post("/login/", data);
         const res = handleSuccess(response);
-        console.log('resssssssssssss: ', res);
+        console.log('Login API response: ', res);
+        console.log('Login API response.data: ', res.data);
 
         if (res.success) {
             // Store both access token and refresh token
-            const accessToken = res.data.accessToken || res.data.access_token;
-            const refreshToken = res.data.refreshToken || res.data.refresh_token;
+            // Backend returns tokens at top level, handleSuccess wraps in res.data
+            const accessToken = res.data?.accessToken || res.data?.access_token || response.data?.access_token;
+            const refreshToken = res.data?.refreshToken || res.data?.refresh_token || response.data?.refresh_token;
+            
+            console.log('Access Token:', accessToken ? 'Found' : 'Not found');
+            console.log('Refresh Token:', refreshToken ? 'Found' : 'Not found');
             
             if (accessToken) {
                 localStorage.setItem("accessToken", accessToken);
@@ -23,6 +28,7 @@ export const loginApi = async (data) => {
 
         return res;
     } catch (err) {
+        console.error('Login API error:', err);
         return handleError(err);
     }
 };
@@ -94,5 +100,34 @@ export const ForgotApi = async (data) => {
         return res;
     } catch (err) {
         return handleError(err);
+    }
+};
+
+// Get company login images API (public endpoint)
+export const getCompanyLoginApi = async () => {
+    try {
+        const response = await API.get("/company-login/");
+        console.log("Company login API raw response:", response);
+        console.log("Company login API response.data:", response.data);
+        
+        // This endpoint returns data directly as JsonResponse, so response.data contains the object
+        const responseData = response.data || {};
+        console.log("Parsed response data:", responseData);
+        
+        return {
+            success: true,
+            data: responseData
+        };
+    } catch (err) {
+        console.error("Error fetching company login images:", err);
+        console.error("Error details:", err.response?.data);
+        // Return default values on error
+        return {
+            success: false,
+            data: {
+                login_logo_url: null,
+                login_image_url: null
+            }
+        };
     }
 };

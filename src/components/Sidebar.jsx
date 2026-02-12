@@ -5,6 +5,8 @@ import { Images } from "../common/assets";
 import { ChevronLeft, ChevronRight, Dot, X } from "lucide-react";
 import { SIDEBAR_WIDTH, SIDEBAR_MINI_WIDTH } from "../common/constants";
 import { logoutApi } from "../API/authApi";
+import { getCompanyDetails } from "../API/companyApi";
+import { CONFIG } from "../API/config";
 import toast from "../common/toast";
 import LogoutPopup from "./LogoutPopup";
 
@@ -14,13 +16,76 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
 
   const [openIndex, setOpenIndex] = useState(null);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [loginLogo, setLoginLogo] = useState(Images.fullLogo);
+  const [quotationLogo, setQuotationLogo] = useState(Images.smLogo);
 
   const token = localStorage.getItem("accessToken");
   const width = isMini ? SIDEBAR_MINI_WIDTH : SIDEBAR_WIDTH;
 
+  // Helper function to construct full media URL
+  const constructMediaUrl = (relativeUrl) => {
+    if (!relativeUrl || 
+        relativeUrl === null || 
+        relativeUrl === 'null' || 
+        relativeUrl === undefined ||
+        String(relativeUrl).trim() === '') {
+      return null;
+    }
+
+    let url = String(relativeUrl).trim();
+    
+    // If already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Get base URL and remove /api if present (media files are served at root level, not under /api)
+    let baseUrl = (CONFIG.BASE_URL || '').replace(/\/$/, '');
+    // Remove /api from the end of base URL since media files are at root level
+    baseUrl = baseUrl.replace(/\/api$/, '');
+    
+    // Ensure URL starts with /
+    const mediaUrl = url.startsWith('/') ? url : `/${url}`;
+    
+    return `${baseUrl}${mediaUrl}`;
+  };
+
   useEffect(() => {
     if (!token) {
       navigate("/");
+    }
+  }, [token]);
+
+  // Fetch company logos on component mount
+  useEffect(() => {
+    const fetchCompanyLogos = async () => {
+      try {
+        const res = await getCompanyDetails();
+        if (res.success && res.data?.company) {
+          const company = res.data.company;
+          
+          // Process login logo (for full sidebar)
+          const loginLogoUrl = company.login_logo_url;
+          const fullLoginLogoUrl = constructMediaUrl(loginLogoUrl);
+          if (fullLoginLogoUrl) {
+            setLoginLogo(fullLoginLogoUrl);
+          }
+          
+          // Process quotation logo (for mini sidebar)
+          const quotationLogoUrl = company.quotation_logo_url;
+          const fullQuotationLogoUrl = constructMediaUrl(quotationLogoUrl);
+          if (fullQuotationLogoUrl) {
+            setQuotationLogo(fullQuotationLogoUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching company logos:", err);
+        // Keep default logos on error
+      }
+    };
+
+    if (token) {
+      fetchCompanyLogos();
     }
   }, [token]);
 
@@ -117,9 +182,13 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
         {/* LOGO */}
         <div className="h-20 flex items-center justify-center relative">
           <img
-            src={isMini ? Images.smLogo : Images.fullLogo}
+            src={isMini ? quotationLogo : loginLogo}
             alt="Logo"
             className={`transition-all ${isMini ? "w-10" : "w-45"}`}
+            onError={(e) => {
+              // Fallback to default logo if backend logo fails to load
+              e.target.src = isMini ? Images.smLogo : Images.fullLogo;
+            }}
           />
 
           {!isMini && (
