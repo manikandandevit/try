@@ -1,348 +1,291 @@
 import { useState } from "react";
 import { Download, Share2 } from "lucide-react";
 import { FaWhatsapp, FaEnvelope } from "react-icons/fa";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import html2pdf from "html2pdf.js";
+import { Images } from "../../common/assets";
 
-const ShareButton = ({ selectedCustomer }) => {
+const ShareButton = ({
+  selectedCustomer,
+  quotationData,
+  companyDetails,
+  quotation,
+  showFullContent,
+  items,
+  subtotal,
+  charges,
+  gstAmount,
+  total,
+  quotationInfo,
+  quotationBy,
+  quotationTo,
+  footer,
+  company
+}) => {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadPdf = async () => {
     if (isDownloading) return;
-    
     setIsDownloading(true);
+
     try {
-      const element = document.getElementById("quotation-preview");
-      if (!element) {
-        alert("Quotation preview not found. Please ensure the quotation is visible.");
-        return;
-      }
+      // Create PDF content container
+      const pdfContent = document.createElement('div');
+      pdfContent.id = 'pdf-content';
+      pdfContent.style.width = '210mm';
+      pdfContent.style.backgroundColor = '#ffffff';
+      pdfContent.style.fontFamily = 'Arial, sans-serif';
+      pdfContent.style.padding = '0';
+      pdfContent.style.margin = '0';
+      pdfContent.style.boxSizing = 'border-box';
 
-      // Find the actual quotation content (the white card inside) - this contains header, content, and footer
-      const quotationContent = element.querySelector('.bg-white.shadow.rounded-xl') || element;
-      
-      if (!quotationContent) {
-        alert("Quotation content not found. Please ensure the quotation is fully loaded.");
-        return;
-      }
+      const customerName = selectedCustomer?.customer_name?.trim() || "quotation";
 
-      // Wait a bit to ensure all images are loaded
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // A4 height in pixels
+      const A4_HEIGHT_PX = 297 * 3.78; // approx 1123px
 
-      // Scroll to top to capture full content from beginning
-      element.scrollTop = 0;
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Create header HTML
+      const headerHTML = `
+        <div style="background-color: #DEDFE6; padding: 24px; width: 100%; box-sizing: border-box;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; align-items: start;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="${company?.logo || Images.smLogo}" style="width: 48px; height: 48px; object-fit: contain;" 
+                   onerror="this.src='${Images.smLogo}'" />
+              <div>
+                <h2 style="font-size: 20px; font-weight: bold; margin: 0;">${company?.name || ''}</h2>
+                <p style="color: #6B7280; font-size: 14px; margin-top: 4px;">${company?.email || ''}</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-size: 14px; margin: 0;">${quotationInfo?.date || ''}</p>
+              <p style="font-weight: 600; font-size: 16px; margin-top: 4px;">Quotation No</p>
+              <p style="color: #2563EB; font-weight: bold;">${quotationInfo?.quotationNo || ''}</p>
+            </div>
+          </div>
+        </div>
+      `;
 
-      // Get footer element (for separate capture, so we can pin it to bottom of each PDF page)
-      const footerElement = quotationContent.querySelector('.quotation-footer');
+      // Create billing section HTML
+      const billingHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; padding: 24px;">
+          <div style="text-align: left;">
+            <h4 style="font-weight: 600; color: #64748B; font-size: 14px; margin-bottom: 8px;">Quotation By</h4>
+            ${quotationBy?.name ? `<p style="font-size: 14px; color: #1E293B; font-weight: 600; margin-bottom: 4px;">${quotationBy.name}</p>` : ''}
+            ${quotationBy?.address ? `<p style="font-size: 14px; color: #1E293B; margin-bottom: 4px;">${quotationBy.address}</p>` : ''}
+            ${quotationBy?.phone ? `<p style="font-size: 14px; color: #1E293B; margin-bottom: 4px;">${quotationBy.phone}</p>` : ''}
+            ${quotationBy?.email ? `<p style="font-size: 14px; color: #1E293B;">${quotationBy.email}</p>` : ''}
+          </div>
+          <div style="text-align: right;">
+            <h4 style="font-weight: 600; color: #64748B; font-size: 14px; margin-bottom: 8px;">Quotation To</h4>
+            ${quotationTo?.name ? `<p style="font-size: 14px; color: #1E293B; font-weight: 600; margin-bottom: 4px;">${quotationTo.name}</p>` : ''}
+            ${quotationTo?.address ? `<p style="font-size: 14px; color: #1E293B; margin-bottom: 4px;">${quotationTo.address}</p>` : ''}
+            ${quotationTo?.phone ? `<p style="font-size: 14px; color: #1E293B; margin-bottom: 4px;">${quotationTo.phone}</p>` : ''}
+            ${quotationTo?.email ? `<p style="font-size: 14px; color: #1E293B;">${quotationTo.email}</p>` : ''}
+          </div>
+        </div>
+      `;
 
-      // Get the full height of the quotation (header + content + footer)
-      const fullHeight = quotationContent.scrollHeight || quotationContent.offsetHeight;
-      const fullWidth = quotationContent.scrollWidth || quotationContent.offsetWidth;
+      // Create footer HTML
+      const footerHTML = `
+        <div style="background-color: #DEDFE6; padding: 20px 24px; text-align: center; border-top: 1px solid #E2E8F0;">
+          <img src="${footer?.logo || Images.fullLogo}" style="width: 140px; height: 40px; margin: 0 auto 8px; object-fit: contain;" 
+               onerror="this.src='${Images.fullLogo}'" />
+          <p style="color: #2563EB; font-size: 14px; margin: 0;">${footer?.website || ''}</p>
+        </div>
+      `;
 
-      // Create a deep clone of the element to convert oklch colors
-      const clone = quotationContent.cloneNode(true);
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = fullWidth + 'px';
-      clone.style.height = 'auto';
-      clone.style.minHeight = fullHeight + 'px';
-      clone.style.visibility = 'visible'; // Make it visible for capture
-      clone.style.opacity = '1';
-      clone.style.overflow = 'visible'; // Ensure all content is visible
+      // Create total section HTML
+      const totalHTML = `
+        <div style="display: flex; justify-content: flex-end; margin-top: 24px; padding: 0 24px;">
+          <div style="width: 280px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 0 8px;">
+              <span style="font-size: 15px;">Subtotal</span>
+              <span style="font-size: 15px;">₹${subtotal || 0}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 0 8px;">
+              <span style="font-size: 15px;">Shipping</span>
+              <span style="font-size: 15px;">₹${charges?.shipping || 0}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 0 8px;">
+              <span style="font-size: 15px;">GST (${charges?.gstPercent || 0}%)</span>
+              <span style="font-size: 15px;">₹${gstAmount || 0}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; border-top: 2px solid #2563EB; padding: 12px 8px 0 8px; margin-top: 4px;">
+              <span>Total</span>
+              <span>₹${total || 0}</span>
+            </div>
+          </div>
+        </div>
+      `;
 
-      // In the cloned content, hide the footer so that the main canvas only contains
-      // header + body. We'll capture the footer separately and draw it at the bottom
-      // of every PDF page, so it always sits at the page bottom.
-      const clonedFooter = clone.querySelector('.quotation-footer');
-      if (clonedFooter) {
-        clonedFooter.style.display = 'none';
-      }
+      // Create key features HTML
+      const keyFeaturesHTML = items?.some(item => item.key_features?.some(f => f?.trim())) ? `
+        <div style="margin: 32px 24px 24px 24px; border-top: 1px solid #E2E8F0; padding-top: 20px;">
+          <h4 style="font-size: 16px; font-weight: 600; color: #1E293B; margin-bottom: 16px;">Key Features</h4>
+          <div style="font-size: 13px; color: #374151;">
+            ${items.map(item => {
+              const features = (item.key_features || []).filter(f => f?.trim());
+              if (features.length === 0) return '';
+              return `<p style="margin: 0 0 8px 0; line-height: 1.5;">
+                <span style="font-weight: 600; color: #2563EB;">${item.item}:</span> ${features.join(', ')}
+              </p>`;
+            }).join('')}
+          </div>
+        </div>
+      ` : '';
 
-      document.body.appendChild(clone);
-
-      // Convert all modern color formats (oklch, oklab, etc.) to RGB
-      const convertColorsToRgb = (elementToConvert) => {
-        const allElements = elementToConvert.querySelectorAll('*');
-        const originalElements = Array.from(document.querySelectorAll('*'));
+      if (!showFullContent || !items || items.length === 0) {
+        // No items case
+        pdfContent.innerHTML = `
+          ${headerHTML}
+          ${billingHTML}
+          <div style="padding: 40px 24px; text-align: center; color: #9CA3AF; min-height: 300px;">
+            <p style="font-size: 16px;">No items added yet</p>
+          </div>
+          ${footerHTML}
+        `;
+      } else {
+        const rows = items;
         
-        allElements.forEach((el, index) => {
-          try {
-            // Try to find matching original element by index or class
-            let originalEl = el;
-            if (index < originalElements.length) {
-              // Try to match by similar structure
-              const elClasses = Array.from(el.classList || []);
-              if (elClasses.length > 0) {
-                const matched = originalElements.find(orig => {
-                  const origClasses = Array.from(orig.classList || []);
-                  return elClasses.some(c => origClasses.includes(c));
-                });
-                if (matched) originalEl = matched;
-              }
-            }
+        // Calculate rows per page - maximum 12 rows per page
+        const MAX_ROWS_PER_PAGE = 12;
+        const totalPages = Math.ceil(rows.length / MAX_ROWS_PER_PAGE);
+        
+        let pageContent = '';
 
-            const computed = window.getComputedStyle(originalEl);
-            
-            // Helper to convert any color format to RGB
-            const getRgbColor = (colorValue, property = 'color') => {
-              if (!colorValue || colorValue === 'transparent' || colorValue === 'rgba(0, 0, 0, 0)') {
-                return null;
-              }
-              
-              // If it's already RGB/RGBA/HEX, use it
-              if (colorValue.startsWith('rgb') || colorValue.startsWith('#')) {
-                return colorValue;
-              }
-              
-              // If it contains oklch, oklab, or other modern color formats, convert it
-              if (colorValue.includes('oklch') || colorValue.includes('oklab') || 
-                  colorValue.includes('lab') || colorValue.includes('lch') ||
-                  colorValue.includes('color(')) {
-                // Create a temporary element to force browser color conversion
-                const temp = document.createElement('div');
-                temp.style[property] = colorValue;
-                temp.style.position = 'absolute';
-                temp.style.visibility = 'hidden';
-                temp.style.top = '-9999px';
-                temp.style.left = '-9999px';
-                document.body.appendChild(temp);
-                
-                // Force a reflow to ensure color is computed
-                void temp.offsetHeight;
-                
-                const rgb = window.getComputedStyle(temp)[property];
-                document.body.removeChild(temp);
-                
-                // Return RGB if conversion succeeded
-                if (rgb && !rgb.includes('oklch') && !rgb.includes('oklab') && 
-                    !rgb.includes('lab') && !rgb.includes('lch') && 
-                    rgb !== 'transparent' && rgb !== 'rgba(0, 0, 0, 0)') {
-                  return rgb;
-                }
-              }
-              
-              return null;
-            };
-
-            // Convert color
-            const rgbColor = getRgbColor(computed.color, 'color');
-            if (rgbColor) {
-              el.style.color = rgbColor;
-            }
-
-            // Convert backgroundColor
-            const rgbBg = getRgbColor(computed.backgroundColor, 'backgroundColor');
-            if (rgbBg) {
-              el.style.backgroundColor = rgbBg;
-            }
-
-            // Convert borderColor
-            const rgbBorder = getRgbColor(computed.borderColor, 'borderColor');
-            if (rgbBorder && computed.borderWidth !== '0px') {
-              el.style.borderColor = rgbBorder;
-            }
-            
-            // Convert borderTopColor, borderRightColor, etc.
-            ['borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor'].forEach(prop => {
-              const borderColor = computed[prop];
-              if (borderColor) {
-                const rgb = getRgbColor(borderColor, prop);
-                if (rgb) {
-                  el.style[prop] = rgb;
-                }
-              }
-            });
-          } catch (e) {
-            // Ignore errors for individual elements
-            console.warn('Color conversion error for element:', e);
+        // Generate pages
+        for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+          const startIdx = pageNum * MAX_ROWS_PER_PAGE;
+          const endIdx = Math.min(startIdx + MAX_ROWS_PER_PAGE, rows.length);
+          const pageRows = rows.slice(startIdx, endIdx);
+          
+          // Check if this is the last page
+          const isLastPage = pageNum === totalPages - 1;
+          
+          // Add page break for all pages except last
+          if (pageNum > 0) {
+            pageContent += `<div style="page-break-before: always;"></div>`;
           }
-        });
+          
+          // Start page container
+          pageContent += `<div style="position: relative; min-height: ${A4_HEIGHT_PX}px; display: flex; flex-direction: column;">`;
+          
+          // Add header and billing only on first page
+          if (pageNum === 0) {
+            pageContent += headerHTML;
+            pageContent += billingHTML;
+          } else {
+            // Add simple header for subsequent pages
+            pageContent += `
+              <div style="background-color: #DEDFE6; padding: 16px 24px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="${company?.logo || Images.smLogo}" style="width: 40px; height: 40px; object-fit: contain;" />
+                    <div>
+                      <h2 style="font-size: 18px; font-weight: bold; margin: 0;">${company?.name || ''}</h2>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <p style="font-size: 13px; color: #2563EB; font-weight: 600;">Quotation #${quotationInfo?.quotationNo || ''}</p>
+                    <p style="font-size: 12px; color: #6B7280;">Page ${pageNum + 1} of ${totalPages}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+          
+          // Add table
+          pageContent += `
+            <div style="padding: 0 24px; flex: 1;">
+              <table style="width: 100%; border-collapse: collapse; margin-top: ${pageNum === 0 ? '0' : '8px'};">
+                <thead>
+                  <tr style="background-color: #2563EB;">
+                    <th style="padding: 12px; text-align: left; color: white; font-size: 14px;">Service Name</th>
+                    <th style="padding: 12px; text-align: center; color: white; font-size: 14px;">Quantity</th>
+                    <th style="padding: 12px; text-align: center; color: white; font-size: 14px;">Price</th>
+                    <th style="padding: 12px; text-align: right; color: white; font-size: 14px;">Amount(₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+          
+          // Add rows for this page
+          pageRows.forEach(item => {
+            pageContent += `
+              <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #E2E8F0; font-size: 13px;">${item.item || ''}</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #E2E8F0; font-size: 13px;">${item.qty || 0}</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #E2E8F0; font-size: 13px;">₹${item.rate || 0}</td>
+                <td style="padding: 10px; text-align: right; border-bottom: 1px solid #E2E8F0; font-size: 13px; font-weight: 500;">₹${(item.qty * item.rate) || 0}</td>
+              </tr>
+            `;
+          });
+          
+          // Add empty rows to maintain minimum height if needed
+          const emptyRowsCount = MAX_ROWS_PER_PAGE - pageRows.length;
+          if (emptyRowsCount > 0 && !isLastPage) {
+            for (let i = 0; i < emptyRowsCount; i++) {
+              pageContent += `
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #E2E8F0;">&nbsp;</td>
+                  <td style="padding: 10px; text-align: center; border-bottom: 1px solid #E2E8F0;">&nbsp;</td>
+                  <td style="padding: 10px; text-align: center; border-bottom: 1px solid #E2E8F0;">&nbsp;</td>
+                  <td style="padding: 10px; text-align: right; border-bottom: 1px solid #E2E8F0;">&nbsp;</td>
+                </tr>
+              `;
+            }
+          }
+          
+          pageContent += `
+                </tbody>
+              </table>
+          `;
+          
+          // Add totals and key features only on last page
+          if (isLastPage) {
+            pageContent += totalHTML;
+            pageContent += keyFeaturesHTML;
+          }
+          
+          pageContent += `</div>`; // Close padding div
+          
+          // Add footer
+          pageContent += `<div style="margin-top: auto;">${footerHTML}</div>`;
+          pageContent += `</div>`; // Close page container
+        }
+
+        pdfContent.innerHTML = pageContent;
+      }
+
+      // Append to body
+      document.body.appendChild(pdfContent);
+
+      // PDF options
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `${customerName.replace(/[^a-z0-9]/gi, "_")}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          letterRendering: true,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+        pagebreak: { mode: ['css'] }
       };
 
-      // Convert all modern color formats to RGB in the clone
-      convertColorsToRgb(clone);
+      await html2pdf().set(opt).from(pdfContent).save();
+      document.body.removeChild(pdfContent);
 
-      // Wait a bit for styles to apply
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Wait a bit more for clone to render
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // Create canvas from the clone - capture full height (header + content, without footer)
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-        width: fullWidth,
-        height: fullHeight,
-        windowWidth: fullWidth,
-        windowHeight: fullHeight,
-        removeContainer: false, // Keep container for full capture
-      });
-
-      // Remove the clone
-      document.body.removeChild(clone);
-
-      const imgData = canvas.toDataURL("image/png", 1.0);
-
-      // Capture the footer as a separate image so we can place it at the bottom
-      // of every PDF page (or at least the last page).
-      let footerImgData = null;
-      let footerCanvas = null;
-
-      if (footerElement) {
-        const footerClone = footerElement.cloneNode(true);
-        footerClone.style.position = 'absolute';
-        footerClone.style.left = '-9999px';
-        footerClone.style.top = '0';
-        footerClone.style.visibility = 'visible';
-        footerClone.style.opacity = '1';
-        document.body.appendChild(footerClone);
-
-        try {
-          // Optional: normalize colors inside footer as well
-          convertColorsToRgb(footerClone);
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          footerCanvas = await html2canvas(footerClone, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: false,
-            logging: false,
-            backgroundColor: '#ffffff',
-          });
-          footerImgData = footerCanvas.toDataURL("image/png", 1.0);
-        } catch (e) {
-          // If footer capture fails, we simply skip footer image; PDF will still be generated.
-          footerImgData = null;
-          footerCanvas = null;
-        } finally {
-          document.body.removeChild(footerClone);
-        }
-      }
-      
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      // Calculate dimensions to fit width while maintaining aspect ratio
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const imgAspectRatio = imgHeight / imgWidth;
-
-      const marginX = 5; // left/right margin
-      const marginTop = 5;
-      const marginBottom = 5;
-
-      // Fit to page width, maintain aspect ratio
-      const imgWidthInMM = pdfWidth - marginX * 2;
-      const scaleFactor = imgWidthInMM / imgWidth;
-      let imgHeightInMM = imgWidthInMM * imgAspectRatio;
-
-      // Footer height (in mm) based on captured footer image
-      let footerHeightInMM = 0;
-      if (footerCanvas && footerImgData) {
-        footerHeightInMM = footerCanvas.height * scaleFactor / 1; // height(px) * (mm/px)
-      }
-
-      // Available content height per page after reserving space for footer
-      const availableContentHeightPerPage = pdfHeight - marginTop - marginBottom - footerHeightInMM;
-
-      const xOffset = marginX;
-
-      // If content fits in one page (with room for footer)
-      if (imgHeightInMM <= availableContentHeightPerPage) {
-        const yOffset = marginTop;
-        pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidthInMM, imgHeightInMM);
-
-        // Draw footer at the bottom of the page
-        if (footerImgData && footerHeightInMM > 0) {
-          const footerY = pdfHeight - marginBottom - footerHeightInMM;
-          pdf.addImage(
-            footerImgData,
-            "PNG",
-            xOffset,
-            footerY,
-            imgWidthInMM,
-            footerHeightInMM
-          );
-        }
-      } else {
-        // Split across multiple pages
-        let remainingHeightMM = imgHeightInMM;
-        let sourceYpx = 0;
-        const imgHeightMMTotal = imgHeightInMM; // for ratio
-
-        while (remainingHeightMM > 0) {
-          const isFirstPage = sourceYpx === 0;
-
-          if (!isFirstPage) {
-            pdf.addPage();
-          }
-
-          const heightThisPageMM = Math.min(remainingHeightMM, availableContentHeightPerPage);
-
-          // Calculate corresponding source height in pixels
-          const sourceHeightPx = (heightThisPageMM / imgHeightMMTotal) * imgHeight;
-
-          // Create a temporary canvas for this page section
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = imgWidth;
-          pageCanvas.height = sourceHeightPx;
-          const ctx = pageCanvas.getContext('2d');
-          ctx.drawImage(
-            canvas,
-            0,
-            sourceYpx,
-            imgWidth,
-            sourceHeightPx,
-            0,
-            0,
-            imgWidth,
-            sourceHeightPx
-          );
-
-          const pageImgData = pageCanvas.toDataURL("image/png", 1.0);
-          const yOffset = marginTop;
-
-          pdf.addImage(pageImgData, "PNG", xOffset, yOffset, imgWidthInMM, heightThisPageMM);
-
-          // Draw footer at the bottom of this page
-          if (footerImgData && footerHeightInMM > 0) {
-            const footerY = pdfHeight - marginBottom - footerHeightInMM;
-            pdf.addImage(
-              footerImgData,
-              "PNG",
-              xOffset,
-              footerY,
-              imgWidthInMM,
-              footerHeightInMM
-            );
-          }
-
-          sourceYpx += sourceHeightPx;
-          remainingHeightMM -= heightThisPageMM;
-        }
-      }
-
-      const customerName =
-        selectedCustomer?.customer_name?.trim() ||
-        selectedCustomer?.name?.trim() ||
-        "quotation";
-
-      const fileName = `${customerName.replace(/[^a-z0-9]/gi, '_')}.pdf`;
-      console.log("Saving PDF as:", fileName);
-      pdf.save(fileName);
-      console.log("PDF downloaded successfully!");
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert(`Error generating PDF: ${error.message}. Please check the console for details.`);
+      console.error("PDF Error:", error);
+      alert("Error generating PDF: " + error.message);
     } finally {
       setIsDownloading(false);
     }
@@ -351,16 +294,13 @@ const ShareButton = ({ selectedCustomer }) => {
   return (
     <div className="relative group inline-block w-32 h-10">
       <div className="relative w-full h-full rounded-full bg-primary text-white overflow-hidden">
-        {/* Sliding Container */}
         <div className="absolute inset-0 transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
-          {/* Share Button (Top Layer) */}
           <div className="flex items-center justify-center gap-2 w-full h-full">
             <Share2 size={18} />
             <span className="text-sm font-medium">Share</span>
           </div>
         </div>
 
-        {/* Icons Layer (Under Share) */}
         <div className="absolute bg-[#F1F1FA] inset-0 flex items-center justify-center gap-3 translate-y-full transition-transform duration-300 ease-in-out group-hover:translate-y-0">
           <button className="text-primary rounded-full hover:scale-110 transition">
             <FaWhatsapp size={20} />

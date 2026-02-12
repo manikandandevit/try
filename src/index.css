@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
-@import "tailwindcss";
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
 
 /* ✅ Theme variables */
 @theme base {
@@ -16,6 +17,18 @@
 /* Global font */
 body {
   font-family: "Outfit", sans-serif;
+}
+
+:root {
+  --color-bgHeader: #dedfe6;
+  --color-primary: #00085e;
+}
+
+.bg-header {
+  background-color: var(--color-bgHeader);
+}
+.text-primary {
+  color: var(--color-primary);
 }
 
 @layer base {

@@ -36,7 +36,7 @@ const Quotation = () => {
     }, []);
 
     return (
-        <div className="flex w-full h-screen gap-3">
+        <div className="flex w-full h-auto gap-3">
             <ConversationPanel 
                 conversationHistory={conversationHistory}
                 setConversationHistory={setConversationHistory}

@@ -5,16 +5,16 @@ import { CONFIG } from "../../API/config";
 const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustomer }) => {
   // Construct media URL helper function
   const constructMediaUrl = (relativeUrl) => {
-    if (!relativeUrl || 
-        relativeUrl === null || 
-        relativeUrl === 'null' || 
-        relativeUrl === undefined ||
-        String(relativeUrl).trim() === '') {
+    if (!relativeUrl ||
+      relativeUrl === null ||
+      relativeUrl === 'null' ||
+      relativeUrl === undefined ||
+      String(relativeUrl).trim() === '') {
       return null;
     }
 
     let url = String(relativeUrl).trim();
-    
+
     // If already a full URL, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
@@ -24,22 +24,22 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
     let baseUrl = (CONFIG.BASE_URL || '').replace(/\/$/, '');
     // Remove /api from the end of base URL since media files are at root level
     baseUrl = baseUrl.replace(/\/api$/, '');
-    
+
     // Ensure URL starts with /
     const mediaUrl = url.startsWith('/') ? url : `/${url}`;
-    
+
     return `${baseUrl}${mediaUrl}`;
   };
 
   // Transform backend quotation to frontend format
   const transformQuotation = () => {
     // Get company info - always use company details from API
-    const logoUrl = companyDetails?.quotation_logo_url 
+    const logoUrl = companyDetails?.quotation_logo_url
       ? constructMediaUrl(companyDetails.quotation_logo_url)
       : null;
-    
+
     // Get login logo for footer
-    const loginLogoUrl = companyDetails?.login_logo_url 
+    const loginLogoUrl = companyDetails?.login_logo_url
       ? constructMediaUrl(companyDetails.login_logo_url)
       : null;
 
@@ -138,50 +138,67 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
 
   const data = transformQuotation();
   const { company, quotationInfo, quotationBy, quotationTo, items, charges, footer, subtotal, gstAmount, total } = data;
-  
+
   // Show content only if services/items are added (not just customer selection)
   const hasServices = items && items.length > 0 && items.some(item => item.item && item.qty > 0);
   const showFullContent = hasServices && selectedCustomer !== null;
 
   return (
-    <div className="bg-white shadow rounded-xl overflow-hidden text-sm">
+    <div
+      id="quotation-preview"
+      className="bg-white text-sm mx-auto flex flex-col relative"
+      style={{
+        minHeight: 'auto',
+        backgroundColor: '#ffffff',
+        position: 'relative'
+      }}
+    >
 
       {/* ===== HEADER ===== */}
       <div className="bg-[#DEDFE6] p-6">
 
-        <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-            <img 
-              src={company.logo} 
-              alt="logo" 
+        <div className="grid grid-cols-2 items-start">
+
+          {/* LEFT SIDE */}
+          <div className="flex items-center gap-3">
+            <img
+              src={company.logo}
+              alt="logo"
               className="w-12 h-12 object-contain"
               onError={(e) => {
                 e.target.src = Images.smLogo;
               }}
             />
             <div>
-              <h2 className="text-xl font-bold">{company.name}</h2>
-              <p className="text-gray-500 text-sm font-normal mt-1">
+              <h2 className="text-xl font-bold leading-tight">
+                {company.name}
+              </h2>
+              <p className="text-gray-500 text-sm mt-1">
                 {company.email}
               </p>
             </div>
           </div>
 
+          {/* RIGHT SIDE */}
           <div className="text-right">
-            <p className="font-normal text-sm mb-1">{quotationInfo.date}</p>
-            <p className="font-semibold text-base text-textPrimary mb-1">Quotation No</p>
+            <p className="text-sm">{quotationInfo.date}</p>
+            <p className="font-semibold text-base mt-1">
+              Quotation No
+            </p>
             <p className="text-primary font-bold">
               {quotationInfo.quotationNo}
             </p>
           </div>
+
         </div>
 
       </div>
 
+
       {/* ===== BILLING SECTION - Only show if customer is selected ===== */}
       {showFullContent && (
         <>
-          <div className="flex justify-between p-6">
+          <div className="grid grid-cols-2 p-6">
 
             {/* Left Side - Quotation By (Company Details) */}
             <div className="text-left">
@@ -315,18 +332,26 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
         </>
       )}
 
+
       {/* ===== FOOTER ===== */}
-      <div className="quotation-footer p-6 bg-[#DEDFE6] text-center">
-        <img 
-          src={footer.logo} 
-          alt="footer logo" 
+      <div
+        className="p-6 bg-[#DEDFE6] text-center border-t border-lineColor"
+        style={{
+          marginTop: showFullContent ? 'auto' : '0',
+          width: '100%',
+          backgroundColor: '#DEDFE6'
+        }}
+      >
+        <img
+          src={footer.logo}
+          alt="footer logo"
           className="w-35 h-10 mx-auto mb-2 object-contain"
-          onError={(e) => {
-            e.target.src = Images.fullLogo;
-          }}
+          onError={(e) => { e.target.src = Images.fullLogo; }}
         />
         <p className="text-primary text-sm">{footer.website}</p>
       </div>
+
+
 
     </div>
   );
