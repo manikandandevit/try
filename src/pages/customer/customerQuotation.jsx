@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CommonTable from "../../common/table";
-import { Eye } from "lucide-react";
+import { ArrowLeft, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const CustomerQuotation = () => {
@@ -30,14 +30,6 @@ const CustomerQuotation = () => {
         },
 
     ]);
-
-
-    /* ---------------- OPEN ADD FORM ---------------- */
-    const handleAdd = () => {
-        setMode("add");
-        setEditData(null);
-        setOpenForm(true);
-    };
 
     const handleStatusChange = (id, newStatus) => {
         const currentItem = customers.find((item) => item.id === id);
@@ -128,7 +120,7 @@ const CustomerQuotation = () => {
             cell: (row) => (
                 <div className="flex justify-center">
                     <button
-                        onClick={() => navigate(`/users/view/${row.id}`)}
+                        onClick={() => navigate(`/quotation/${row.id}`)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-lightGrey hover:bg-primary/10 transition"
                     >
                         <Eye size={16} className="text-darkGrey" />
@@ -144,7 +136,14 @@ const CustomerQuotation = () => {
             <div className="bg-white rounded-lg shadow-sm">
 
                 {/* HEADER */}
-                <div className="flex items-center p-6 justify-between">
+                <div className="flex items-center p-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="mr-3 p-2 rounded-full hover:bg-gray-100 transition"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+
                     <h2 className="text-xl font-medium text-textColor">
                         Arun
                     </h2>
@@ -159,7 +158,7 @@ const CustomerQuotation = () => {
                     searchPlaceholder="Search Customer"
                     rightActions={
                         <button
-                            onClick={handleAdd}
+                            onClick={() => navigate("/quotation")}
                             className="bg-primary text-white px-4 py-2 text-sm">
 
                             + Create Quotation

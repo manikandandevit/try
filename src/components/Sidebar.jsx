@@ -24,16 +24,16 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
 
   // Helper function to construct full media URL
   const constructMediaUrl = (relativeUrl) => {
-    if (!relativeUrl || 
-        relativeUrl === null || 
-        relativeUrl === 'null' || 
-        relativeUrl === undefined ||
-        String(relativeUrl).trim() === '') {
+    if (!relativeUrl ||
+      relativeUrl === null ||
+      relativeUrl === 'null' ||
+      relativeUrl === undefined ||
+      String(relativeUrl).trim() === '') {
       return null;
     }
 
     let url = String(relativeUrl).trim();
-    
+
     // If already a full URL, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
@@ -43,10 +43,10 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
     let baseUrl = (CONFIG.BASE_URL || '').replace(/\/$/, '');
     // Remove /api from the end of base URL since media files are at root level
     baseUrl = baseUrl.replace(/\/api$/, '');
-    
+
     // Ensure URL starts with /
     const mediaUrl = url.startsWith('/') ? url : `/${url}`;
-    
+
     return `${baseUrl}${mediaUrl}`;
   };
 
@@ -63,14 +63,14 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
         const res = await getCompanyDetails();
         if (res.success && res.data?.company) {
           const company = res.data.company;
-          
+
           // Process login logo (for full sidebar)
           const loginLogoUrl = company.login_logo_url;
           const fullLoginLogoUrl = constructMediaUrl(loginLogoUrl);
           if (fullLoginLogoUrl) {
             setLoginLogo(fullLoginLogoUrl);
           }
-          
+
           // Process quotation logo (for mini sidebar)
           const quotationLogoUrl = company.quotation_logo_url;
           const fullQuotationLogoUrl = constructMediaUrl(quotationLogoUrl);
@@ -106,7 +106,12 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
     const hasChildren = item.children?.length > 0;
     const isActive =
       location.pathname === item.path ||
-      item.children?.some((c) => c.path === location.pathname);
+      location.pathname.startsWith(item.path + "/") ||
+      item.children?.some(
+        (c) =>
+          location.pathname === c.path ||
+          location.pathname.startsWith(c.path + "/")
+      );
 
     return (
       <div key={item.name}>
