@@ -4,6 +4,7 @@ import QuotationTemplate from "./quotationTemplate";
 import TemplateDropdown from "./searchCustomer";
 import ShareButton from "./share";
 import { getCompanyDetails } from "../../API/companyApi";
+import { FileText } from "lucide-react";
 
 const QuotationPanel = ({ quotation, loading, setQuotation }) => {
   const [companyDetails, setCompanyDetails] = useState(null);
@@ -68,13 +69,17 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
           </p>
         </div>
 
-        <div className="flex items-right gap-6">
+        <div className="flex items-right gap-4">
           <TemplateDropdown 
             onCustomerSelect={handleCustomerSelect}
             selectedCustomer={selectedCustomer}
           />
 
           <ShareButton selectedCustomer={selectedCustomer} />
+
+           <button className="p-1 bg-[#F7BA1E] text-primary rounded-full">
+            <FileText size={14} className="w-5 h-5"/>
+          </button>
 
           <button className="p-1 bg-primary text-white rounded-full shrink-0">
             <img src={Images.starIcon} alt="star" className="w-7 h-7" />

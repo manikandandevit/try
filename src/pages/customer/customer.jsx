@@ -3,11 +3,11 @@ import CommonTable from "../../common/table";
 import { PencilLine, Eye } from "lucide-react";
 import CustomerForm from "./customerForm";
 import { useNavigate } from "react-router-dom";
-import { 
-    getAllCustomersApi, 
-    addCustomerApi, 
-    updateCustomerApi, 
-    updateCustomerStatusApi 
+import {
+    getAllCustomersApi,
+    addCustomerApi,
+    updateCustomerApi,
+    updateCustomerStatusApi
 } from "../../API/customerApi";
 import toast from "../../common/toast";
 
@@ -21,6 +21,11 @@ const Customers = () => {
     const [openForm, setOpenForm] = useState(false);
     const [mode, setMode] = useState("add"); // add | edit
     const [editData, setEditData] = useState(null);
+    const [confirmPopup, setConfirmPopup] = useState({
+        open: false,
+        id: null,
+        status: null,
+    });
 
     /* ---------------- FETCH CUSTOMERS ---------------- */
     const fetchCustomers = useCallback(async () => {
@@ -95,8 +100,8 @@ const Customers = () => {
 
             if (response.success) {
                 toast.success(
-                    mode === "add" 
-                        ? "Customer added successfully" 
+                    mode === "add"
+                        ? "Customer added successfully"
                         : "Customer updated successfully"
                 );
                 setOpenForm(false);
@@ -125,15 +130,14 @@ const Customers = () => {
                 email: customer.email,
                 address: customer.address,
             };
-            
+
             const response = await updateCustomerStatusApi(id, newStatus, backendCustomerData);
-            
+
             if (response.success) {
                 toast.success(
-                    response.message || 
-                    `Customer ${newStatus ? "Activated" : "Inactivated"} successfully`
+                    `Customer ${newStatus ? "Activated" : "Deactivated"} successfully`
                 );
-                fetchCustomers(); // Refresh the list
+                fetchCustomers();
             } else {
                 toast.error(response.message || "Failed to update customer status");
             }
@@ -175,32 +179,31 @@ const Customers = () => {
             selector: (row) => row.totalQuote,
         },
         {
-            name: "Status",
-            cell: (row) => (
-                <button
-                    onClick={() => toggleStatus(row.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all
-                        ${row.active 
-                            ? "bg-green-100 text-green-700 hover:bg-green-200" 
-                            : "bg-red-100 text-red-700 hover:bg-red-200"
-                        }
-                    `}
-                    title={row.active ? "Click to deactivate" : "Click to activate"}
-                >
-                    <div
-                        className={`w-2 h-2 rounded-full transition-colors
-                            ${row.active ? "bg-green-500" : "bg-red-500"}
-                        `}
-                    />
-                    <span>{row.active ? "Active" : "Inactive"}</span>
-                </button>
-            ),
-            center: true,
-        },
-        {
             name: "Action",
             cell: (row) => (
                 <div className="flex items-center gap-2">
+
+                    {/* Status Toggle */}
+                    {/* Toggle Only */}
+                    <button
+                        onClick={() =>
+                            setConfirmPopup({
+                                open: true,
+                                id: row.id,
+                                status: row.active,
+                            })
+                        }
+                        className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors
+        ${row.active ? "bg-primary" : "bg-gray-300"}
+    `}
+                    >
+                        <div
+                            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform
+            ${row.active ? "translate-x-5" : "translate-x-0"}
+        `}
+                        />
+                    </button>
+
                     {/* View */}
                     <button
                         onClick={() => navigate(`/customer/quote/${row.id}`)}
@@ -218,6 +221,7 @@ const Customers = () => {
                     >
                         <PencilLine size={16} className="text-darkGrey" />
                     </button>
+
                 </div>
             ),
             center: true,
@@ -263,6 +267,46 @@ const Customers = () => {
                 onSubmit={handleSave}
             // onSuccess={handleSave}
             />
+
+            {/* STATUS CONFIRM POPUP */}
+            {confirmPopup.open && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
+                    <div className="bg-white shadow-lg w-80 p-6">
+                        <h3 className="text-lg font-medium mb-4">
+                            Confirm Status Change
+                        </h3>
+
+                        <p className="text-sm text-gray-600 mb-6">
+                            Are you sure want to{" "}
+                            <span className="font-semibold">
+                                {confirmPopup.status ? "Deactivate" : "Activate"}
+                            </span>{" "}
+                            this user?
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() =>
+                                    setConfirmPopup({ open: false, id: null, status: null })
+                                }
+                                className="px-4 py-2 text-sm bg-gray-200"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    toggleStatus(confirmPopup.id);
+                                    setConfirmPopup({ open: false, id: null, status: null });
+                                }}
+                                className="px-4 py-2 text-sm bg-primary text-white"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import CommonTable from "../../common/table";
-import { PencilLine, Eye } from "lucide-react";
+import { PencilLine } from "lucide-react";
 import UserForm from "./userForm";
 import { getAllUsersApi, addUserApi, updateUserApi, updateUserStatusApi } from "../../API/userApi";
 import toast from "../../common/toast";
@@ -16,6 +16,11 @@ const Users = () => {
     const [openForm, setOpenForm] = useState(false);
     const [mode, setMode] = useState("add");
     const [editData, setEditData] = useState(null);
+    const [confirmPopup, setConfirmPopup] = useState({
+        open: false,
+        id: null,
+        status: null,
+    });
 
     /* ---------------- FETCH USERS ---------------- */
     const fetchUsers = async () => {
@@ -131,18 +136,20 @@ const Users = () => {
         {
             name: "Status",
             cell: (row) => (
-                <button
-                    onClick={() => toggleStatus(row.id)}
-                    className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors
-            ${row.active ? "bg-primary" : "bg-red-300"}
-          `}
+                <span
+                    className={`inline-flex items-center gap-2 px-2 py-1 text-xs rounded-full font-medium
+            ${row.active ? "bg-[#ECFDF3] text-[#037847]" : "bg-gray-200 text-[#364254]"}
+        `}
                 >
-                    <div
-                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform
-              ${row.active ? "translate-x-5" : "translate-x-0"}
+                    {/* Dot */}
+                    <span
+                        className={`w-2 h-2 rounded-full
+                ${row.active ? "bg-[#037847]" : "bg-[#364254]"}
             `}
-                    />
-                </button>
+                    ></span>
+
+                    {row.active ? "Active" : "Inactive"}
+                </span>
             ),
             center: true,
         },
@@ -150,9 +157,25 @@ const Users = () => {
             name: "Action",
             cell: (row) => (
                 <div className="flex items-center gap-2">
-                    {/* View */}
-                    <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lightGrey hover:bg-primary/10 transition">
-                        <Eye size={16} className="text-darkGrey" />
+
+                    {/* Toggle */}
+                    <button
+                        onClick={() =>
+                            setConfirmPopup({
+                                open: true,
+                                id: row.id,
+                                status: row.active,
+                            })
+                        }
+                        className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors
+                ${row.active ? "bg-primary" : "bg-lightGrey"}
+            `}
+                    >
+                        <div
+                            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform
+                    ${row.active ? "translate-x-5" : "translate-x-0"}
+                `}
+                        />
                     </button>
 
                     {/* Edit */}
@@ -162,6 +185,7 @@ const Users = () => {
                     >
                         <PencilLine size={16} className="text-darkGrey" />
                     </button>
+
                 </div>
             ),
             center: true,
@@ -176,7 +200,7 @@ const Users = () => {
                     <h2 className="text-xl font-medium text-textPrimary">
                         User List
                     </h2>
-                   
+
                 </div>
 
                 {/* TABLE */}
@@ -206,6 +230,46 @@ const Users = () => {
                 onClose={() => setOpenForm(false)}
                 onSubmit={handleSave}
             />
+
+            {/* STATUS CONFIRM POPUP */}
+            {confirmPopup.open && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
+                    <div className="bg-white shadow-lg w-80 p-6">
+                        <h3 className="text-lg font-medium mb-4">
+                            Confirm Status Change
+                        </h3>
+
+                        <p className="text-sm text-gray-600 mb-6">
+                            Are you sure want to{" "}
+                            <span className="font-semibold">
+                                {confirmPopup.status ? "Deactivate" : "Activate"}
+                            </span>{" "}
+                            this user?
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() =>
+                                    setConfirmPopup({ open: false, id: null, status: null })
+                                }
+                                className="px-4 py-2 text-sm bg-gray-200"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    toggleStatus(confirmPopup.id);
+                                    setConfirmPopup({ open: false, id: null, status: null });
+                                }}
+                                className="px-4 py-2 text-sm bg-primary text-white"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

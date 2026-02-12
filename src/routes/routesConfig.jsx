@@ -12,8 +12,6 @@ import Quotation from "../pages/quotation/quotation";
 import Customers from "../pages/customer/customer";
 import Users from "../pages/user/user";
 import Setting from "../pages/setting/setting";
-import Profile from "../pages/profile/profile";
-import path from "path";
 import CustomerQuotation from "../pages/customer/customerQuotation";
 
 export const publicRoutes = [
@@ -100,12 +98,12 @@ export const ProtectedRoutes = [
     showInSidebar: false,
     element: <Setting />,
   },
-  {
-    name: "Profile",
-    path: "/profile",
-    showInSidebar: false,
-    element: <Profile />,
-  },
+  // {
+  //   name: "Profile",
+  //   path: "/profile",
+  //   showInSidebar: false,
+  //   element: <Profile />,
+  // },
   {
     name: "Customer Quotation",
     path: "/customer/quote/:id",
@@ -122,10 +120,10 @@ export const bottomMenus = [
     icon: Images.setting,
     activeIcon: Images.actSetting,
   },
-  {
-    name: "Profile",
-    path: "/profile",
-    icon: Images.profile,
-    activeIcon: Images.actProfile,
-  },
+  // {
+  //   name: "Profile",
+  //   path: "/profile",
+  //   icon: Images.profile,
+  //   activeIcon: Images.actProfile,
+  // },
 ];
