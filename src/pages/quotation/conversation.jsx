@@ -1,9 +1,22 @@
+import { useState, useRef, useEffect } from "react";
 import { CheckCheck, Send } from "lucide-react";
 import { Images } from "../../common/assets";
+import { sendChatMessage, syncConversationHistory } from "../../API/quotationApi";
 
 /* ------------------ ChatMessage component ------------------ */
 const ChatMessage = ({ message }) => {
-    const isOutgoing = message.type === "outgoing";
+    const isOutgoing = message.role === "user";
+
+    // Format time from timestamp or use provided time
+    const formatTime = (timestamp) => {
+        if (!timestamp) return "";
+        try {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return timestamp;
+        }
+    };
 
     return (
         <div
@@ -12,14 +25,14 @@ const ChatMessage = ({ message }) => {
         >
             {/* Avatar */}
             <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-                {isOutgoing && message.status === "read" && (
+                {isOutgoing && (
                     <span className="absolute -top-6 left-2 text-primary">
                         <CheckCheck size={18} />
                     </span>
                 )}
 
                 <img
-                    src={message.avatar}
+                    src={isOutgoing ? Images.adminProfile : Images.smLogo}
                     alt="avatar"
                     className="w-8 h-8 rounded-full"
                 />
@@ -31,60 +44,110 @@ const ChatMessage = ({ message }) => {
                     className={`p-3 rounded-lg shadow text-[#636576] ${isOutgoing ? "bg-[#e3efff]" : "bg-white"
                         }`}
                 >
-                    {message.text}
+                    {message.content || message.text}
                 </div>
 
                 <div className="text-xs text-gray-400 mt-1">
-                    {message.time}
+                    {formatTime(message.timestamp) || message.time || ""}
                 </div>
             </div>
         </div>
     );
 };
 
-const ConversationPanel = () => {
+const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuotation }) => {
+    const [message, setMessage] = useState("");
+    const [sending, setSending] = useState(false);
+    const messagesEndRef = useRef(null);
+    const textareaRef = useRef(null);
 
-    const messages = [
-        {
-            id: 1,
-            type: "incoming",
-            avatar: Images.smLogo,
-            text: "Ah, error messages! Let’s make this friendlier while keeping it actionable. Key principles for this context: Ah, error messages! Let’s make this friendlier while keeping it actionable.",
-            time: "10:30 AM",
-        },
-        {
-            id: 2,
-            type: "outgoing",
-            avatar: Images.adminProfile,
-            text: "How to rewrite this error message for a voice assistant? Original: 'Error. Try again.’",
-            time: "10:31 AM",
-            status: "read",
-        },
-        {
-            id: 1,
-            type: "incoming",
-            avatar: Images.smLogo,
-            text: "How to rewrite this error message for a voice assistant? Original: 'Error. Try again.’",
-            time: "10:31 AM",
-            status: "read",
-        },
-        {
-            id: 1,
-            type: "incoming",
-            avatar: Images.smLogo,
-            text: "How to rewrite this error message for a voice assistant? Original: 'Error. Try again.’",
-            time: "10:31 AM",
-            status: "read",
-        },
-        {
-            id: 2,
-            type: "outgoing",
-            avatar: Images.adminProfile,
-            text: "How to rewrite this error message for a voice assistant? Original: 'Error. Try again.’",
-            time: "10:31 AM",
-            status: "read",
-        },
-    ];
+    // Scroll to bottom when messages change
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [conversationHistory]);
+
+    // Convert backend format to frontend format for display
+    const formatMessages = (history) => {
+        if (!history || !Array.isArray(history)) return [];
+        return history.map((msg, index) => ({
+            id: index,
+            role: msg.role || (msg.type === "outgoing" ? "user" : "assistant"),
+            content: msg.content || msg.text || "",
+            timestamp: msg.timestamp || new Date().toISOString(),
+            time: msg.time || ""
+        }));
+    };
+
+    const handleSend = async () => {
+        if (!message.trim() || sending) return;
+
+        const userMessage = message.trim();
+        setMessage("");
+        setSending(true);
+
+        // Add user message to conversation immediately
+        const userMsg = {
+            role: "user",
+            content: userMessage,
+            timestamp: new Date().toISOString()
+        };
+        const updatedHistory = [...conversationHistory, userMsg];
+        setConversationHistory(updatedHistory);
+
+        try {
+            // Send to backend
+            const response = await sendChatMessage(userMessage);
+
+            if (response.success) {
+                // Add assistant response
+                const assistantMsg = {
+                    role: "assistant",
+                    content: response.data?.response || response.data?.message || "Response received",
+                    timestamp: new Date().toISOString()
+                };
+                const finalHistory = [...updatedHistory, assistantMsg];
+                setConversationHistory(finalHistory);
+
+                // Update quotation if provided
+                if (response.data?.quotation) {
+                    setQuotation(response.data.quotation);
+                }
+
+                // Sync conversation history to backend
+                await syncConversationHistory(finalHistory.map(msg => ({
+                    role: msg.role,
+                    content: msg.content
+                })));
+            } else {
+                // Show error message
+                const errorMsg = {
+                    role: "assistant",
+                    content: `Error: ${response.message || "Failed to send message"}`,
+                    timestamp: new Date().toISOString()
+                };
+                setConversationHistory([...updatedHistory, errorMsg]);
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+            const errorMsg = {
+                role: "assistant",
+                content: "Error: Failed to send message. Please try again.",
+                timestamp: new Date().toISOString()
+            };
+            setConversationHistory([...updatedHistory, errorMsg]);
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const formattedMessages = formatMessages(conversationHistory);
 
     return (
         <div className="w-2/4 h-screen flex flex-col rounded-lg bg-white overflow-hidden">
@@ -96,18 +159,30 @@ const ConversationPanel = () => {
 
             {/* Messages */}
             <div className="flex-1 p-4 space-y-6 overflow-y-auto bg-[#f0f0fa] hide-scrollbar">
-                {messages.map((msg) => (
-                    <ChatMessage key={msg.id} message={msg} />
-                ))}
+                {formattedMessages.length === 0 ? (
+                    <div className="text-center text-gray-400 mt-8">
+                        Start a conversation to create a quotation
+                    </div>
+                ) : (
+                    formattedMessages.map((msg) => (
+                        <ChatMessage key={msg.id} message={msg} />
+                    ))
+                )}
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Input Bar */}
             <div className="p-3 bg-[#f0f0fa]">
                 <div className="bg-white rounded-xl w-full p-4 flex flex-col justify-between">
                     <textarea
+                        ref={textareaRef}
                         className="w-full resize-none bg-transparent outline-none text-sm text-textPrimary"
                         placeholder="Type your message here..."
                         rows={3}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        disabled={sending}
                     />
 
                     <div className="flex justify-between items-center">
@@ -115,7 +190,11 @@ const ConversationPanel = () => {
                             <img src={Images.star} alt="star" className="w-6 h-6" />
                         </button>
 
-                        <button className="p-2 rounded-full bg-primary text-white">
+                        <button 
+                            className="p-2 rounded-full bg-primary text-white disabled:opacity-50"
+                            onClick={handleSend}
+                            disabled={sending || !message.trim()}
+                        >
                             <Send size={16} />
                         </button>
                     </div>

@@ -23,6 +23,8 @@
     "@tailwindcss/cli": "^4.1.14",
     "@tailwindcss/vite": "^4.1.14",
     "axios": "^1.13.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.1.0",
     "lucide-react": "^0.561.0",
     "notistack": "^3.0.2",
     "react": "^19.1.1",
