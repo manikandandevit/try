@@ -14,6 +14,7 @@ import Users from "../pages/user/user";
 import Setting from "../pages/setting/setting";
 import Profile from "../pages/profile/profile";
 import path from "path";
+import CustomerQuotation from "../pages/customer/customerQuotation";
 
 export const publicRoutes = [
   { path: "/", element: <Login /> },
@@ -104,6 +105,12 @@ export const ProtectedRoutes = [
     path: "/profile",
     showInSidebar: false,
     element: <Profile />,
+  },
+  {
+    name: "Customer Quotation",
+    path: "/customer/quote/:id",
+    showInSidebar: false,
+    element: <CustomerQuotation />,
   },
 ];
 

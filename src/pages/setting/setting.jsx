@@ -21,8 +21,8 @@ const Setting = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="flex gap-6">
+    <div className="min-h-screen bg-gray-100">
+      <div className="flex gap-4">
 
         {/* LEFT SIDE */}
         <div className="w-64 bg-white rounded-2xl shadow p-6">

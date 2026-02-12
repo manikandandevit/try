@@ -2,9 +2,11 @@ import { useState } from "react";
 import CommonTable from "../../common/table";
 import { PencilLine, Eye } from "lucide-react";
 import CustomerForm from "./customerForm";
+import { useNavigate } from "react-router-dom";
 
 const Customers = () => {
     const [search, setSearch] = useState("");
+    const navigate = useNavigate();
 
     const [customers, setCustomers] = useState([
         {
@@ -93,7 +95,7 @@ const Customers = () => {
             name: "Address",
             selector: (row) => row.address,
         },
-         {
+        {
             name: "Total Quotation",
             selector: (row) => row.totalQuote,
         },
@@ -118,6 +120,7 @@ const Customers = () => {
 
                     {/* View */}
                     <button
+                        onClick={() => navigate(`/customer/quote/${row.id}`)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-lightGrey hover:bg-primary/10 transition"
                     >
                         <Eye size={16} className="text-darkGrey" />
