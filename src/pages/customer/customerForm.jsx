@@ -95,15 +95,18 @@ const CustomerForm = ({
 
         onSubmit({
             id: form.id,
-            name: form.customerName,
-            company: form.companyName,
+            customerName: form.customerName,
+            companyName: form.companyName,
+            name: form.customerName, // Keep for backward compatibility
+            company: form.companyName, // Keep for backward compatibility
             phone: form.phone,
             email: form.email,
             address: form.address,
             gst: form.gst,
         });
 
-        onClose();
+        // Don't close here - let parent handle it after API success
+        // onClose();
     };
 
     return (

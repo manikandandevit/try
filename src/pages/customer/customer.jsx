@@ -1,31 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import CommonTable from "../../common/table";
 import { PencilLine, Eye } from "lucide-react";
 import CustomerForm from "./customerForm";
 import { useNavigate } from "react-router-dom";
+import { 
+    getAllCustomersApi, 
+    addCustomerApi, 
+    updateCustomerApi, 
+    updateCustomerStatusApi 
+} from "../../API/customerApi";
+import toast from "../../common/toast";
 
 const Customers = () => {
     const [search, setSearch] = useState("");
     const navigate = useNavigate();
-
-    const [customers, setCustomers] = useState([
-        {
-            id: 1,
-            name: "Arun Kumar",
-            company: "TechNova Pvt Ltd",
-            phone: "9876543210",
-            email: "arun@technova.com",
-            address: "Chennai, Tamil Nadu",
-            gst: "33ABCDE1234F1Z5",
-            totalQuote: "25",
-            active: true,
-        },
-    ]);
+    const [customers, setCustomers] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     /* ---------------- FORM STATE ---------------- */
     const [openForm, setOpenForm] = useState(false);
     const [mode, setMode] = useState("add"); // add | edit
     const [editData, setEditData] = useState(null);
+
+    /* ---------------- FETCH CUSTOMERS ---------------- */
+    const fetchCustomers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await getAllCustomersApi(search);
+            if (response.success) {
+                // Map backend data to frontend format
+                const clients = response.data?.clients || response.data || [];
+                const mappedCustomers = clients.map((client) => ({
+                    id: client.id,
+                    name: client.customer_name || "",
+                    company: client.company_name || "",
+                    phone: client.phone_number || "",
+                    email: client.email || "",
+                    address: client.address || "",
+                    gst: client.gst || "", // Backend doesn't have GST, but keeping for compatibility
+                    totalQuote: "0", // This would need a separate API call to get quote count
+                    active: client.is_active ?? true,
+                }));
+                setCustomers(mappedCustomers);
+            } else {
+                toast.error(response.message || "Failed to fetch customers");
+            }
+        } catch (error) {
+            toast.error("Error fetching customers");
+            console.error("Error fetching customers:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [search]);
+
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
 
     /* ---------------- OPEN ADD FORM ---------------- */
     const handleAdd = () => {
@@ -42,30 +72,75 @@ const Customers = () => {
     };
 
     /* ---------------- SAVE DATA ---------------- */
-    const handleSave = (formData) => {
-        if (mode === "add") {
-            const newCustomer = {
-                ...formData,
-                id: customers.length + 1,
-                active: true,
-            };
-            setCustomers((prev) => [...prev, newCustomer]);
-        } else {
-            setCustomers((prev) =>
-                prev.map((item) =>
-                    item.id === formData.id ? { ...item, ...formData } : item
-                )
-            );
+    const handleSave = async (formData) => {
+        try {
+            let response;
+            if (mode === "add") {
+                response = await addCustomerApi({
+                    customerName: formData.customerName || formData.name,
+                    companyName: formData.companyName || formData.company,
+                    phone: formData.phone,
+                    email: formData.email,
+                    address: formData.address,
+                });
+            } else {
+                response = await updateCustomerApi(formData.id, {
+                    customerName: formData.customerName || formData.name,
+                    companyName: formData.companyName || formData.company,
+                    phone: formData.phone,
+                    email: formData.email,
+                    address: formData.address,
+                });
+            }
+
+            if (response.success) {
+                toast.success(
+                    mode === "add" 
+                        ? "Customer added successfully" 
+                        : "Customer updated successfully"
+                );
+                setOpenForm(false);
+                fetchCustomers(); // Refresh the list
+            } else {
+                toast.error(response.message || "Failed to save customer");
+            }
+        } catch (error) {
+            toast.error("Error saving customer");
+            console.error("Error saving customer:", error);
         }
     };
 
     /* ---------------- TOGGLE STATUS ---------------- */
-    const toggleStatus = (id) => {
-        setCustomers((prev) =>
-            prev.map((item) =>
-                item.id === id ? { ...item, active: !item.active } : item
-            )
-        );
+    const toggleStatus = async (id) => {
+        try {
+            const customer = customers.find((c) => c.id === id);
+            if (!customer) return;
+
+            const newStatus = !customer.active;
+            // Map frontend customer data to backend format
+            const backendCustomerData = {
+                customer_name: customer.name,
+                company_name: customer.company,
+                phone_number: customer.phone,
+                email: customer.email,
+                address: customer.address,
+            };
+            
+            const response = await updateCustomerStatusApi(id, newStatus, backendCustomerData);
+            
+            if (response.success) {
+                toast.success(
+                    response.message || 
+                    `Customer ${newStatus ? "Activated" : "Inactivated"} successfully`
+                );
+                fetchCustomers(); // Refresh the list
+            } else {
+                toast.error(response.message || "Failed to update customer status");
+            }
+        } catch (error) {
+            toast.error("Error updating customer status");
+            console.error("Error updating customer status:", error);
+        }
     };
 
     /* ---------------- TABLE COLUMNS ---------------- */
@@ -100,28 +175,37 @@ const Customers = () => {
             selector: (row) => row.totalQuote,
         },
         {
+            name: "Status",
+            cell: (row) => (
+                <button
+                    onClick={() => toggleStatus(row.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+                        ${row.active 
+                            ? "bg-green-100 text-green-700 hover:bg-green-200" 
+                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                        }
+                    `}
+                    title={row.active ? "Click to deactivate" : "Click to activate"}
+                >
+                    <div
+                        className={`w-2 h-2 rounded-full transition-colors
+                            ${row.active ? "bg-green-500" : "bg-red-500"}
+                        `}
+                    />
+                    <span>{row.active ? "Active" : "Inactive"}</span>
+                </button>
+            ),
+            center: true,
+        },
+        {
             name: "Action",
             cell: (row) => (
                 <div className="flex items-center gap-2">
-
-                    {/* Toggle */}
-                    <button
-                        onClick={() => toggleStatus(row.id)}
-                        className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors
-              ${row.active ? "bg-primary" : "bg-red-300"}
-            `}
-                    >
-                        <div
-                            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform
-                ${row.active ? "translate-x-5" : "translate-x-0"}
-              `}
-                        />
-                    </button>
-
                     {/* View */}
                     <button
                         onClick={() => navigate(`/customer/quote/${row.id}`)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-lightGrey hover:bg-primary/10 transition"
+                        title="View Quotations"
                     >
                         <Eye size={16} className="text-darkGrey" />
                     </button>
@@ -130,6 +214,7 @@ const Customers = () => {
                     <button
                         onClick={() => handleEdit(row)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-lightGrey hover:bg-primary/10 transition"
+                        title="Edit Customer"
                     >
                         <PencilLine size={16} className="text-darkGrey" />
                     </button>
@@ -161,11 +246,11 @@ const Customers = () => {
                         <button
                             onClick={handleAdd}
                             className="bg-primary text-white px-4 py-2 text-sm">
-
                             + Add Customer
                         </button>
                     }
                     noPagination={false}
+                    loading={loading}
                 />
             </div>
 
