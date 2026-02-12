@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { Images } from "../../common/assets";
-import { loginApi } from "../../API/authApi";
+import { loginApi, getCompanyLoginApi } from "../../API/authApi";
+import { CONFIG } from "../../API/config";
 import toast from "../../common/toast";
 
 // ================= ZOD SCHEMA =================
@@ -21,28 +22,122 @@ const Login = () => {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginImage, setLoginImage] = useState(Images.loginLeft);
+  const [loginLogo, setLoginLogo] = useState(Images.fullLogo);
+  const [brandName, setBrandName] = useState("");
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(loginSchema),
   });
 
+  // Helper function to construct full media URL
+  const constructMediaUrl = (relativeUrl) => {
+    if (!relativeUrl || 
+        relativeUrl === null || 
+        relativeUrl === 'null' || 
+        relativeUrl === undefined ||
+        String(relativeUrl).trim() === '') {
+      return null;
+    }
+
+    let url = String(relativeUrl).trim();
+    
+    // If already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Get base URL and remove /api if present (media files are served at root level, not under /api)
+    let baseUrl = (CONFIG.BASE_URL || '').replace(/\/$/, '');
+    // Remove /api from the end of base URL since media files are at root level
+    baseUrl = baseUrl.replace(/\/api$/, '');
+    
+    // Ensure URL starts with /
+    const mediaUrl = url.startsWith('/') ? url : `/${url}`;
+    
+    return `${baseUrl}${mediaUrl}`;
+  };
+
+  // Fetch company login images on component mount
+  useEffect(() => {
+    const fetchCompanyImages = async () => {
+      try {
+        const res = await getCompanyLoginApi();
+        console.log("Login component - Full API response:", res);
+        console.log("CONFIG.BASE_URL:", CONFIG.BASE_URL);
+        
+        // Handle response - check both res.data and direct res properties
+        const responseData = res?.data || res || {};
+        console.log("Response data extracted:", responseData);
+        
+        // Use backend images if available, otherwise fallback to default
+        const loginImageUrl = responseData.login_image_url;
+        const loginLogoUrl = responseData.login_logo_url;
+        const brandNameValue = responseData.brand_name;
+        
+        // Set brand name if available
+        if (brandNameValue && brandNameValue.trim()) {
+          setBrandName(brandNameValue.trim());
+        } else {
+          setBrandName("");
+        }
+        
+        // Update document title
+        const titleText = brandNameValue && brandNameValue.trim() 
+          ? brandNameValue.trim() 
+          : "SynQuot";
+        document.title = titleText;
+        
+        console.log("Raw login_image_url:", loginImageUrl, "Type:", typeof loginImageUrl);
+        console.log("Raw login_logo_url:", loginLogoUrl, "Type:", typeof loginLogoUrl);
+        console.log("Brand name:", brandNameValue);
+        
+        // Process login image
+        const fullImageUrl = constructMediaUrl(loginImageUrl);
+        if (fullImageUrl) {
+          console.log("✅ Setting login image URL:", fullImageUrl);
+          setLoginImage(fullImageUrl);
+        } else {
+          console.log("❌ No valid login_image_url found, keeping default image");
+        }
+        
+        // Process login logo
+        const fullLogoUrl = constructMediaUrl(loginLogoUrl);
+        if (fullLogoUrl) {
+          console.log("✅ Setting login logo URL:", fullLogoUrl);
+          setLoginLogo(fullLogoUrl);
+        } else {
+          console.log("❌ No valid login_logo_url found, keeping default logo");
+        }
+      } catch (err) {
+        console.error("❌ Error fetching company login images:", err);
+        // Keep default images on error
+      }
+    };
+
+    fetchCompanyImages();
+  }, []);
+
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // const res = await loginApi(data);
-      // setLoading(false);
+      const res = await loginApi(data);
+      console.log("Login response:", res);
+      setLoading(false);
 
-      // if (res.success) {
-      localStorage.setItem("accessToken", "9090808")
+      if (res.success) {
         toast.success("Login successful");
         navigate("/dashboard");
-      // } else {
-      //   toast.error(res.message || "Login failed");
-      // }
+      } else {
+        const errorMessage = res.message || res.error || "Login failed. Please check your email and password.";
+        toast.error(errorMessage);
+        console.error("Login failed:", res);
+      }
     } catch (err) {
       setLoading(false);
-      toast.error("Login failed");
-      console.error(err);
+      const errorMessage = err?.response?.data?.error || err?.message || "Login failed. Please try again.";
+      toast.error(errorMessage);
+      console.error("Login error:", err);
     }
   };
 
@@ -51,11 +146,21 @@ const Login = () => {
       {/* ================= LEFT SIDE ================= */}
       <div className="w-1/2 bg-primary text-white flex flex-col items-center justify-center p-10">
         <img
-          src={Images.loginLeft}
+          src={loginImage}
           alt="Illustration"
           className="w-75 h-70 object-contain mb-10"
+          onError={(e) => {
+            // Fallback to default image if backend image fails to load
+            e.target.src = Images.loginLeft;
+          }}
         />
-        <h2 className="text-3xl font-semibold mb-4">Syn<span className="text-5xl">Q</span>uot</h2>
+        <h2 className="text-3xl font-semibold mb-4">
+          {brandName ? (
+            brandName
+          ) : (
+            <>Syn<span className="text-5xl">Q</span>uot</>
+          )}
+        </h2>
         <p className="text-center text-md font-medium">
           Smart Quotes, Made Simple.
         </p>
@@ -65,7 +170,15 @@ const Login = () => {
       <div className="w-1/2 flex items-center justify-center bg-bgColor p-10">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
           <div className="flex justify-center mb-6">
-            <img src={Images.fullLogo} alt="Logo" className="w-86.5 h-25" />
+            <img 
+              src={loginLogo} 
+              alt="Logo" 
+              className="w-86.5 h-25"
+              onError={(e) => {
+                // Fallback to default logo if backend logo fails to load
+                e.target.src = Images.fullLogo;
+              }}
+            />
           </div>
 
           <h2 className="text-center text-textPrimary text-2xl font-semibold mb-6">Welcome !</h2>

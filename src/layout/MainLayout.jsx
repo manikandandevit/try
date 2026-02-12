@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import {
@@ -6,12 +6,36 @@ import {
   SIDEBAR_MINI_WIDTH,
   TOPBAR_HEIGHT,
 } from "../common/constants";
+import { getCompanyLoginApi } from "../API/authApi";
 
 const MainLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarMini, setSidebarMini] = useState(false);
 
   const sidebarWidth = sidebarMini ? SIDEBAR_MINI_WIDTH : SIDEBAR_WIDTH;
+
+  // Set document title based on brand name
+  useEffect(() => {
+    const fetchBrandName = async () => {
+      try {
+        const res = await getCompanyLoginApi();
+        const responseData = res?.data || res || {};
+        const brandNameValue = responseData.brand_name;
+        
+        // Update document title
+        const titleText = brandNameValue && brandNameValue.trim() 
+          ? brandNameValue.trim() 
+          : "SynQuot";
+        document.title = titleText;
+      } catch (err) {
+        console.error("Error fetching brand name for title:", err);
+        // Set default title on error
+        document.title = "SynQuot";
+      }
+    };
+
+    fetchBrandName();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-bgColor">

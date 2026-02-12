@@ -1,7 +1,7 @@
 import { Images } from "../../common/assets";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { VerifyTokenApi, resetPasswordApi } from "../../API/authApi";
+import { VerifyTokenApi, resetPasswordApi, getCompanyLoginApi } from "../../API/authApi";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,6 +43,28 @@ const ResetPassword = () => {
     }
     verifyToken();
   }, [token]);
+
+  // Set document title based on brand name
+  useEffect(() => {
+    const fetchBrandName = async () => {
+      try {
+        const res = await getCompanyLoginApi();
+        const responseData = res?.data || res || {};
+        const brandNameValue = responseData.brand_name;
+        
+        // Update document title
+        const titleText = brandNameValue && brandNameValue.trim() 
+          ? brandNameValue.trim() 
+          : "SynQuot";
+        document.title = titleText;
+      } catch (err) {
+        console.error("Error fetching brand name for title:", err);
+        document.title = "SynQuot";
+      }
+    };
+
+    fetchBrandName();
+  }, []);
 
   const verifyToken = async () => {
     try {
