@@ -281,7 +281,7 @@ const Customers = () => {
                             <span className="font-semibold">
                                 {confirmPopup.status ? "Deactivate" : "Activate"}
                             </span>{" "}
-                            this user?
+                            this customer?
                         </p>
 
                         <div className="flex justify-end gap-3">
