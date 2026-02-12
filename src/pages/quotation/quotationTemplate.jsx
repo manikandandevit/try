@@ -80,8 +80,7 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
     const gstAmount = quotation?.gst_amount || (subtotal * charges.gstPercent) / 100;
     const total = quotation?.grand_total || subtotal + charges.shipping + gstAmount;
 
-    // Generate quotation number and date
-    const quotationNo = quotation?.quotation_number || `QUO${Date.now().toString().slice(-6)}`;
+    // Get date
     const date = quotation?.date || new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -92,7 +91,7 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
       company,
       quotationInfo: {
         date,
-        quotationNo,
+        quotationNumber: quotation?.quotation_number || "",
       },
       quotationBy: companyDetails ? {
         name: companyDetails.company_name || "",
@@ -181,6 +180,7 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
 
           {/* RIGHT SIDE */}
           <div className="text-right">
+<<<<<<< HEAD
             <p className="text-sm">{quotationInfo.date}</p>
             <p className="font-semibold text-base mt-1">
               Quotation No
@@ -188,6 +188,14 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
             <p className="text-primary font-bold">
               {quotationInfo.quotationNo}
             </p>
+=======
+            {quotationInfo.quotationNumber && (
+              <p className="font-semibold text-base mb-2 text-textPrimary">
+                Quotation #: {quotationInfo.quotationNumber}
+              </p>
+            )}
+            <p className="font-normal text-sm mb-1">{quotationInfo.date}</p>
+>>>>>>> 85f6ed14ec0249dbacaa8834f4aee399f8bed92b
           </div>
 
         </div>
