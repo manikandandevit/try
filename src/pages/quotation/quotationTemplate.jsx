@@ -63,6 +63,7 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
       item: service.service_name || "Service",
       qty: service.quantity || 0,
       rate: service.unit_price || service.price || service.unit_rate || 0,
+      key_features: service.key_features || [],
     }));
 
     // Get charges from quotation
@@ -289,12 +290,33 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
               </div>
             </div>
 
+            {/* ===== KEY FEATURES SUMMARY (ONE LINE PER SERVICE) ===== */}
+            {items.some(item => item.key_features && item.key_features.some(f => f && f.trim())) && (
+              <div className="mt-6 border-t border-lineColor pt-4">
+                <h4 className="text-sm font-semibold text-textPrimary mb-2">
+                  Key Features
+                </h4>
+                <div className="space-y-1 text-xs text-gray-700">
+                  {items.map((item, index) => {
+                    const features = (item.key_features || []).filter(f => f && f.trim());
+                    if (features.length === 0) return null;
+                    return (
+                      <p key={index}>
+                        <span className="font-semibold">{item.item}:</span>{" "}
+                        {features.join(", ")}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
           </div>
         </>
       )}
 
       {/* ===== FOOTER ===== */}
-      <div className="p-6 bg-[#DEDFE6] text-center">
+      <div className="quotation-footer p-6 bg-[#DEDFE6] text-center">
         <img 
           src={footer.logo} 
           alt="footer logo" 

@@ -12,16 +12,12 @@ const ShareButton = ({ selectedCustomer }) => {
     
     setIsDownloading(true);
     try {
-      console.log("Starting PDF download...");
       const element = document.getElementById("quotation-preview");
       if (!element) {
         alert("Quotation preview not found. Please ensure the quotation is visible.");
-        console.error("Quotation preview element not found");
         return;
       }
 
-      console.log("Element found, capturing...");
-      
       // Find the actual quotation content (the white card inside) - this contains header, content, and footer
       const quotationContent = element.querySelector('.bg-white.shadow.rounded-xl') || element;
       
@@ -37,11 +33,12 @@ const ShareButton = ({ selectedCustomer }) => {
       element.scrollTop = 0;
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // Get footer element (for separate capture, so we can pin it to bottom of each PDF page)
+      const footerElement = quotationContent.querySelector('.quotation-footer');
+
       // Get the full height of the quotation (header + content + footer)
       const fullHeight = quotationContent.scrollHeight || quotationContent.offsetHeight;
       const fullWidth = quotationContent.scrollWidth || quotationContent.offsetWidth;
-
-      console.log("Quotation dimensions:", { width: fullWidth, height: fullHeight });
 
       // Create a deep clone of the element to convert oklch colors
       const clone = quotationContent.cloneNode(true);
@@ -54,6 +51,15 @@ const ShareButton = ({ selectedCustomer }) => {
       clone.style.visibility = 'visible'; // Make it visible for capture
       clone.style.opacity = '1';
       clone.style.overflow = 'visible'; // Ensure all content is visible
+
+      // In the cloned content, hide the footer so that the main canvas only contains
+      // header + body. We'll capture the footer separately and draw it at the bottom
+      // of every PDF page, so it always sits at the page bottom.
+      const clonedFooter = clone.querySelector('.quotation-footer');
+      if (clonedFooter) {
+        clonedFooter.style.display = 'none';
+      }
+
       document.body.appendChild(clone);
 
       // Convert all modern color formats (oklch, oklab, etc.) to RGB
@@ -164,7 +170,7 @@ const ShareButton = ({ selectedCustomer }) => {
       // Wait a bit more for clone to render
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Create canvas from the clone - capture full height including header and footer
+      // Create canvas from the clone - capture full height (header + content, without footer)
       const canvas = await html2canvas(clone, {
         scale: 2,
         useCORS: true,
@@ -183,10 +189,43 @@ const ShareButton = ({ selectedCustomer }) => {
       // Remove the clone
       document.body.removeChild(clone);
 
-      console.log("Canvas created, generating PDF...");
-      console.log("Canvas dimensions:", { width: canvas.width, height: canvas.height });
-      
       const imgData = canvas.toDataURL("image/png", 1.0);
+
+      // Capture the footer as a separate image so we can place it at the bottom
+      // of every PDF page (or at least the last page).
+      let footerImgData = null;
+      let footerCanvas = null;
+
+      if (footerElement) {
+        const footerClone = footerElement.cloneNode(true);
+        footerClone.style.position = 'absolute';
+        footerClone.style.left = '-9999px';
+        footerClone.style.top = '0';
+        footerClone.style.visibility = 'visible';
+        footerClone.style.opacity = '1';
+        document.body.appendChild(footerClone);
+
+        try {
+          // Optional: normalize colors inside footer as well
+          convertColorsToRgb(footerClone);
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          footerCanvas = await html2canvas(footerClone, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
+            logging: false,
+            backgroundColor: '#ffffff',
+          });
+          footerImgData = footerCanvas.toDataURL("image/png", 1.0);
+        } catch (e) {
+          // If footer capture fails, we simply skip footer image; PDF will still be generated.
+          footerImgData = null;
+          footerCanvas = null;
+        } finally {
+          document.body.removeChild(footerClone);
+        }
+      }
       
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -196,51 +235,99 @@ const ShareButton = ({ selectedCustomer }) => {
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       const imgAspectRatio = imgHeight / imgWidth;
-      const pdfAspectRatio = pdfHeight / pdfWidth;
-      
-      let imgWidthInMM, imgHeightInMM;
-      
-      // Fit to page width, maintain aspect ratio
-      imgWidthInMM = pdfWidth - 10; // 5mm margin on each side
-      imgHeightInMM = imgWidthInMM * imgAspectRatio;
-      
-      const xOffset = 5; // 5mm left margin
-      let yOffset = 5; // Start with 5mm top margin
 
-      // If content fits in one page
-      if (imgHeightInMM <= pdfHeight - 10) {
+      const marginX = 5; // left/right margin
+      const marginTop = 5;
+      const marginBottom = 5;
+
+      // Fit to page width, maintain aspect ratio
+      const imgWidthInMM = pdfWidth - marginX * 2;
+      const scaleFactor = imgWidthInMM / imgWidth;
+      let imgHeightInMM = imgWidthInMM * imgAspectRatio;
+
+      // Footer height (in mm) based on captured footer image
+      let footerHeightInMM = 0;
+      if (footerCanvas && footerImgData) {
+        footerHeightInMM = footerCanvas.height * scaleFactor / 1; // height(px) * (mm/px)
+      }
+
+      // Available content height per page after reserving space for footer
+      const availableContentHeightPerPage = pdfHeight - marginTop - marginBottom - footerHeightInMM;
+
+      const xOffset = marginX;
+
+      // If content fits in one page (with room for footer)
+      if (imgHeightInMM <= availableContentHeightPerPage) {
+        const yOffset = marginTop;
         pdf.addImage(imgData, "PNG", xOffset, yOffset, imgWidthInMM, imgHeightInMM);
+
+        // Draw footer at the bottom of the page
+        if (footerImgData && footerHeightInMM > 0) {
+          const footerY = pdfHeight - marginBottom - footerHeightInMM;
+          pdf.addImage(
+            footerImgData,
+            "PNG",
+            xOffset,
+            footerY,
+            imgWidthInMM,
+            footerHeightInMM
+          );
+        }
       } else {
         // Split across multiple pages
-        let sourceY = 0;
-        let remainingHeight = imgHeightInMM;
-        let pageAdded = false;
+        let remainingHeightMM = imgHeightInMM;
+        let sourceYpx = 0;
+        const imgHeightMMTotal = imgHeightInMM; // for ratio
 
-        while (remainingHeight > 0) {
-          if (pageAdded) {
+        while (remainingHeightMM > 0) {
+          const isFirstPage = sourceYpx === 0;
+
+          if (!isFirstPage) {
             pdf.addPage();
-            yOffset = 5; // Reset to top for new page
           }
 
-          const availableHeight = pdfHeight - 10; // 5mm margin top and bottom
-          const heightToAdd = Math.min(remainingHeight, availableHeight);
-          
-          // Calculate source crop for this page
-          const sourceHeight = (heightToAdd / imgHeightInMM) * imgHeight;
-          
+          const heightThisPageMM = Math.min(remainingHeightMM, availableContentHeightPerPage);
+
+          // Calculate corresponding source height in pixels
+          const sourceHeightPx = (heightThisPageMM / imgHeightMMTotal) * imgHeight;
+
           // Create a temporary canvas for this page section
           const pageCanvas = document.createElement('canvas');
           pageCanvas.width = imgWidth;
-          pageCanvas.height = sourceHeight;
+          pageCanvas.height = sourceHeightPx;
           const ctx = pageCanvas.getContext('2d');
-          ctx.drawImage(canvas, 0, sourceY, imgWidth, sourceHeight, 0, 0, imgWidth, sourceHeight);
-          
+          ctx.drawImage(
+            canvas,
+            0,
+            sourceYpx,
+            imgWidth,
+            sourceHeightPx,
+            0,
+            0,
+            imgWidth,
+            sourceHeightPx
+          );
+
           const pageImgData = pageCanvas.toDataURL("image/png", 1.0);
-          pdf.addImage(pageImgData, "PNG", xOffset, yOffset, imgWidthInMM, heightToAdd);
-          
-          sourceY += sourceHeight;
-          remainingHeight -= heightToAdd;
-          pageAdded = true;
+          const yOffset = marginTop;
+
+          pdf.addImage(pageImgData, "PNG", xOffset, yOffset, imgWidthInMM, heightThisPageMM);
+
+          // Draw footer at the bottom of this page
+          if (footerImgData && footerHeightInMM > 0) {
+            const footerY = pdfHeight - marginBottom - footerHeightInMM;
+            pdf.addImage(
+              footerImgData,
+              "PNG",
+              xOffset,
+              footerY,
+              imgWidthInMM,
+              footerHeightInMM
+            );
+          }
+
+          sourceYpx += sourceHeightPx;
+          remainingHeightMM -= heightThisPageMM;
         }
       }
 
