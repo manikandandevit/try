@@ -180,22 +180,12 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
 
           {/* RIGHT SIDE */}
           <div className="text-right">
-<<<<<<< HEAD
-            <p className="text-sm">{quotationInfo.date}</p>
-            <p className="font-semibold text-base mt-1">
-              Quotation No
-            </p>
-            <p className="text-primary font-bold">
-              {quotationInfo.quotationNo}
-            </p>
-=======
             {quotationInfo.quotationNumber && (
               <p className="font-semibold text-base mb-2 text-textPrimary">
                 Quotation #: {quotationInfo.quotationNumber}
               </p>
             )}
             <p className="font-normal text-sm mb-1">{quotationInfo.date}</p>
->>>>>>> 85f6ed14ec0249dbacaa8834f4aee399f8bed92b
           </div>
 
         </div>
