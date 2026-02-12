@@ -79,7 +79,7 @@ const TemplateDropdown = ({ onCustomerSelect, selectedCustomer }) => {
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between rounded-full px-5 py-2 cursor-pointer bg-primary text-white"
       >
-        <span className="text-sm font-medium truncate max-w-[180px]">
+        <span className="text-sm font-medium truncate max-w-45">
           {selected}
         </span>
         <ChevronDown size={18} className="shrink-0" />
@@ -87,7 +87,7 @@ const TemplateDropdown = ({ onCustomerSelect, selectedCustomer }) => {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg z-50 p-2 min-w-[250px]">
+        <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg z-50 p-2 min-w-62.5">
           {/* Search */}
           <input
             type="text"

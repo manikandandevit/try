@@ -65,20 +65,20 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
         <div>
           <h2 className="text-lg text-textPrimary font-bold">Preview</h2>
           <p className="text-base font-normal text-textSecondary">
-           Quotation Preview
+            Quotation Preview
           </p>
         </div>
 
         <div className="flex items-right gap-4">
-          <TemplateDropdown 
+          <TemplateDropdown
             onCustomerSelect={handleCustomerSelect}
             selectedCustomer={selectedCustomer}
           />
 
-          <ShareButton selectedCustomer={selectedCustomer} />
+          <ShareButton selectedCustomer={selectedCustomer}  />
 
-           <button className="p-1 bg-[#F7BA1E] text-primary rounded-full">
-            <FileText size={14} className="w-5 h-5"/>
+          <button className="p-1 bg-[#F7BA1E] text-primary rounded-full shrink-0">
+            <FileText size={14} className="w-5 h-5" />
           </button>
 
           <button className="p-1 bg-primary text-white rounded-full shrink-0">
@@ -92,12 +92,26 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
         id="quotation-preview"
         className="flex-1 mt-2 overflow-y-auto hide-scrollbar bg-white rounded-xl"
       >
-        <QuotationTemplate 
-          quotation={quotation} 
-          companyDetails={companyDetails}
-          loading={loading}
-          selectedCustomer={selectedCustomer}
-        />
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-gray-400">Loading...</p>
+          </div>
+        ) : quotation ? (
+          <QuotationTemplate
+            quotation={quotation}
+            companyDetails={companyDetails}
+            loading={loading}
+            selectedCustomer={selectedCustomer}
+          />
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <FileText size={50} className="mb-4 opacity-30" />
+            <p className="text-lg font-medium">No Quotation Generated</p>
+            <p className="text-sm mt-1">
+              Ask AI to generate a quotation to preview it here.
+            </p>
+          </div>
+        )}
       </div>
 
     </div>
