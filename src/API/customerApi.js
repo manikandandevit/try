@@ -108,3 +108,14 @@ export const updateCustomerStatusApi = async (id, isActive, currentCustomerData 
   }
 };
 
+// GET CUSTOMER QUOTATIONS
+export const getCustomerQuotationsApi = async (customerId) => {
+  try {
+    const response = await API.get(`/clients/${customerId}/quotations/`);
+    const res = handleSuccess(response);
+    return res;
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
