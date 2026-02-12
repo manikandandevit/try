@@ -22,31 +22,42 @@ const Setting = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <div className="flex gap-6"> {/* ✅ GAP ADDED */}
+      <div className="flex gap-6">
 
         {/* LEFT SIDE */}
-        <div className="w-64 bg-white rounded-2xl shadow p-6 space-y-4">
-          <button
-            onClick={() => setActiveTab("view")}
-            className={`w-full py-2 rounded-lg text-sm font-medium ${
-              activeTab === "view"
-                ? "bg-primary text-white"
-                : "border"
-            }`}
-          >
-            View Settings
-          </button>
+        <div className="w-64 bg-white rounded-2xl shadow p-6">
 
-          <button
-            onClick={() => setActiveTab("edit")}
-            className={`w-full py-2 rounded-lg text-sm font-medium ${
-              activeTab === "edit"
-                ? "bg-primary text-white"
-                : "border"
-            }`}
-          >
-            Edit Settings
-          </button>
+          {/* Common Title */}
+          <h2 className="text-xl font-semibold mb-6 border-b border-borderColor pb-3">
+            Settings
+          </h2>
+
+          {/* Menu List */}
+          <div className="space-y-2">
+
+            <button
+              onClick={() => setActiveTab("view")}
+              className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === "view"
+                  ? "bg-primary text-white"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
+            >
+              View Settings
+            </button>
+
+            <button
+              onClick={() => setActiveTab("edit")}
+              className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === "edit"
+                  ? "bg-primary text-white"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
+            >
+              Edit Settings
+            </button>
+
+          </div>
         </div>
 
         {/* RIGHT SIDE */}

@@ -79,12 +79,12 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
         {/* RIGHT SIDE */}
         <div className="ml-auto flex items-center gap-4 md:gap-6">
           {/* TOKEN VIEW TOGGLE */}
-          <button
+          {/* <button
             onClick={() => setShowTokens(!showTokens)}
             className="px-3 py-1 text-sm bg-white/20 hover:bg-white/30 rounded-md text-white transition"
           >
             {showTokens ? "Hide Tokens" : "Show Tokens"}
-          </button>
+          </button> */}
 
           {/* NOTIFICATION */}
           <div className="relative cursor-pointer" 

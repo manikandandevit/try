@@ -15,6 +15,7 @@ const Customers = () => {
             email: "arun@technova.com",
             address: "Chennai, Tamil Nadu",
             gst: "33ABCDE1234F1Z5",
+            totalQuote: "25",
             active: true,
         },
     ]);
@@ -91,6 +92,10 @@ const Customers = () => {
         {
             name: "Address",
             selector: (row) => row.address,
+        },
+         {
+            name: "Total Quotation",
+            selector: (row) => row.totalQuote,
         },
         {
             name: "Action",
