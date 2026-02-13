@@ -241,7 +241,7 @@ const DashboardCharts = () => {
             <div key={index} className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span
-                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                   style={{ backgroundColor: item.color }}
                 ></span>
                 <span className="text-gray-600 truncate">{item.name}</span>
