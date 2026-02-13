@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Images } from "../../common/assets";
 import QuotationTemplate from "./quotationTemplate";
 import TemplateDropdown from "./searchCustomer";
 import ShareButton from "./share";
 import { getCompanyDetails } from "../../API/companyApi";
-import { FileText, Sparkles } from "lucide-react";
+import { FileText, Sparkles, ArrowLeft } from "lucide-react";
 import { enhanceQuotation } from "../../API/quotationApi";
 
 // Map quotation_to format to selectedCustomer format
@@ -20,6 +21,7 @@ const mapQuotationToToCustomer = (quotationTo) => {
 };
 
 const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fromCustomerView, conversationHistory, quotationId }) => {
+  const navigate = useNavigate();
   const [companyDetails, setCompanyDetails] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [transformedData, setTransformedData] = useState(null);
@@ -233,11 +235,22 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
 
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-white to-gray-50 rounded-xl shadow-md border border-lineColor/30 px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-3">
-        <div>
-          <h2 className="text-lg sm:text-xl text-textPrimary font-bold tracking-tight">Preview</h2>
-          <p className="text-sm sm:text-base font-medium text-textSecondary mt-0.5">
-            Quotation Preview
-          </p>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {fromCustomerView && initialCustomer?.id && (
+            <button
+              onClick={() => navigate(`/customer/quote/${initialCustomer.id}`)}
+              className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition"
+              title="Back to Customer Quotations"
+            >
+              <ArrowLeft size={18} className="sm:w-5 sm:h-5 text-textPrimary" />
+            </button>
+          )}
+          <div>
+            <h2 className="text-lg sm:text-xl text-textPrimary font-bold tracking-tight">Preview</h2>
+            <p className="text-sm sm:text-base font-medium text-textSecondary mt-0.5">
+              Quotation Preview
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">

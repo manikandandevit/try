@@ -72,6 +72,7 @@ const Users = () => {
             if (mode === "add") {
                 response = await addUserApi({
                     name: formData.name,
+                    username: formData.username || undefined,
                     email: formData.email,
                     phone: formData.phone,
                     password: formData.password,
@@ -80,6 +81,7 @@ const Users = () => {
             } else {
                 response = await updateUserApi(formData.id, {
                     name: formData.name,
+                    username: formData.username || undefined,
                     email: formData.email,
                     phone: formData.phone,
                     password: formData.password || undefined,
@@ -126,6 +128,10 @@ const Users = () => {
             selector: (row) => row.name,
         },
         {
+            name: "Username",
+            selector: (row) => row.username || "-",
+        },
+        {
             name: "Email",
             selector: (row) => row.email,
         },
@@ -135,7 +141,69 @@ const Users = () => {
         },
         {
             name: "Created By",
-            selector: (row) => row.created_by || "-",
+            cell: (row) => {
+                const formatDate = (dateString) => {
+                    if (!dateString) return "";
+                    try {
+                        const date = new Date(dateString);
+                        return date.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                        });
+                    } catch (error) {
+                        return "";
+                    }
+                };
+
+                const createdBy = row.created_by || "-";
+                const createdAt = row.created_at ? formatDate(row.created_at) : "";
+
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-textPrimary font-medium">{createdBy}</span>
+                        {createdAt && (
+                            <span className="text-xs text-textSecondary mt-0.5">{createdAt}</span>
+                        )}
+                    </div>
+                );
+            },
+        },
+        {
+            name: "Updated By",
+            cell: (row) => {
+                const formatDate = (dateString) => {
+                    if (!dateString) return "";
+                    try {
+                        const date = new Date(dateString);
+                        return date.toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                        });
+                    } catch (error) {
+                        return "";
+                    }
+                };
+
+                const updatedBy = row.updated_by || "-";
+                const updatedAt = row.updated_at ? formatDate(row.updated_at) : "";
+
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-textPrimary font-medium">{updatedBy}</span>
+                        {updatedAt && updatedBy !== "-" && (
+                            <span className="text-xs text-textSecondary mt-0.5">{updatedAt}</span>
+                        )}
+                    </div>
+                );
+            },
         },
         {
             name: "Status",

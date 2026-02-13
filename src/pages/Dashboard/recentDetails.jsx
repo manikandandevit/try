@@ -5,6 +5,14 @@ const RecentDetails = () => {
     const [customersData, setCustomersData] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+        }).format(value || 0);
+    };
+
     useEffect(() => {
         const fetchCustomers = async () => {
             setLoading(true);
@@ -47,7 +55,7 @@ const RecentDetails = () => {
     return (
         <div className="w-full bg-white border border-lineColor rounded-lg sm:rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[600px]">
+                <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[800px]">
                     <thead className="text-gray-600 bg-[#DFEFFF] border-b border-gray-200">
                         <tr>
                             <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-semibold text-xs sm:text-sm">S. No</th>
@@ -56,6 +64,7 @@ const RecentDetails = () => {
                             <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-semibold text-xs sm:text-sm hidden md:table-cell">Email</th>
                             <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-semibold text-xs sm:text-sm">Phone</th>
                             <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-semibold text-xs sm:text-sm">Quotation</th>
+                            <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-semibold text-xs sm:text-sm">Submitted Value</th>
                             <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-semibold text-xs sm:text-sm">Status</th>
                         </tr>
                     </thead>
@@ -73,6 +82,9 @@ const RecentDetails = () => {
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 hidden md:table-cell break-words">{item.email}</td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">{item.phone}</td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">{item.totalQuotation}</td>
+                                <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-medium text-gray-800">
+                                    {formatCurrency(item.submittedValue || item.submitted_value || 0)}
+                                </td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">
                                     <span
                                         className={`px-2 sm:px-3 py-1 rounded-md text-[10px] sm:text-xs font-medium ${

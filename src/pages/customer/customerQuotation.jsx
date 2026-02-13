@@ -64,7 +64,22 @@ const CustomerQuotation = () => {
                 }
                 setQuotations((prev) => [newQuotation, ...prev]);
                 toast.success("Quotation created");
-                // Stay on same page (customer quotation list)
+                // Navigate to quotation tab with the quotation number
+                if (newQuotation.id) {
+                    navigate(`/quotation/${newQuotation.id}`, {
+                        state: {
+                            fromCustomerView: true,
+                            customer: client ? {
+                                id: client.id,
+                                customer_name: client.customer_name || customerName,
+                                email: client.email || "",
+                                address: client.address || "",
+                                phone_number: client.phone_number || "",
+                            } : null,
+                            quotNo: newQuotation.quotation_number,
+                        },
+                    });
+                }
             } else {
                 toast.error(response.message || "Failed to create quotation");
             }
@@ -129,6 +144,23 @@ const CustomerQuotation = () => {
         }
     };
 
+    const formatDateTime = (dateString) => {
+        if (!dateString) return "";
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+            });
+        } catch (error) {
+            return "";
+        }
+    };
+
     const columns = [
         {
             name: "S.No",
@@ -181,6 +213,38 @@ const CustomerQuotation = () => {
                 );
             },
             center: true,
+        },
+        {
+            name: "Created By",
+            cell: (row) => {
+                const createdBy = row.created_by || row.user_name || "-";
+                const createdAt = row.created_at ? formatDateTime(row.created_at) : "";
+
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-textPrimary font-medium">{createdBy}</span>
+                        {createdAt && (
+                            <span className="text-xs text-textSecondary mt-0.5">{createdAt}</span>
+                        )}
+                    </div>
+                );
+            },
+        },
+        {
+            name: "Updated By",
+            cell: (row) => {
+                const updatedBy = row.updated_by || row.user_name || "-";
+                const updatedAt = row.updated_at ? formatDateTime(row.updated_at) : "";
+
+                return (
+                    <div className="flex flex-col">
+                        <span className="text-textPrimary font-medium">{updatedBy}</span>
+                        {updatedAt && updatedBy !== "-" && (
+                            <span className="text-xs text-textSecondary mt-0.5">{updatedAt}</span>
+                        )}
+                    </div>
+                );
+            },
         },
         {
             name: "Action",
