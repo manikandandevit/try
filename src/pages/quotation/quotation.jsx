@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import ConversationPanel from "./conversation";
 import QuotationPanel from "./quotationPanle";
 import { getQuotation, getQuotationById, getConversationHistory, syncQuotation, getLastQuotationId } from "../../API/quotationApi";
@@ -11,7 +12,7 @@ const Quotation = () => {
     const [quotation, setQuotationState] = useState(null);
     const [conversationHistory, setConversationHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Undo/Redo history
     const [quotationHistory, setQuotationHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
@@ -36,7 +37,7 @@ const Quotation = () => {
             } else {
                 finalQuotation = newQuotation;
             }
-            
+
             // Add to history if not an undo/redo operation
             if (!isUndoRedoRef.current && prev && JSON.stringify(prev) !== JSON.stringify(finalQuotation)) {
                 setQuotationHistory((hist) => {
@@ -53,7 +54,7 @@ const Quotation = () => {
                     return newHist;
                 });
             }
-            
+
             return finalQuotation;
         });
     }, [historyIndex]);
@@ -133,7 +134,7 @@ const Quotation = () => {
     useEffect(() => {
         const flushSave = () => {
             const q = quotationRef.current;
-            if (q?.id) syncQuotation(q).catch(() => {});
+            if (q?.id) syncQuotation(q).catch(() => { });
         };
         const handleVisibilityChange = () => {
             if (document.visibilityState === "hidden") flushSave();
@@ -181,28 +182,49 @@ const Quotation = () => {
     const canRedo = historyIndex < quotationHistory.length - 1;
 
     return (
-        <div className="flex flex-col md:flex-row w-full h-auto gap-3">
-            <ConversationPanel 
-                conversationHistory={conversationHistory}
-                setConversationHistory={setConversationHistory}
-                setQuotation={setQuotation}
-                quotationId={quotationId || null}
-                onUndo={handleUndo}
-                onRedo={handleRedo}
-                canUndo={canUndo}
-                canRedo={canRedo}
-            />
-            <QuotationPanel 
-                quotation={quotation}
-                loading={loading}
-                setQuotation={setQuotation}
-                initialCustomer={location.state?.customer}
-                fromCustomerView={location.state?.fromCustomerView}
-                conversationHistory={conversationHistory}
-                quotationId={quotationId || null}
-            />
+        <div className="flex flex-col w-full h-auto gap-3">
+
+            {/* ✅ Top Header (Only when ID exists) */}
+            {quotationId && (
+                <div className="flex items-center gap-3 p-3">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center justify-center w-9 h-9 rounded hover:bg-gray-200 transition"
+                    >
+                        <ArrowLeft className="w-5 h-5 text-primary" />
+                    </button>
+
+                    <h2 className="text-primary text-lg font-semibold">
+                        Quotation Details
+                    </h2>
+                </div>
+            )}
+
+            {/* Existing Layout */}
+            <div className="flex flex-col md:flex-row w-full h-auto gap-3">
+                <ConversationPanel
+                    conversationHistory={conversationHistory}
+                    setConversationHistory={setConversationHistory}
+                    setQuotation={setQuotation}
+                    quotationId={quotationId || null}
+                    onUndo={handleUndo}
+                    onRedo={handleRedo}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                />
+                <QuotationPanel
+                    quotation={quotation}
+                    loading={loading}
+                    setQuotation={setQuotation}
+                    initialCustomer={location.state?.customer}
+                    fromCustomerView={location.state?.fromCustomerView}
+                    conversationHistory={conversationHistory}
+                    quotationId={quotationId || null}
+                />
+            </div>
         </div>
-    )
+
+    );
 };
 
 export default Quotation;

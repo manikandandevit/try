@@ -53,7 +53,6 @@ const CardSection = () => {
             icon: Images.totalQuote,
             bg: "bg-[#165DFF]",
             iconColor: "text-white",
-            path: "/quotation",
         },
         {
             title: "Total Customers",
@@ -61,7 +60,6 @@ const CardSection = () => {
             icon: Images.totalCust,
             bg: "bg-[#F7BA1E]",
             iconColor: "text-white",
-            path: "/customer",
         },
         {
             title: "Total Draft",
@@ -69,23 +67,20 @@ const CardSection = () => {
             icon: Images.totalQuote,
             bg: "bg-[#9CA3AF]",
             iconColor: "text-white",
-            path: "/quotation",
         },
         {
             title: "Total Submitted Value",
             value: loading ? "..." : formatCurrency(stats.totalSubmittedValue),
-            icon: Images.totalQuote,
+            icon: Images.dollar,
             bg: "bg-[#10B981]",
             iconColor: "text-white",
-            path: "/quotation",
         },
         {
             title: "Total Awarded Value",
             value: loading ? "..." : formatCurrency(stats.totalAwardedValue),
-            icon: Images.totalQuote,
+            icon: Images.dollar,
             bg: "bg-[#8B5CF6]",
             iconColor: "text-white",
-            path: "/quotation",
         },
     ];
 
@@ -112,7 +107,7 @@ const CardSection = () => {
                             </h2>
 
                             <div
-                                className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center ${item.bg} flex-shrink-0`}
+                                className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center ${item.bg} shrink-0`}
                             >
                                 <img
                                     src={item.icon}

@@ -209,7 +209,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShow(!show)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute right-4 top-11 -translate-y-1/2 text-gray-400"
               >
                 {show ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
