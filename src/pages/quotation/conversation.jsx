@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { CheckCheck, Send } from "lucide-react";
+import { CheckCheck, Send, Undo, Redo } from "lucide-react";
 import { Images } from "../../common/assets";
 import { sendChatMessage, syncConversationHistory } from "../../API/quotationApi";
 
@@ -55,7 +55,7 @@ const ChatMessage = ({ message }) => {
     );
 };
 
-const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuotation, quotationId }) => {
+const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuotation, quotationId, onUndo, onRedo, canUndo, canRedo }) => {
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
     const messagesEndRef = useRef(null);
@@ -182,9 +182,24 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
                     />
 
                     <div className="flex justify-between items-center">
-                        <button>
-                            <img src={Images.star} alt="star" className="w-6 h-6" />
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onUndo}
+                                disabled={!canUndo}
+                                className="p-2 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                title="Undo"
+                            >
+                                <Undo size={16} />
+                            </button>
+                            <button
+                                onClick={onRedo}
+                                disabled={!canRedo}
+                                className="p-2 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                title="Redo"
+                            >
+                                <Redo size={16} />
+                            </button>
+                        </div>
 
                         <button 
                             className="p-2 rounded-full bg-primary text-white disabled:opacity-50"

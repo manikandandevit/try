@@ -4,7 +4,8 @@ import QuotationTemplate from "./quotationTemplate";
 import TemplateDropdown from "./searchCustomer";
 import ShareButton from "./share";
 import { getCompanyDetails } from "../../API/companyApi";
-import { FileText } from "lucide-react";
+import { FileText, Sparkles } from "lucide-react";
+import { enhanceQuotation } from "../../API/quotationApi";
 
 // Map quotation_to format to selectedCustomer format
 const mapQuotationToToCustomer = (quotationTo) => {
@@ -18,10 +19,11 @@ const mapQuotationToToCustomer = (quotationTo) => {
   };
 };
 
-const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fromCustomerView }) => {
+const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fromCustomerView, conversationHistory, quotationId }) => {
   const [companyDetails, setCompanyDetails] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [transformedData, setTransformedData] = useState(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   // When coming from Customer Quotation list view: auto-set customer from initialCustomer or quotation.quotation_to
   useEffect(() => {
@@ -205,6 +207,27 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
   const hasCustomer = selectedCustomer !== null || (quotation?.quotation_to && quotation.quotation_to.name);
   const showFullContent = hasCustomer;
 
+  // Handle enhancement button click
+  const handleEnhanceQuotation = async () => {
+    if (!quotation || isEnhancing) return;
+    
+    setIsEnhancing(true);
+    try {
+      const response = await enhanceQuotation(quotationId || null);
+      if (response.success && response.data?.quotation) {
+        setQuotation(response.data.quotation);
+        // Show success message (you can add a toast notification here)
+        console.log("Quotation enhanced successfully!");
+      } else {
+        console.error("Enhancement failed:", response.message);
+      }
+    } catch (error) {
+      console.error("Error enhancing quotation:", error);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   return (
     <div className="w-3/5 h-screen flex flex-col bg-gray-100">
 
@@ -250,8 +273,17 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
             <FileText size={14} className="w-5 h-5" />
           </button>
 
-          <button className="p-1 bg-primary text-white rounded-full shrink-0">
-            <img src={Images.starIcon} alt="star" className="w-7 h-7" />
+          <button 
+            onClick={handleEnhanceQuotation}
+            disabled={!quotation || isEnhancing || !hasServices}
+            className="p-1 bg-primary text-white rounded-full shrink-0 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all relative"
+            title={isEnhancing ? "Enhancing..." : "AI Enhance Service Names"}
+          >
+            {isEnhancing ? (
+              <Sparkles size={20} className="animate-pulse" />
+            ) : (
+              <img src={Images.starIcon} alt="star" className="w-7 h-7" />
+            )}
           </button>
         </div>
       </div>
@@ -272,6 +304,7 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
             loading={loading}
             selectedCustomer={selectedCustomer}
             viewMode={fromCustomerView || (quotation?.id && quotation?.quotation_number)}
+            conversationHistory={conversationHistory}
           />
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-gray-400">

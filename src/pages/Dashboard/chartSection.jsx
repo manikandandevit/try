@@ -15,13 +15,16 @@ import { getDashboardStatsApi } from "../../API/customerApi";
 
 /* -------------------- PIE DATA FALLBACK (3 COLORS) -------------------- */
 const pieDataFallback = [
-  { name: "Email", value: 0, color: "#165DFF" },
-  { name: "WhatsApp", value: 0, color: "#14C9C9" },
+  { name: "Draft", value: 0, color: "#9CA3AF" },
+  { name: "Submitted", value: 0, color: "#165DFF" },
+  { name: "Awarded", value: 0, color: "#10B981" },
 ];
 
 const DashboardCharts = () => {
   const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1; // 1-12
   const [year, setYear] = useState(String(currentYear));
+  const [month, setMonth] = useState(String(currentMonth));
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState([]);
   const [pieData, setPieData] = useState(pieDataFallback);
@@ -29,9 +32,9 @@ const DashboardCharts = () => {
   const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getDashboardStatsApi(year);
+      const res = await getDashboardStatsApi(year, month);
       if (res.success && res.data) {
-        const { monthly_sends, send_breakdown } = res.data;
+        const { monthly_sends, status_breakdown } = res.data;
         if (monthly_sends && monthly_sends.length) {
           const barData = monthly_sends.map((d) => ({
             month: d.month?.charAt(0) + (d.month?.slice(1)?.toLowerCase() || ""),
@@ -41,11 +44,14 @@ const DashboardCharts = () => {
         } else {
           setMonthlyData([]);
         }
-        if (send_breakdown) {
+        if (status_breakdown) {
           setPieData([
-            { name: "Email", value: send_breakdown.email?.count ?? 0, color: "#165DFF" },
-            { name: "WhatsApp", value: send_breakdown.whatsapp?.count ?? 0, color: "#14C9C9" },
+            { name: "Draft", value: status_breakdown.draft ?? 0, color: "#9CA3AF" },
+            { name: "Submitted", value: status_breakdown.submitted ?? 0, color: "#165DFF" },
+            { name: "Awarded", value: status_breakdown.awarded ?? 0, color: "#10B981" },
           ]);
+        } else {
+          setPieData(pieDataFallback);
         }
       }
     } catch {
@@ -54,7 +60,7 @@ const DashboardCharts = () => {
     } finally {
       setLoading(false);
     }
-  }, [year]);
+  }, [year, month]);
 
   useEffect(() => {
     fetchStats();
@@ -148,11 +154,42 @@ const DashboardCharts = () => {
 
         <div>
           <h3 className="text-base font-semibold text-gray-800">
-            Send Method
+            Quotation Status
           </h3>
           <p className="text-sm text-gray-500 mt-1 mb-4">
-            Email vs WhatsApp
+            Draft, Submitted, Awarded
           </p>
+          
+          {/* Month and Year Selectors */}
+          <div className="flex gap-2 mb-4">
+            <select
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="border border-borderColor rounded-md px-2 py-1 text-sm focus:outline-none flex-1"
+            >
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            <select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="border border-borderColor rounded-md px-2 py-1 text-sm focus:outline-none flex-1"
+            >
+              {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
+                <option key={y} value={String(y)}>{y}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Full Pie Chart */}

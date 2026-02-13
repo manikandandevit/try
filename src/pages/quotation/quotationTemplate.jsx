@@ -2,7 +2,7 @@ import { quotationData } from "./quoteData";
 import { Images } from "../../common/assets";
 import { CONFIG } from "../../API/config";
 
-const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustomer, viewMode }) => {
+const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustomer, viewMode, conversationHistory }) => {
   // Construct media URL helper function
   const constructMediaUrl = (relativeUrl) => {
     if (!relativeUrl ||
@@ -140,8 +140,39 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
 
   // Show content: view mode = show when customer exists; else = show when services + customer
   const hasServices = items && items.length > 0 && items.some(item => item.item && item.qty > 0);
-  const hasCustomer = selectedCustomer !== null || (quotation?.quotation_to && quotation.quotation_to.name);
+  const hasCustomer = selectedCustomer !== null || (quotation?.quotation_to && quotation.quotation_to?.name);
   const showFullContent = viewMode ? hasCustomer : (hasServices && hasCustomer);
+  
+  // Check if chat has started - header and footer should only show AFTER chat starts
+  // Chat has started if there are conversation messages
+  const hasChatStarted = conversationHistory && Array.isArray(conversationHistory) && conversationHistory.length > 0;
+  
+  // Check if quotation is empty (new user scenario - no services and no customer)
+  // Hide header and footer when there's no meaningful content to display
+  // First check if services array from quotation is empty
+  const quotationServices = quotation?.services || [];
+  const hasQuotationServices = Array.isArray(quotationServices) && quotationServices.length > 0;
+  
+  // Check for valid services - must have items with actual values (not just "Service" placeholder)
+  const hasValidServices = hasQuotationServices && items && Array.isArray(items) && items.length > 0 && 
+    items.some(item => {
+      if (!item || !item.item) return false;
+      // Check if it's not just a placeholder "Service" text
+      const isPlaceholder = item.item === "Service" || item.item.trim() === "";
+      // Must have quantity > 0 or rate > 0, and not be a placeholder
+      return !isPlaceholder && (item.qty > 0 || item.rate > 0);
+    });
+  
+  // Check for valid customer - must have actual customer data
+  const hasValidCustomer = (selectedCustomer !== null && selectedCustomer.customer_name && selectedCustomer.customer_name.trim() !== '') || 
+    (quotation?.quotation_to && quotation.quotation_to?.name && quotation.quotation_to.name.trim() !== '');
+  
+  // Hide header and footer when:
+  // 1. NOT in viewMode (not viewing from customer tab) AND chat hasn't started yet (no conversation history), OR
+  // 2. NOT in viewMode AND no valid services AND no valid customer (empty quotation)
+  // When viewing from customer tab (viewMode=true), always show header and footer
+  // Initial preview should be completely empty until chat starts (only for new quotations)
+  const isEmptyQuotation = !viewMode && ((!hasChatStarted) || (!hasValidServices && !hasValidCustomer));
 
   return (
     <div
@@ -154,7 +185,8 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
       }}
     >
 
-      {/* ===== HEADER ===== */}
+      {/* ===== HEADER ===== - Hide when quotation is empty */}
+      {!isEmptyQuotation && (
       <div className="bg-[#DEDFE6] p-6">
 
         <div className="grid grid-cols-2 items-start">
@@ -190,6 +222,7 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
         </div>
 
       </div>
+      )}
 
 
       {/* ===== BILLING SECTION - Only show if customer is selected ===== */}
@@ -330,7 +363,8 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
       )}
 
 
-      {/* ===== FOOTER ===== */}
+      {/* ===== FOOTER ===== - Hide when quotation is empty */}
+      {!isEmptyQuotation && (
       <div
         className="p-6 bg-[#DEDFE6] text-center border-t border-lineColor"
         style={{
@@ -347,6 +381,7 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
         />
         <p className="text-primary text-sm">{footer.website}</p>
       </div>
+      )}
 
 
 
