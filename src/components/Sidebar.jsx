@@ -137,11 +137,11 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
         >
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {isSub ? (
-              <Dot size={16} className={`sm:w-5 sm:h-5 flex-shrink-0 ${isActive ? "text-primary" : "text-white"}`} />
+              <Dot size={16} className={`sm:w-5 sm:h-5 shrink-0 ${isActive ? "text-primary" : "text-white"}`} />
             ) : (
               <img
                 src={isActive && item.activeIcon ? item.activeIcon : item.icon}
-                className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                 alt={item.name}
               />
             )}
@@ -153,7 +153,7 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
           {!isMini && hasChildren && (
             <ChevronRight
               size={14}
-              className={`sm:w-4 sm:h-4 transition-transform flex-shrink-0 ${openIndex === index ? "rotate-90" : ""}`}
+              className={`sm:w-4 sm:h-4 transition-transform shrink-0 ${openIndex === index ? "rotate-90" : ""}`}
             />
           )}
         </button>
@@ -182,14 +182,14 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
 
       <aside
         className={`
-          fixed left-0 top-0 h-screen bg-gradient-to-b from-primary to-primary/95 z-50 transition-all duration-300 flex flex-col shadow-2xl
+          fixed left-0 top-0 h-screen bg-linear-to-b from-primary to-primary/95 z-50 transition-all duration-300 flex flex-col shadow-2xl
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
         style={{ width }}
       >
         {/* LOGO */}
-        <div className="h-16 sm:h-18 md:h-20 flex items-center justify-center relative border-b border-white/10">
+        <div className="h-16 sm:h-18 md:h-20 flex items-center justify-center relative">
           <img
             src={isMini ? quotationLogo : loginLogo}
             alt="Logo"
@@ -259,7 +259,7 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
         </div>
 
         {/* BOTTOM MENUS */}
-        <div className="py-2 sm:py-3 border-t border-white/10">
+        <div className="py-2 sm:py-3">
           {bottomMenus.map((item) => {
             const isActive = location.pathname === item.path;
 
@@ -281,7 +281,7 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
               >
                 <img
                   src={isActive ? item.activeIcon : item.icon}
-                  className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                  className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                   alt={item.name}
                 />
                 {!isMini && (
@@ -296,7 +296,7 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
             onClick={() => setShowLogoutPopup(true)}
             className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-md text-white/80 hover:bg-red-500/20 hover:text-white transition-all duration-200 text-sm sm:text-base font-medium"
           >
-            <img src={Images.logoutIcon} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" alt="Logout" />
+            <img src={Images.logoutIcon} className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" alt="Logout" />
             {!isMini && <span className="truncate text-xs sm:text-sm md:text-base">Logout</span>}
           </button>
         </div>
