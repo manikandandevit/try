@@ -236,9 +236,27 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
       {/* Top Bar */}
       <div className="bg-gradient-to-r from-white to-gray-50 rounded-xl shadow-md border border-lineColor/30 px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-3">
         <div className="flex items-center gap-2 sm:gap-3">
-          {fromCustomerView && initialCustomer?.id && (
+          {fromCustomerView && (
             <button
-              onClick={() => navigate(`/customer/quote/${initialCustomer.id}`)}
+              onClick={() => {
+                // Try multiple sources for customer ID
+                const customerId = 
+                  initialCustomer?.id || 
+                  selectedCustomer?.id || 
+                  quotation?.quotation_to?.id ||
+                  (() => {
+                    // Fallback to localStorage
+                    const storedId = localStorage.getItem("currentCustomerId");
+                    return storedId ? parseInt(storedId, 10) : null;
+                  })();
+                
+                if (customerId) {
+                  navigate(`/customer/quote/${customerId}`);
+                } else {
+                  // If no customer ID found, navigate to customer list
+                  navigate("/customer");
+                }
+              }}
               className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition"
               title="Back to Customer Quotations"
             >

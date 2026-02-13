@@ -26,7 +26,7 @@ const DashboardCharts = () => {
   const currentYear = new Date().getFullYear();
 
   /* -------------------- BAR FILTER -------------------- */
-  const [filterType, setFilterType] = useState("year");
+  const [filterType, setFilterType] = useState("week");
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   /* -------------------- PIE FILTER -------------------- */
@@ -47,16 +47,128 @@ const DashboardCharts = () => {
   const fetchBarStats = useCallback(async () => {
     setLoadingBar(true);
     try {
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth() + 1;
+      /* ===== WEEK ===== */
+      if (filterType === "week") {
+        // Format date as YYYY-MM-DD for API
+        const weekDateStr = selectedDate.toISOString().split('T')[0];
+        
+        // Fetch data with week_date parameter
+        const year = selectedDate.getFullYear();
+        const res = await getDashboardStatsApi(year, null, weekDateStr);
 
-      const res = await getDashboardStatsApi(year, month);
+        if (res.success && res.data) {
+          const { week_data } = res.data;
+          
+          if (week_data && week_data.length > 0) {
+            // Use week_data from API
+            const weekDays = week_data.map((d) => ({
+              label: d.day,
+              value: d.total ?? 0,
+            }));
+            setMonthlyData(weekDays);
+          } else {
+            // Fallback: Create week days structure
+            const selected = new Date(selectedDate);
+            const dayOfWeek = selected.getDay();
+            const start = new Date(selected);
+            start.setDate(selected.getDate() - dayOfWeek);
+            
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+              const d = new Date(start);
+              d.setDate(start.getDate() + i);
+              const dayName = d.toLocaleDateString("en-US", {
+                weekday: "short",
+              });
+              weekDays.push({
+                label: dayName,
+                value: 0,
+              });
+            }
+            setMonthlyData(weekDays);
+          }
+        } else {
+          setMonthlyData([]);
+        }
+      }
 
-      if (res.success && res.data) {
-        const { monthly_sends } = res.data;
+      /* ===== MONTH ===== */
+      if (filterType === "month") {
+        // Show weeks within the selected month
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth(); // 0-11
+        
+        // Calculate first and last day of the month
+        const firstDay = new Date(year, month, 1);
+        firstDay.setHours(0, 0, 0, 0);
+        const lastDay = new Date(year, month + 1, 0); // Last day of month
+        lastDay.setHours(23, 59, 59, 999);
+        
+        // Find the first Sunday of the month (or before if month doesn't start on Sunday)
+        const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 6 = Saturday
+        const weekStart = new Date(firstDay);
+        if (firstDayOfWeek !== 0) {
+          // Go back to the previous Sunday
+          weekStart.setDate(firstDay.getDate() - firstDayOfWeek);
+        }
+        weekStart.setHours(0, 0, 0, 0);
+        
+        // Calculate all weeks in the month
+        const weeks = [];
+        let currentWeekStart = new Date(weekStart);
+        let weekNumber = 1;
+        
+        while (currentWeekStart <= lastDay) {
+          const weekEnd = new Date(currentWeekStart);
+          weekEnd.setDate(currentWeekStart.getDate() + 6);
+          weekEnd.setHours(23, 59, 59, 999);
+          
+          // Only include weeks that overlap with the selected month
+          if (weekEnd >= firstDay && currentWeekStart <= lastDay) {
+            // Format week date for API (use the Sunday of this week)
+            const weekDateStr = currentWeekStart.toISOString().split('T')[0];
+            
+            // Fetch week data
+            const res = await getDashboardStatsApi(year, null, weekDateStr);
+            
+            if (res.success && res.data && res.data.week_data) {
+              // Only count quotations from days within the selected month
+              let weekTotal = 0;
+              res.data.week_data.forEach((dayData) => {
+                const dayDate = new Date(dayData.date);
+                if (dayDate >= firstDay && dayDate <= lastDay) {
+                  weekTotal += dayData.total ?? 0;
+                }
+              });
+              
+              weeks.push({
+                label: `Week ${weekNumber}`,
+                value: weekTotal,
+              });
+            } else {
+              weeks.push({
+                label: `Week ${weekNumber}`,
+                value: 0,
+              });
+            }
+            weekNumber++;
+          }
+          
+          // Move to next week (next Sunday)
+          currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+        }
+        
+        setMonthlyData(weeks);
+      }
 
-        /* ===== YEAR ===== */
-        if (filterType === "year") {
+      /* ===== YEAR ===== */
+      if (filterType === "year") {
+        // Show months within the selected year
+        const year = selectedDate.getFullYear();
+        const res = await getDashboardStatsApi(year, null);
+
+        if (res.success && res.data) {
+          const { monthly_sends } = res.data;
           const barData =
             monthly_sends?.map((d) => ({
               label:
@@ -66,43 +178,8 @@ const DashboardCharts = () => {
             })) || [];
 
           setMonthlyData(barData);
-        }
-
-        /* ===== WEEK ===== */
-        if (filterType === "week") {
-          const start = new Date(selectedDate);
-          start.setDate(start.getDate() - start.getDay());
-
-          const weekDays = Array.from({ length: 7 }, (_, i) => {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            return {
-              label: d.toLocaleDateString("en-US", {
-                weekday: "short",
-              }),
-              value: 0, // Replace with real API week data
-            };
-          });
-
-          setMonthlyData(weekDays);
-        }
-
-        /* ===== MONTH ===== */
-        if (filterType === "month") {
-          const y = selectedDate.getFullYear();
-          const m = selectedDate.getMonth();
-          const lastDay = new Date(y, m + 1, 0).getDate();
-          const totalWeeks = Math.ceil(lastDay / 7);
-
-          const weeks = [];
-          for (let i = 1; i <= totalWeeks; i++) {
-            weeks.push({
-              label: `Week ${i}`,
-              value: 0, // Replace with real API week grouping
-            });
-          }
-
-          setMonthlyData(weeks);
+        } else {
+          setMonthlyData([]);
         }
       }
     } catch {
@@ -110,7 +187,7 @@ const DashboardCharts = () => {
     } finally {
       setLoadingBar(false);
     }
-  }, [filterType, selectedDate]);
+  }, [filterType, selectedDate, currentYear]);
 
   /* =========================================================
      ================= PIE CHART FETCH ========================
@@ -196,9 +273,17 @@ const DashboardCharts = () => {
           <div className="flex gap-2">
             <select
               value={filterType}
-              onChange={(e) =>
-                setFilterType(e.target.value)
-              }
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                // Reset date based on filter type
+                if (e.target.value === "year") {
+                  setSelectedDate(new Date(currentYear, 0, 1));
+                } else if (e.target.value === "month") {
+                  setSelectedDate(new Date(currentYear, new Date().getMonth(), 1));
+                } else {
+                  setSelectedDate(new Date());
+                }
+              }}
               className="border border-borderColor rounded-md px-3 py-2 text-sm"
             >
               <option value="week">Week</option>
@@ -206,19 +291,34 @@ const DashboardCharts = () => {
               <option value="year">Year</option>
             </select>
 
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) =>
-                setSelectedDate(date)
-              }
-              showMonthYearPicker={
-                filterType === "month"
-              }
-              showYearPicker={
-                filterType === "year"
-              }
-              className="border border-borderColor rounded-md px-3 py-2 text-sm"
-            />
+            {filterType === "week" && (
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                dateFormat="dd/MM/yyyy"
+                className="border border-borderColor rounded-md px-3 py-2 text-sm"
+              />
+            )}
+
+            {filterType === "month" && (
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                showMonthYearPicker
+                dateFormat="MMM yyyy"
+                className="border border-borderColor rounded-md px-3 py-2 text-sm"
+              />
+            )}
+
+            {filterType === "year" && (
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                showYearPicker
+                dateFormat="yyyy"
+                className="border border-borderColor rounded-md px-3 py-2 text-sm"
+              />
+            )}
           </div>
         </div>
 

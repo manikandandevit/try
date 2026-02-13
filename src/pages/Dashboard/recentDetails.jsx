@@ -79,7 +79,19 @@ const RecentDetails = () => {
                                     {item.name}
                                 </td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 hidden sm:table-cell">{item.company}</td>
-                                <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 hidden md:table-cell break-words">{item.email}</td>
+                                <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 hidden md:table-cell">
+                                    <div className="relative group inline-block w-full">
+                                        <div className="break-words truncate max-w-full">
+                                            {item.email || "-"}
+                                        </div>
+                                        {item.email && item.email !== "-" && (
+                                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md whitespace-nowrap opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 shadow-lg">
+                                                {item.email}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">{item.phone}</td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4">{item.totalQuotation}</td>
                                 <td className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 font-medium text-gray-800">

@@ -3,7 +3,7 @@ import { Download, Share2 } from "lucide-react";
 import { FaWhatsapp, FaEnvelope } from "react-icons/fa";
 import html2pdf from "html2pdf.js";
 import { Images } from "../../common/assets";
-import { sendQuotationEmail, sendQuotationWhatsApp } from "../../API/quotationApi";
+import { sendQuotationEmail, sendQuotationWhatsApp, updateQuotationStatus } from "../../API/quotationApi";
 import toast from "../../common/toast";
 
 const ShareButton = ({
@@ -275,6 +275,26 @@ const ShareButton = ({
       };
       await html2pdf().set(opt).from(pdfContent).save();
       document.body.removeChild(pdfContent);
+      
+      // Update quotation status to "submitted" after successful download
+      if (quotation?.id) {
+        try {
+          const statusRes = await updateQuotationStatus(quotation.id, "submitted");
+          if (statusRes.success) {
+            // Update local state
+            if (setQuotation && quotation) {
+              setQuotation({ ...quotation, status: "submitted" });
+            }
+            toast.success("PDF downloaded! Status updated to Submitted.");
+          } else {
+            // PDF downloaded but status update failed - still show success for download
+            console.warn("Status update failed:", statusRes.message);
+          }
+        } catch (statusError) {
+          // PDF downloaded but status update failed - still show success for download
+          console.warn("Status update error:", statusError);
+        }
+      }
     } catch (error) {
       console.error("PDF Error:", error);
       alert("Error generating PDF: " + error.message);

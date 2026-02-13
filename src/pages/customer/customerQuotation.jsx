@@ -24,7 +24,12 @@ const CustomerQuotation = () => {
     const [creating, setCreating] = useState(false);
 
     const fetchQuotations = useCallback(async () => {
-        if (!customerId) return;
+        if (!customerId) {
+            setLoading(false);
+            toast.error("Customer ID is missing");
+            navigate("/customer");
+            return;
+        }
         setLoading(true);
         try {
             const response = await getCustomerQuotationsApi(customerId);
@@ -44,7 +49,7 @@ const CustomerQuotation = () => {
         } finally {
             setLoading(false);
         }
-    }, [customerId]);
+    }, [customerId, navigate]);
 
     useEffect(() => {
         fetchQuotations();
@@ -66,16 +71,21 @@ const CustomerQuotation = () => {
                 toast.success("Quotation created");
                 // Navigate to quotation tab with the quotation number
                 if (newQuotation.id) {
+                    const customerData = client ? {
+                        id: client.id,
+                        customer_name: client.customer_name || customerName,
+                        email: client.email || "",
+                        address: client.address || "",
+                        phone_number: client.phone_number || "",
+                    } : null;
+                    // Store customer ID in localStorage for back navigation
+                    if (customerData?.id) {
+                        localStorage.setItem("currentCustomerId", String(customerData.id));
+                    }
                     navigate(`/quotation/${newQuotation.id}`, {
                         state: {
                             fromCustomerView: true,
-                            customer: client ? {
-                                id: client.id,
-                                customer_name: client.customer_name || customerName,
-                                email: client.email || "",
-                                address: client.address || "",
-                                phone_number: client.phone_number || "",
-                            } : null,
+                            customer: customerData,
                             quotNo: newQuotation.quotation_number,
                         },
                     });
@@ -226,10 +236,23 @@ const CustomerQuotation = () => {
                 const createdAt = row.created_at ? formatDateTime(row.created_at) : "";
 
                 return (
-                    <div className="flex flex-col">
-                        <span className="text-textPrimary font-medium">{createdBy}</span>
-                        {createdAt && (
-                            <span className="text-xs text-textSecondary mt-0.5">{createdAt}</span>
+                    <div className="relative group inline-block w-full">
+                        <div className="flex flex-col">
+                            <span className="text-textPrimary font-medium truncate">{createdBy}</span>
+                            {createdAt && (
+                                <span className="text-xs text-textSecondary mt-0.5 truncate">{createdAt}</span>
+                            )}
+                        </div>
+                        {createdBy !== "-" && (
+                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 text-left max-w-xs shadow-lg">
+                                <div className="flex flex-col gap-1">
+                                    <div className="font-medium">{createdBy}</div>
+                                    {createdAt && (
+                                        <div className="text-gray-300 text-[11px]">{createdAt}</div>
+                                    )}
+                                </div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
+                            </div>
                         )}
                     </div>
                 );
@@ -242,10 +265,23 @@ const CustomerQuotation = () => {
                 const updatedAt = row.updated_at ? formatDateTime(row.updated_at) : "";
 
                 return (
-                    <div className="flex flex-col">
-                        <span className="text-textPrimary font-medium">{updatedBy}</span>
-                        {updatedAt && updatedBy !== "-" && (
-                            <span className="text-xs text-textSecondary mt-0.5">{updatedAt}</span>
+                    <div className="relative group inline-block w-full">
+                        <div className="flex flex-col">
+                            <span className="text-textPrimary font-medium truncate">{updatedBy}</span>
+                            {updatedAt && updatedBy !== "-" && (
+                                <span className="text-xs text-textSecondary mt-0.5 truncate">{updatedAt}</span>
+                            )}
+                        </div>
+                        {updatedBy !== "-" && (
+                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 text-left max-w-xs shadow-lg">
+                                <div className="flex flex-col gap-1">
+                                    <div className="font-medium">{updatedBy}</div>
+                                    {updatedAt && updatedBy !== "-" && (
+                                        <div className="text-gray-300 text-[11px]">{updatedAt}</div>
+                                    )}
+                                </div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
+                            </div>
                         )}
                     </div>
                 );
@@ -256,21 +292,26 @@ const CustomerQuotation = () => {
             cell: (row) => (
                 <div className="flex justify-center">
                     <button
-                        onClick={() =>
+                        onClick={() => {
+                            const customerData = client ? {
+                                id: client.id,
+                                customer_name: client.customer_name || customerName,
+                                email: client.email || "",
+                                address: client.address || "",
+                                phone_number: client.phone_number || "",
+                            } : null;
+                            // Store customer ID in localStorage for back navigation
+                            if (customerData?.id) {
+                                localStorage.setItem("currentCustomerId", String(customerData.id));
+                            }
                             navigate(`/quotation/${row.id}`, {
                                 state: {
                                     fromCustomerView: true,
-                                    customer: client ? {
-                                        id: client.id,
-                                        customer_name: client.customer_name || customerName,
-                                        email: client.email || "",
-                                        address: client.address || "",
-                                        phone_number: client.phone_number || "",
-                                    } : null,
+                                    customer: customerData,
                                     quotNo: row.quotation_number,
                                 },
-                            })
-                        }
+                            });
+                        }}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-lightGrey hover:bg-primary/10 transition"
                         title="View Quotation"
                     >
@@ -306,11 +347,11 @@ const CustomerQuotation = () => {
                     searchPlaceholder="Search by quotation number"
                     rightActions={
                         <button
-                            onClick={() => navigate(`/quotation/${customerId}`)}
+                            onClick={handleCreateQuotation}
                             disabled={creating}
                             className="bg-primary text-white px-4 py-2 text-sm disabled:opacity-60"
                         >
-                            + Create Quotation
+                            {creating ? "Creating..." : "+ Create Quote"}
                         </button>
                     }
                     noPagination={false}

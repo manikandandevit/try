@@ -15,7 +15,7 @@ const Customers = () => {
     const [search, setSearch] = useState("");
     const navigate = useNavigate();
     const [customers, setCustomers] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     /* ---------------- FORM STATE ---------------- */
     const [openForm, setOpenForm] = useState(false);
@@ -179,11 +179,22 @@ const Customers = () => {
         },
         {
             name: "Email",
-            selector: (row) => row.email,
-        },
-        {
-            name: "Address",
-            selector: (row) => row.address,
+            cell: (row) => {
+                const email = row.email || "-";
+                return (
+                    <div className="relative group inline-block w-full">
+                        <div className="truncate max-w-full">
+                            {email}
+                        </div>
+                        {email !== "-" && (
+                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md whitespace-nowrap opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 shadow-lg">
+                                {email}
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
+                            </div>
+                        )}
+                    </div>
+                );
+            },
         },
         {
             name: "Total Quotation",
@@ -213,10 +224,23 @@ const Customers = () => {
                 const createdAt = row.created_at ? formatDate(row.created_at) : "";
 
                 return (
-                    <div className="flex flex-col">
-                        <span className="text-textPrimary font-medium">{createdBy}</span>
-                        {createdAt && (
-                            <span className="text-xs text-textSecondary mt-0.5">{createdAt}</span>
+                    <div className="relative group inline-block w-full">
+                        <div className="flex flex-col">
+                            <span className="text-textPrimary font-medium truncate">{createdBy}</span>
+                            {createdAt && (
+                                <span className="text-xs text-textSecondary mt-0.5 truncate">{createdAt}</span>
+                            )}
+                        </div>
+                        {createdBy !== "-" && (
+                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 text-left max-w-xs shadow-lg">
+                                <div className="flex flex-col gap-1">
+                                    <div className="font-medium">{createdBy}</div>
+                                    {createdAt && (
+                                        <div className="text-gray-300 text-[11px]">{createdAt}</div>
+                                    )}
+                                </div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
+                            </div>
                         )}
                     </div>
                 );
@@ -246,10 +270,23 @@ const Customers = () => {
                 const updatedAt = row.updated_at ? formatDate(row.updated_at) : "";
 
                 return (
-                    <div className="flex flex-col">
-                        <span className="text-textPrimary font-medium">{updatedBy}</span>
-                        {updatedAt && updatedBy !== "-" && (
-                            <span className="text-xs text-textSecondary mt-0.5">{updatedAt}</span>
+                    <div className="relative group inline-block w-full">
+                        <div className="flex flex-col">
+                            <span className="text-textPrimary font-medium truncate">{updatedBy}</span>
+                            {updatedAt && updatedBy !== "-" && (
+                                <span className="text-xs text-textSecondary mt-0.5 truncate">{updatedAt}</span>
+                            )}
+                        </div>
+                        {updatedBy !== "-" && (
+                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 text-left max-w-xs shadow-lg">
+                                <div className="flex flex-col gap-1">
+                                    <div className="font-medium">{updatedBy}</div>
+                                    {updatedAt && updatedBy !== "-" && (
+                                        <div className="text-gray-300 text-[11px]">{updatedAt}</div>
+                                    )}
+                                </div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
+                            </div>
                         )}
                     </div>
                 );
