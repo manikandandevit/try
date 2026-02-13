@@ -68,6 +68,20 @@ const CardSection = () => {
             bg: "bg-[#9CA3AF]",
             iconColor: "text-white",
         },
+        {
+            title: "Total Submitted Value",
+            value: loading ? "..." : formatCurrency(stats.totalSubmittedValue),
+            icon: Images.dollar,
+            bg: "bg-[#10B981]",
+            iconColor: "text-white",
+        },
+        {
+            title: "Total Awarded Value",
+            value: loading ? "..." : formatCurrency(stats.totalAwardedValue),
+            icon: Images.dollar,
+            bg: "bg-[#8B5CF6]",
+            iconColor: "text-white",
+        },
     ];
 
     const handleCardClick = (path) => {

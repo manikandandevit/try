@@ -148,6 +148,11 @@ const CustomerQuotation = () => {
             selector: (row) => formatAmount(row.amount),
         },
         {
+            name: "Created At",
+            selector: (row) => row.created || "—",
+        },
+
+        {
             name: "Status",
             cell: (row) => {
                 const status = (row.status || "draft").toLowerCase();
@@ -155,11 +160,11 @@ const CustomerQuotation = () => {
                     status === "draft"
                         ? [{ value: "draft", label: "Draft" }]
                         : status === "submitted"
-                        ? [
-                              { value: "submitted", label: "Submitted" },
-                              { value: "awarded", label: "Awarded" },
-                          ]
-                        : [{ value: "awarded", label: "Awarded" }];
+                            ? [
+                                { value: "submitted", label: "Submitted" },
+                                { value: "awarded", label: "Awarded" },
+                            ]
+                            : [{ value: "awarded", label: "Awarded" }];
                 return (
                     <select
                         value={status}
@@ -167,7 +172,7 @@ const CustomerQuotation = () => {
                             const newStatus = e.target.value;
                             if (newStatus !== status) handleStatusChange(row.id, newStatus);
                         }}
-                        className={`w-full max-w-[120px] px-2 py-1 text-xs rounded-full border-0 font-medium focus:ring-2 focus:ring-primary/30 outline-none cursor-pointer
+                        className={`w-full max-w-30 px-2 py-1 text-xs rounded-full border-0 font-medium focus:ring-2 focus:ring-primary/30 outline-none cursor-pointer
                             ${status === "draft" ? "bg-gray-100 text-gray-600" : ""}
                             ${status === "submitted" ? "bg-[#BADDFF] text-[#2F80ED]" : ""}
                             ${status === "awarded" ? "bg-[#B0DAB2] text-[#068F0B]" : ""}`}
@@ -182,6 +187,11 @@ const CustomerQuotation = () => {
             },
             center: true,
         },
+        {
+            name: "Updated At",
+            selector: (row) => row.updated || "—",
+        },
+
         {
             name: "Action",
             cell: (row) => (
@@ -237,7 +247,7 @@ const CustomerQuotation = () => {
                     searchPlaceholder="Search by quotation number"
                     rightActions={
                         <button
-                            onClick={handleCreateQuotation}
+                            onClick={() => navigate(`/quotation/${customerId}`)}
                             disabled={creating}
                             className="bg-primary text-white px-4 py-2 text-sm disabled:opacity-60"
                         >
@@ -256,7 +266,7 @@ const CustomerQuotation = () => {
                             Confirm Status Change
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
-                            Are you sure you want to change status from{" "}
+                            Are you sure want to change status from{" "}
                             <span className="font-semibold capitalize">
                                 {confirmPopup.oldStatus}
                             </span>{" "}

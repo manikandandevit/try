@@ -18,6 +18,7 @@ import starIcon from "../assets/icons/starIcon.svg";
 import totalCust from "../assets/icons/totalCust.svg";
 import totalQuote from "../assets/icons/totalQuote.svg";
 import totalUser from "../assets/icons/totalUser.svg";
+import dollar from "../assets/icons/dollar.svg"
 
 //images
 import fullLogo from "../assets/fulllogo.png";
@@ -42,6 +43,7 @@ export const Images = {
   profile, actProfile,
   star, starIcon,
   totalCust, totalQuote, totalUser,
+  dollar,
   
 
 
