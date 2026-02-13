@@ -13,8 +13,7 @@ import toast from "../../common/toast";
 const loginSchema = z.object({
   email: z
     .string()
-    .min(1, "Email is required")
-    .email("Invalid email address"),
+    .min(1, "Email or Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -184,12 +183,12 @@ const Login = () => {
           <h2 className="text-center text-textPrimary text-2xl font-semibold mb-6">Welcome !</h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email */}
+            {/* Email or Username */}
             <div>
-              <label className="text-sm text-textPrimary font-medium">Email</label>
+              <label className="text-sm text-textPrimary font-medium">Email or Username</label>
               <input
                 type="text"
-                placeholder="Enter your email"
+                placeholder="Enter your email or username"
                 className="w-full mt-1 h-11 px-4 rounded-md border border-borderColor outline-none"
                 {...register("email")}
               />

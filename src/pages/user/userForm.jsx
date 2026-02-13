@@ -6,6 +6,11 @@ import { z } from "zod";
 const userSchema = z.object({
   name: z.string().min(1, "Name is required"),
 
+  username: z
+    .string()
+    .optional()
+    .refine((val) => !val || val.length >= 3, "Username must be at least 3 characters"),
+
   email: z
     .string()
     .min(1, "Email is required")
@@ -28,6 +33,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
   const [form, setForm] = useState({
     id: null,
     name: "",
+    username: "",
     email: "",
     phone: "",
     password: "",
@@ -45,6 +51,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
       setForm({
         id: editData.id,
         name: editData.name || "",
+        username: editData.username || "",
         email: editData.email || "",
         phone: editData.phone || "",
         password: "********",
@@ -57,6 +64,7 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
       setForm({
         id: null,
         name: "",
+        username: "",
         email: "",
         phone: "",
         password: "",
@@ -155,6 +163,27 @@ const UserForm = ({ open, onClose, mode, editData, onSubmit }) => {
             {errors.name && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.name}
+              </p>
+            )}
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="text-sm font-medium">
+              Username <span className="text-gray-400 text-xs">(Optional)</span>
+            </label>
+
+            <input
+              name="username"
+              value={form.username}
+              placeholder="Enter Username (for login)"
+              onChange={handleChange}
+              className="w-full mt-1 border border-lineColor rounded-md px-3 py-2 focus:ring-1 focus:ring-primary"
+            />
+
+            {errors.username && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.username}
               </p>
             )}
           </div>

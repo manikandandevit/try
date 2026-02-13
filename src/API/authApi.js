@@ -118,6 +118,7 @@ export const getCurrentUserApi = async () => {
                 userType,
                 label: userType === "company" ? "Admin" : "User",
                 displayName: userType === "company" ? companyName : userName,
+                createdAt: userDetails.created_at || null,
             };
         }
         return { success: false };
