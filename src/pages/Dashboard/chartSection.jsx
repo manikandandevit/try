@@ -83,7 +83,7 @@ const DashboardCharts = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
-      
+
       {/* LEFT SIDE (WIDER) */}
       <div className="lg:col-span-2 bg-white border border-lineColor rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5">
 
@@ -111,55 +111,55 @@ const DashboardCharts = () => {
 
         {/* Vertical Bar Chart - Monthly Total Quotations */}
         {loading ? (
-          <div className="flex items-center justify-center h-[250px] sm:h-[300px] text-gray-500">
+          <div className="flex items-center justify-center h-62.5 sm:h-75 text-gray-500">
             <div className="flex flex-col items-center gap-2">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
               <p className="text-sm">Loading...</p>
             </div>
           </div>
         ) : (
-        <ResponsiveContainer width="100%" height={windowWidth < 640 ? 250 : 300}>
-          <BarChart data={monthlyData}>
-            
-            {/* Horizontal dotted lines */}
-            <CartesianGrid
-              horizontal
-              vertical={false}
-              stroke="#E5E7EB"
-              strokeDasharray="6 6"
-            />
+          <ResponsiveContainer width="100%" height={windowWidth < 640 ? 250 : 300}>
+            <BarChart data={monthlyData}>
 
-            {/* X Axis (Jan–Dec) */}
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: windowWidth < 640 ? 10 : 13 }}
-            />
+              {/* Horizontal dotted lines */}
+              <CartesianGrid
+                horizontal
+                vertical={false}
+                stroke="#E5E7EB"
+                strokeDasharray="6 6"
+              />
 
-            {/* Y Axis (Dynamic) */}
-            <YAxis
-              domain={[0, roundedMax]}
-              ticks={Array.from(
-                { length: Math.ceil(roundedMax / 200) + 1 },
-                (_, i) => Math.min(i * 200, roundedMax)
-              )}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: windowWidth < 640 ? 10 : 13 }}
-            />
+              {/* X Axis (Jan–Dec) */}
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: windowWidth < 640 ? 10 : 13 }}
+              />
 
-            <Tooltip />
+              {/* Y Axis (Dynamic) */}
+              <YAxis
+                domain={[0, roundedMax]}
+                ticks={Array.from(
+                  { length: Math.ceil(roundedMax / 200) + 1 },
+                  (_, i) => Math.min(i * 200, roundedMax)
+                )}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: windowWidth < 640 ? 10 : 13 }}
+              />
 
-            <Bar
-              dataKey="value"
-              fill="#00085E"
-              radius={[0, 0, 0, 0]}
-              barSize={windowWidth < 640 ? 20 : 25}
-              name="Quotations"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+              <Tooltip />
+
+              <Bar
+                dataKey="value"
+                fill="#00085E"
+                radius={[0, 0, 0, 0]}
+                barSize={windowWidth < 640 ? 20 : 25}
+                name="Quotations"
+              />
+            </BarChart>
+          </ResponsiveContainer>
         )}
       </div>
 
@@ -169,11 +169,8 @@ const DashboardCharts = () => {
         <div>
           <h3 className="text-sm sm:text-base font-semibold text-gray-800">
             Quotation Status
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1 mb-3 sm:mb-4">
-            Draft, Submitted, Awarded
-          </p>
-          
+          </h3>          
+
           {/* Month and Year Selectors */}
           <div className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-4">
             <select
@@ -225,18 +222,10 @@ const DashboardCharts = () => {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-
-          {/* Center Total */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-            <p className="text-xs sm:text-sm text-gray-500">Total</p>
-            <p className="text-lg sm:text-xl font-bold text-gray-800">
-              {totalPie}
-            </p>
-          </div>
         </div>
 
         {/* Legend */}
-        <div className="flex flex-col gap-1.5 sm:gap-2 mt-3 sm:mt-4 text-xs sm:text-sm">
+        <div className="grid grid-cols-3 gap-2 mt-3 sm:mt-4 text-xs sm:text-sm">
           {pieData.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <div className="flex items-center gap-2">
@@ -245,10 +234,7 @@ const DashboardCharts = () => {
                   style={{ backgroundColor: item.color }}
                 ></span>
                 <span className="text-gray-600 truncate">{item.name}</span>
-              </div>
-              <span className="font-medium text-gray-800 ml-2">
-                {item.value}
-              </span>
+              </div>             
             </div>
           ))}
         </div>
