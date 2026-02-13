@@ -16,9 +16,11 @@ export const getAllCustomersApi = async (search = "") => {
 };
 
 // GET DASHBOARD STATS (KPIs, monthly sends for bar chart, pie chart data)
-export const getDashboardStatsApi = async (year) => {
+export const getDashboardStatsApi = async (year, month = null) => {
   try {
-    const params = year ? { year } : {};
+    const params = {};
+    if (year) params.year = year;
+    if (month) params.month = month;
     const response = await API.get("/dashboard-stats/", { params });
     const res = handleSuccess(response);
     return res;

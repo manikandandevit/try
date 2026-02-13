@@ -11,6 +11,11 @@ const Quotation = () => {
     const [quotation, setQuotationState] = useState(null);
     const [conversationHistory, setConversationHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Undo/Redo history
+    const [quotationHistory, setQuotationHistory] = useState([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+    const isUndoRedoRef = useRef(false);
 
     // When quotation loaded by ID has quotation_number, it is PERMANENT - chat/sync must never change it
     const setQuotation = useCallback((newQuotationOrUpdater) => {
@@ -20,17 +25,38 @@ const Quotation = () => {
                 : newQuotationOrUpdater;
             if (!newQuotation) return prev;
             // DB-loaded quotation (from customer view): preserve id, quotation_number, quotation_to
+            let finalQuotation;
             if (prev?.id && prev?.quotation_number) {
-                return {
+                finalQuotation = {
                     ...newQuotation,
                     id: prev.id,
                     quotation_number: prev.quotation_number,
                     quotation_to: newQuotation.quotation_to || prev.quotation_to,
                 };
+            } else {
+                finalQuotation = newQuotation;
             }
-            return newQuotation;
+            
+            // Add to history if not an undo/redo operation
+            if (!isUndoRedoRef.current && prev && JSON.stringify(prev) !== JSON.stringify(finalQuotation)) {
+                setQuotationHistory((hist) => {
+                    // Remove any future history if we're not at the end
+                    const newHist = hist.slice(0, historyIndex + 1);
+                    // Add new state
+                    newHist.push(JSON.parse(JSON.stringify(finalQuotation)));
+                    // Limit history to 50 states
+                    if (newHist.length > 50) {
+                        newHist.shift();
+                        return newHist;
+                    }
+                    setHistoryIndex(newHist.length - 1);
+                    return newHist;
+                });
+            }
+            
+            return finalQuotation;
         });
-    }, []);
+    }, [historyIndex]);
 
     // Fetch initial data: by id if in URL, else check last quotation and redirect or show empty
     useEffect(() => {
@@ -60,6 +86,11 @@ const Quotation = () => {
                 if (quotationRes.success) {
                     const q = quotationRes.data?.quotation || quotationRes.data;
                     setQuotationState(q);
+                    // Initialize history with initial quotation
+                    if (q) {
+                        setQuotationHistory([JSON.parse(JSON.stringify(q))]);
+                        setHistoryIndex(0);
+                    }
                     if (quotationId && q) {
                         try {
                             await syncQuotation(q);
@@ -118,6 +149,37 @@ const Quotation = () => {
         };
     }, []);
 
+    // Undo handler
+    const handleUndo = useCallback(() => {
+        if (historyIndex > 0) {
+            isUndoRedoRef.current = true;
+            const prevIndex = historyIndex - 1;
+            const prevQuotation = quotationHistory[prevIndex];
+            setQuotationState(JSON.parse(JSON.stringify(prevQuotation)));
+            setHistoryIndex(prevIndex);
+            setTimeout(() => {
+                isUndoRedoRef.current = false;
+            }, 0);
+        }
+    }, [historyIndex, quotationHistory]);
+
+    // Redo handler
+    const handleRedo = useCallback(() => {
+        if (historyIndex < quotationHistory.length - 1) {
+            isUndoRedoRef.current = true;
+            const nextIndex = historyIndex + 1;
+            const nextQuotation = quotationHistory[nextIndex];
+            setQuotationState(JSON.parse(JSON.stringify(nextQuotation)));
+            setHistoryIndex(nextIndex);
+            setTimeout(() => {
+                isUndoRedoRef.current = false;
+            }, 0);
+        }
+    }, [historyIndex, quotationHistory]);
+
+    const canUndo = historyIndex > 0;
+    const canRedo = historyIndex < quotationHistory.length - 1;
+
     return (
         <div className="flex w-full h-auto gap-3">
             <ConversationPanel 
@@ -125,6 +187,10 @@ const Quotation = () => {
                 setConversationHistory={setConversationHistory}
                 setQuotation={setQuotation}
                 quotationId={quotationId || null}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                canUndo={canUndo}
+                canRedo={canRedo}
             />
             <QuotationPanel 
                 quotation={quotation}
@@ -132,6 +198,8 @@ const Quotation = () => {
                 setQuotation={setQuotation}
                 initialCustomer={location.state?.customer}
                 fromCustomerView={location.state?.fromCustomerView}
+                conversationHistory={conversationHistory}
+                quotationId={quotationId || null}
             />
         </div>
     )

@@ -127,3 +127,19 @@ export const updateQuotationStatus = async (quotationId, status) => {
     }
 };
 
+// Enhance quotation service names using AI (format names intelligently)
+export const enhanceQuotation = async (quotationId = null) => {
+    try {
+        const payload = { 
+            message: "ENHANCE_QUOTATION: Please intelligently format all service names in proper case, camelCase, or title case as appropriate. For example: 'tshirt' should become 'T-Shirt' or 'Tshirt', 'web development' should become 'Web Development'. Make all service names professional and properly formatted.",
+            enhance_mode: true
+        };
+        if (quotationId) payload.quotation_id = quotationId;
+        const response = await API.post("/chat/", payload);
+        const res = handleSuccess(response);
+        return res;
+    } catch (err) {
+        return handleError(err);
+    }
+};
+
