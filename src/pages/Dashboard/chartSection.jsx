@@ -76,11 +76,11 @@ const DashboardCharts = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h3 className="text-lg font-medium text-gray-800">
-              Total Quotations per Month
+              Quotations Overview
             </h3>
-            <p className="text-sm text-gray-500 mt-1">
+            {/* <p className="text-sm text-gray-500 mt-1">
               Customer quotations sent by month
-            </p>
+            </p> */}
           </div>
 
           <select
@@ -148,11 +148,11 @@ const DashboardCharts = () => {
 
         <div>
           <h3 className="text-base font-semibold text-gray-800">
-            Send Method
+            Status Overview
           </h3>
-          <p className="text-sm text-gray-500 mt-1 mb-4">
+          {/* <p className="text-sm text-gray-500 mt-1 mb-4">
             Email vs WhatsApp
-          </p>
+          </p> */}
         </div>
 
         {/* Full Pie Chart */}
