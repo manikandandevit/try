@@ -134,6 +134,10 @@ const Users = () => {
             selector: (row) => row.phone,
         },
         {
+            name: "Created By",
+            selector: (row) => row.created_by || "-",
+        },
+        {
             name: "Status",
             cell: (row) => (
                 <span
