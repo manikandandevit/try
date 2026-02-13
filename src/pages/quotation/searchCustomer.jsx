@@ -2,7 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAllCustomersApi } from "../../API/customerApi";
 
-const TemplateDropdown = ({ onCustomerSelect, selectedCustomer }) => {
+const TemplateDropdown = ({ onCustomerSelect, selectedCustomer, readOnly }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState("Select Customer");
@@ -74,15 +74,15 @@ const TemplateDropdown = ({ onCustomerSelect, selectedCustomer }) => {
 
   return (
     <div className="relative w-56">
-      {/* Button */}
+      {/* Button - readOnly = show selected customer without dropdown */}
       <div
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-between rounded-full px-5 py-2 cursor-pointer bg-primary text-white"
+        onClick={() => !readOnly && setOpen(!open)}
+        className={`flex items-center justify-between rounded-full px-5 py-2 bg-primary text-white ${readOnly ? "cursor-default opacity-90" : "cursor-pointer"}`}
       >
         <span className="text-sm font-medium truncate max-w-45">
           {selected}
         </span>
-        <ChevronDown size={18} className="shrink-0" />
+        {!readOnly && <ChevronDown size={18} className="shrink-0" />}
       </div>
 
       {/* Dropdown */}

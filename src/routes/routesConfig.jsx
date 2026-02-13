@@ -31,11 +31,16 @@ export const ProtectedRoutes = [
     element: <Dashboard />
   },
   {
+    name: "Quotation by ID",
+    showInSidebar: false,
+    path: "/quotation/:id",
+    element: <Quotation />
+  },
+  {
     name: "Quotation",
     icon: Images.quote,
     activeIcon: Images.actQuote,
     showInSidebar: true,
-    // permission: PERMISSIONS.DASHBOARD_VIEW,
     path: "/quotation",
     element: <Quotation />
   },

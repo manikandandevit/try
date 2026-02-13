@@ -2,7 +2,7 @@ import { quotationData } from "./quoteData";
 import { Images } from "../../common/assets";
 import { CONFIG } from "../../API/config";
 
-const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustomer }) => {
+const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustomer, viewMode }) => {
   // Construct media URL helper function
   const constructMediaUrl = (relativeUrl) => {
     if (!relativeUrl ||
@@ -138,9 +138,10 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
   const data = transformQuotation();
   const { company, quotationInfo, quotationBy, quotationTo, items, charges, footer, subtotal, gstAmount, total } = data;
 
-  // Show content only if services/items are added (not just customer selection)
+  // Show content: view mode = show when customer exists; else = show when services + customer
   const hasServices = items && items.length > 0 && items.some(item => item.item && item.qty > 0);
-  const showFullContent = hasServices && selectedCustomer !== null;
+  const hasCustomer = selectedCustomer !== null || (quotation?.quotation_to && quotation.quotation_to.name);
+  const showFullContent = viewMode ? hasCustomer : (hasServices && hasCustomer);
 
   return (
     <div
@@ -178,13 +179,11 @@ const QuotationTemplate = ({ quotation, companyDetails, loading, selectedCustome
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT SIDE - QUOT_NO is permanent (not editable) once created from customer tab */}
           <div className="text-right">
-            {quotationInfo.quotationNumber && (
-              <p className="font-semibold text-base mb-2 text-textPrimary">
-                Quotation #: {quotationInfo.quotationNumber}
-              </p>
-            )}
+            <p className="font-semibold text-base mb-2 text-textPrimary" title="Quotation number is permanent and cannot be changed">
+              Quotation #: {quotationInfo.quotationNumber || "—"}
+            </p>
             <p className="font-normal text-sm mb-1">{quotationInfo.date}</p>
           </div>
 

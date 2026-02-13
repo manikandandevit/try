@@ -6,13 +6,39 @@ import ShareButton from "./share";
 import { getCompanyDetails } from "../../API/companyApi";
 import { FileText } from "lucide-react";
 
-const QuotationPanel = ({ quotation, loading, setQuotation }) => {
+// Map quotation_to format to selectedCustomer format
+const mapQuotationToToCustomer = (quotationTo) => {
+  if (!quotationTo || !quotationTo.name) return null;
+  return {
+    id: quotationTo.id,
+    customer_name: quotationTo.name,
+    email: quotationTo.email || "",
+    address: quotationTo.address || "",
+    phone_number: quotationTo.phone || quotationTo.phone_number || "",
+  };
+};
+
+const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fromCustomerView }) => {
   const [companyDetails, setCompanyDetails] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [transformedData, setTransformedData] = useState(null);
 
-  // Load persisted customer on mount
+  // When coming from Customer Quotation list view: auto-set customer from initialCustomer or quotation.quotation_to
   useEffect(() => {
+    if (fromCustomerView && (initialCustomer || quotation?.quotation_to)) {
+      const customer = initialCustomer
+        ? { ...initialCustomer, customer_name: initialCustomer.customer_name || initialCustomer.name }
+        : mapQuotationToToCustomer(quotation?.quotation_to);
+      if (customer) {
+        setSelectedCustomer(customer);
+        localStorage.setItem("selectedQuotationCustomer", JSON.stringify(customer));
+      }
+    }
+  }, [fromCustomerView, initialCustomer, quotation?.quotation_to]);
+
+  // Load persisted customer on mount (only when NOT from customer view)
+  useEffect(() => {
+    if (fromCustomerView) return;
     const savedCustomer = localStorage.getItem("selectedQuotationCustomer");
     if (savedCustomer) {
       try {
@@ -22,7 +48,18 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
         console.error("Error loading saved customer:", error);
       }
     }
-  }, []);
+  }, [fromCustomerView]);
+
+  // When quotation loads with quotation_to (from getQuotationById), auto-set selectedCustomer for full data
+  useEffect(() => {
+    if (quotation?.quotation_to && quotation.quotation_to.name) {
+      const customer = mapQuotationToToCustomer(quotation.quotation_to);
+      if (customer) {
+        setSelectedCustomer(customer);
+        localStorage.setItem("selectedQuotationCustomer", JSON.stringify(customer));
+      }
+    }
+  }, [quotation?.quotation_to]);
 
   useEffect(() => {
     const fetchCompanyDetails = async () => {
@@ -109,8 +146,8 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
     const gstAmount = quotation?.gst_amount || (subtotal * charges.gstPercent) / 100;
     const total = quotation?.grand_total || subtotal + charges.shipping + gstAmount;
 
-    // Generate quotation number and date
-    const quotationNo = quotation?.quotation_number || `QUO${Date.now().toString().slice(-6)}`;
+    // QUOT_NO is permanent when quotation is from DB (e.g. created from customer tab); never editable
+    const quotationNo = quotation?.quotation_number || (quotation?.id ? "" : `QUO${Date.now().toString().slice(-6)}`);
     const date = quotation?.date || new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -164,7 +201,9 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
   // Check if services exist
   const hasServices = data?.items && data.items.length > 0 && 
     data.items.some(item => item.item && item.qty > 0);
-  const showFullContent = hasServices && selectedCustomer !== null;
+  // Show Quotation By, Quotation To, footer when we have customer (from view or selection) - even without services
+  const hasCustomer = selectedCustomer !== null || (quotation?.quotation_to && quotation.quotation_to.name);
+  const showFullContent = hasCustomer;
 
   return (
     <div className="w-3/5 h-screen flex flex-col bg-gray-100">
@@ -182,6 +221,7 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
           <TemplateDropdown
             onCustomerSelect={handleCustomerSelect}
             selectedCustomer={selectedCustomer}
+            readOnly={fromCustomerView}
           />
 
           {/* Pass all required props to ShareButton */}
@@ -202,6 +242,7 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
               quotationData={quotation}
               companyDetails={companyDetails}
               quotation={quotation}
+              setQuotation={setQuotation}
             />
           )}
 
@@ -230,6 +271,7 @@ const QuotationPanel = ({ quotation, loading, setQuotation }) => {
             companyDetails={companyDetails}
             loading={loading}
             selectedCustomer={selectedCustomer}
+            viewMode={fromCustomerView || (quotation?.id && quotation?.quotation_number)}
           />
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-gray-400">

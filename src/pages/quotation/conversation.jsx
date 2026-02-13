@@ -55,7 +55,7 @@ const ChatMessage = ({ message }) => {
     );
 };
 
-const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuotation }) => {
+const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuotation, quotationId }) => {
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
     const messagesEndRef = useRef(null);
@@ -95,11 +95,9 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
         setConversationHistory(updatedHistory);
 
         try {
-            // Send to backend
-            const response = await sendChatMessage(userMessage);
+            const response = await sendChatMessage(userMessage, quotationId || undefined);
 
             if (response.success) {
-                // Add assistant response
                 const assistantMsg = {
                     role: "assistant",
                     content: response.data?.response || response.data?.message || "Response received",
@@ -108,16 +106,14 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
                 const finalHistory = [...updatedHistory, assistantMsg];
                 setConversationHistory(finalHistory);
 
-                // Update quotation if provided
                 if (response.data?.quotation) {
                     setQuotation(response.data.quotation);
                 }
 
-                // Sync conversation history to backend
-                await syncConversationHistory(finalHistory.map(msg => ({
-                    role: msg.role,
-                    content: msg.content
-                })));
+                await syncConversationHistory(
+                    finalHistory.map(msg => ({ role: msg.role, content: msg.content })),
+                    quotationId || undefined
+                );
             } else {
                 // Show error message
                 const errorMsg = {

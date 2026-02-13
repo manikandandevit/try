@@ -10,37 +10,59 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { getDashboardStatsApi } from "../../API/customerApi";
 
-/* -------------------- BAR DATA (Jan–Dec) -------------------- */
-const monthlyData = [
-  { month: "Jan", value: 320 },
-  { month: "Feb", value: 450 },
-  { month: "Mar", value: 280 },
-  { month: "Apr", value: 700 },
-  { month: "May", value: 600 },
-  { month: "Jun", value: 820 },
-  { month: "Jul", value: 500 },
-  { month: "Aug", value: 900 },
-  { month: "Sep", value: 750 },
-  { month: "Oct", value: 650 },
-  { month: "Nov", value: 880 },
-  { month: "Dec", value: 950 },
-];
-
-/* -------------------- PIE DATA (3 COLORS) -------------------- */
-const pieData = [
-  { name: "Available", value: 540, color: "#165DFF" },
-  { name: "Assigned", value: 320, color: "#14C9C9" },
-  { name: "Maintenance", value: 140, color: "#F7BA1E" },
+/* -------------------- PIE DATA FALLBACK (3 COLORS) -------------------- */
+const pieDataFallback = [
+  { name: "Email", value: 0, color: "#165DFF" },
+  { name: "WhatsApp", value: 0, color: "#14C9C9" },
 ];
 
 const DashboardCharts = () => {
-  const [year, setYear] = useState("2025");
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(String(currentYear));
+  const [loading, setLoading] = useState(true);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [pieData, setPieData] = useState(pieDataFallback);
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getDashboardStatsApi(year);
+      if (res.success && res.data) {
+        const { monthly_sends, send_breakdown } = res.data;
+        if (monthly_sends && monthly_sends.length) {
+          const barData = monthly_sends.map((d) => ({
+            month: d.month?.charAt(0) + (d.month?.slice(1)?.toLowerCase() || ""),
+            value: d.total ?? 0,
+          }));
+          setMonthlyData(barData);
+        } else {
+          setMonthlyData([]);
+        }
+        if (send_breakdown) {
+          setPieData([
+            { name: "Email", value: send_breakdown.email?.count ?? 0, color: "#165DFF" },
+            { name: "WhatsApp", value: send_breakdown.whatsapp?.count ?? 0, color: "#14C9C9" },
+          ]);
+        }
+      }
+    } catch {
+      setMonthlyData([]);
+      setPieData(pieDataFallback);
+    } finally {
+      setLoading(false);
+    }
+  }, [year]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   /* -------------------- Dynamic Y Axis -------------------- */
-  const maxValue = Math.max(...monthlyData.map((d) => d.value));
-  const roundedMax = Math.ceil(maxValue / 200) * 200;
+  const maxValue = monthlyData.length ? Math.max(...monthlyData.map((d) => d.value)) : 100;
+  const roundedMax = Math.max(100, Math.ceil(maxValue / 200) * 200);
 
   const totalPie = pieData.reduce((a, b) => a + b.value, 0);
 
@@ -54,11 +76,11 @@ const DashboardCharts = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h3 className="text-lg font-medium text-gray-800">
-              Quotation Overview
+              Total Quotations per Month
             </h3>
-            {/* <p className="text-sm text-gray-500 mt-1">
-              Monthly asset performance
-            </p> */}
+            <p className="text-sm text-gray-500 mt-1">
+              Customer quotations sent by month
+            </p>
           </div>
 
           <select
@@ -66,13 +88,16 @@ const DashboardCharts = () => {
             onChange={(e) => setYear(e.target.value)}
             className="border border-borderColor rounded-md px-3 py-1 text-sm focus:outline-none"
           >
-            <option value="2023">2023</option>
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
+            {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
+              <option key={y} value={String(y)}>{y}</option>
+            ))}
           </select>
         </div>
 
-        {/* Vertical Bar Chart */}
+        {/* Vertical Bar Chart - Monthly Total Quotations */}
+        {loading ? (
+          <div className="flex items-center justify-center h-[300px] text-gray-500">Loading...</div>
+        ) : (
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={monthlyData}>
             
@@ -96,8 +121,8 @@ const DashboardCharts = () => {
             <YAxis
               domain={[0, roundedMax]}
               ticks={Array.from(
-                { length: roundedMax / 200 + 1 },
-                (_, i) => i * 200
+                { length: Math.ceil(roundedMax / 200) + 1 },
+                (_, i) => Math.min(i * 200, roundedMax)
               )}
               axisLine={false}
               tickLine={false}
@@ -111,9 +136,11 @@ const DashboardCharts = () => {
               fill="#00085E"
               radius={[0, 0, 0, 0]}
               barSize={25}
+              name="Quotations"
             />
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
 
       {/* RIGHT SIDE (SMALLER) */}
@@ -121,10 +148,10 @@ const DashboardCharts = () => {
 
         <div>
           <h3 className="text-base font-semibold text-gray-800">
-            Asset Status
+            Send Method
           </h3>
           <p className="text-sm text-gray-500 mt-1 mb-4">
-            Distribution summary
+            Email vs WhatsApp
           </p>
         </div>
 

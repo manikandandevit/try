@@ -1,10 +1,12 @@
 import API from "./axios";
 import { handleSuccess, handleError } from "./apiHelper";
 
-// Chat with AI for quotation
-export const sendChatMessage = async (message) => {
+// Chat with AI for quotation (quotationId = persist chat+quotation to that quotation in DB)
+export const sendChatMessage = async (message, quotationId = null) => {
     try {
-        const response = await API.post("/chat/", { message });
+        const payload = { message };
+        if (quotationId) payload.quotation_id = quotationId;
+        const response = await API.post("/chat/", payload);
         const res = handleSuccess(response);
         return res;
     } catch (err) {
@@ -12,10 +14,32 @@ export const sendChatMessage = async (message) => {
     }
 };
 
-// Get current quotation
+// Get current quotation (session)
 export const getQuotation = async () => {
     try {
         const response = await API.get("/quotation/");
+        const res = handleSuccess(response);
+        return res;
+    } catch (err) {
+        return handleError(err);
+    }
+};
+
+// Get last quotation ID the current user worked on (for redirect when opening /quotation)
+export const getLastQuotationId = async () => {
+    try {
+        const response = await API.get("/last-quotation-id/");
+        const res = handleSuccess(response);
+        return res;
+    } catch (err) {
+        return handleError(err);
+    }
+};
+
+// Get quotation by ID (from database)
+export const getQuotationById = async (id) => {
+    try {
+        const response = await API.get(`/quotation/${id}/`);
         const res = handleSuccess(response);
         return res;
     } catch (err) {
@@ -34,7 +58,7 @@ export const resetQuotation = async () => {
     }
 };
 
-// Sync quotation from frontend
+// Sync quotation from frontend (auto-save to DB when quotation has id)
 export const syncQuotation = async (quotation) => {
     try {
         const response = await API.post("/sync-quotation/", { quotation });
@@ -45,10 +69,11 @@ export const syncQuotation = async (quotation) => {
     }
 };
 
-// Get conversation history
-export const getConversationHistory = async () => {
+// Get conversation history (quotationId = load from that quotation in DB)
+export const getConversationHistory = async (quotationId = null) => {
     try {
-        const response = await API.get("/conversation-history/");
+        const params = quotationId ? { quotation_id: String(quotationId) } : {};
+        const response = await API.get("/conversation-history/", { params });
         const res = handleSuccess(response);
         return res;
     } catch (err) {
@@ -56,10 +81,45 @@ export const getConversationHistory = async () => {
     }
 };
 
-// Sync conversation history from frontend
-export const syncConversationHistory = async (messages) => {
+// Sync conversation history (quotationId = save to that quotation in DB)
+export const syncConversationHistory = async (messages, quotationId = null) => {
     try {
-        const response = await API.post("/sync-conversation-history/", { messages });
+        const payload = { messages };
+        if (quotationId) payload.quotation_id = quotationId;
+        const response = await API.post("/sync-conversation-history/", payload);
+        const res = handleSuccess(response);
+        return res;
+    } catch (err) {
+        return handleError(err);
+    }
+};
+
+// Send quotation via email (sets status to submitted)
+export const sendQuotationEmail = async (payload) => {
+    try {
+        const response = await API.post("/send-quotation-email/", payload);
+        const res = handleSuccess(response);
+        return res;
+    } catch (err) {
+        return handleError(err);
+    }
+};
+
+// Send quotation via WhatsApp (sets status to submitted, returns wa_link)
+export const sendQuotationWhatsApp = async (payload) => {
+    try {
+        const response = await API.post("/send-quotation-whatsapp/", payload);
+        const res = handleSuccess(response);
+        return res;
+    } catch (err) {
+        return handleError(err);
+    }
+};
+
+// Update quotation status (e.g. Submitted → Awarded)
+export const updateQuotationStatus = async (quotationId, status) => {
+    try {
+        const response = await API.patch(`/quotation/${quotationId}/status/`, { status });
         const res = handleSuccess(response);
         return res;
     } catch (err) {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Images } from "../common/assets";
 import { TOPBAR_HEIGHT, SIDEBAR_WIDTH, SIDEBAR_MINI_WIDTH } from "../common/constants";
-import { logoutApi } from "../API/authApi"; 
+import { logoutApi, getCurrentUserApi } from "../API/authApi"; 
 import toast from "../common/toast";
 import LogoutPopup from "./LogoutPopup";
 // import Notification from "../pages/notification/notification";
@@ -19,12 +19,27 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
     accessToken: null,
     refreshToken: null
   });
+  const [userDisplay, setUserDisplay] = useState({ label: "User", displayName: "Tester" });
 
   useEffect(() => {
     // Load tokens from localStorage
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
     setTokens({ accessToken, refreshToken });
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!localStorage.getItem("accessToken")) return;
+      const res = await getCurrentUserApi();
+      if (res.success && res.label) {
+        setUserDisplay({
+          label: res.label,
+          displayName: res.displayName || (res.label === "Admin" ? "Admin" : "User"),
+        });
+      }
+    };
+    fetchUser();
   }, []);
 
   const sidebarWidth = isSidebarMini
@@ -48,6 +63,7 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
       localStorage.removeItem("accessToken"); // Clear access token
       localStorage.removeItem("refreshToken"); // Clear refresh token
       setTokens({ accessToken: null, refreshToken: null });
+      setUserDisplay({ label: "User", displayName: "Tester" });
       setShowLogoutPopup(false);
       toast.success("Logged out successfully");
       navigate("/"); // Redirect to login/home
@@ -103,10 +119,10 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
               />
               <div className="hidden md:block leading-tight">
                 <p className="font-semibold text-base text-white">
-                  Tester
+                  {userDisplay.label}
                 </p>
                 <p className="text-sm font-medium text-white">
-                  Super Admin
+                  {userDisplay.displayName || (userDisplay.label === "Admin" ? "Admin" : "User")}
                 </p>
               </div>
             </div>

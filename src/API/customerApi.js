@@ -15,6 +15,31 @@ export const getAllCustomersApi = async (search = "") => {
   }
 };
 
+// GET DASHBOARD STATS (KPIs, monthly sends for bar chart, pie chart data)
+export const getDashboardStatsApi = async (year) => {
+  try {
+    const params = year ? { year } : {};
+    const response = await API.get("/dashboard-stats/", { params });
+    const res = handleSuccess(response);
+    return res;
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+// GET DASHBOARD CUSTOMER LIST (chart keela - same shape as recentDetails table)
+export const getDashboardCustomersApi = async (limit = 20) => {
+  try {
+    const response = await API.get("/dashboard-customers/", {
+      params: limit ? { limit } : {},
+    });
+    const res = handleSuccess(response);
+    return res;
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
 // CREATE CUSTOMER
 export const addCustomerApi = async (data) => {
   try {
@@ -112,6 +137,17 @@ export const updateCustomerStatusApi = async (id, isActive, currentCustomerData 
 export const getCustomerQuotationsApi = async (customerId) => {
   try {
     const response = await API.get(`/clients/${customerId}/quotations/`);
+    const res = handleSuccess(response);
+    return res;
+  } catch (err) {
+    return handleError(err);
+  }
+};
+
+// CREATE DRAFT QUOTATION FOR A CUSTOMER
+export const createCustomerQuotationApi = async (customerId) => {
+  try {
+    const response = await API.post(`/clients/${customerId}/quotations/`);
     const res = handleSuccess(response);
     return res;
   } catch (err) {

@@ -22,9 +22,9 @@ export const handleError = (error) => {
   return {
     status: error.response?.status || 500,
     success: false,
-    message: errorData.message || error.message || "Something went wrong",
+    message: errorData.message || errorData.error || error.message || "Something went wrong",
     data: null,
-    error: errorData.errors || error,
+    error: errorData.errors || errorData.error || error,
     errorCode: errorData.errorCode || null,
   };
 };

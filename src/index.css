@@ -1,9 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
-@import "tailwindcss/preflight";
-@import "tailwindcss/utilities";
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
-/* ✅ Theme variables */
-@theme base {
+/* ✅ Theme variables (Tailwind v4 uses @theme { } only) */
+@theme {
   --color-primary: #00085e;
   --color-bgColor: #fafcff;
   --color-bgColor1: #f7f7f7;

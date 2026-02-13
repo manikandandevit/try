@@ -33,26 +33,33 @@ const Customers = () => {
         try {
             const response = await getAllCustomersApi(search);
             if (response.success) {
-                // Map backend data to frontend format
-                const clients = response.data?.clients || response.data || [];
+                // Support both shapes: { clients: [] } or direct array
+                const raw = response.data;
+                const clients = Array.isArray(raw)
+                    ? raw
+                    : (raw?.clients ?? []);
                 const mappedCustomers = clients.map((client) => ({
                     id: client.id,
-                    name: client.customer_name || "",
-                    company: client.company_name || "",
-                    phone: client.phone_number || "",
-                    email: client.email || "",
-                    address: client.address || "",
-                    gst: client.gst || "", // Backend doesn't have GST, but keeping for compatibility
-                    totalQuote: "0", // This would need a separate API call to get quote count
-                    active: client.is_active ?? true,
+                    name: client.customer_name ?? client.name ?? "",
+                    company: client.company_name ?? client.company ?? "",
+                    phone: client.phone_number ?? client.phone ?? "",
+                    email: client.email ?? "",
+                    address: client.address ?? "",
+                    gst: client.gst ?? "",
+                    totalQuote: String(
+                        client.quotation_sent_count ?? client.totalQuotation ?? 0
+                    ),
+                    active: client.is_active ?? client.active ?? true,
                 }));
                 setCustomers(mappedCustomers);
             } else {
                 toast.error(response.message || "Failed to fetch customers");
+                setCustomers([]);
             }
         } catch (error) {
             toast.error("Error fetching customers");
             console.error("Error fetching customers:", error);
+            setCustomers([]);
         } finally {
             setLoading(false);
         }
@@ -177,6 +184,21 @@ const Customers = () => {
         {
             name: "Total Quotation",
             selector: (row) => row.totalQuote,
+        },
+        {
+            name: "Status",
+            selector: (row) => (row.active ? "Active" : "Inactive"),
+            cell: (row) => (
+                <span
+                    className={`px-3 py-1 rounded-md text-xs font-medium ${
+                        row.active
+                            ? "bg-[#ECFDF3] text-[#037847]"
+                            : "bg-[#F2F4F7] text-[#364254]"
+                    }`}
+                >
+                    {row.active ? "Active" : "Inactive"}
+                </span>
+            ),
         },
         {
             name: "Action",

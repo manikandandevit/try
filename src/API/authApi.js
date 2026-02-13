@@ -103,6 +103,30 @@ export const ForgotApi = async (data) => {
     }
 };
 
+// Get current user info (for navbar - label and display name)
+export const getCurrentUserApi = async () => {
+    try {
+        const response = await API.get("/check-auth/");
+        const data = response.data || {};
+        if (data.authenticated) {
+            const userType = data.user_type || "user";
+            const userName = data.user_name || "";
+            const userDetails = data.user_details || {};
+            const companyName = userDetails.company_name || "";
+            return {
+                success: true,
+                userType,
+                label: userType === "company" ? "Admin" : "User",
+                displayName: userType === "company" ? companyName : userName,
+            };
+        }
+        return { success: false };
+    } catch (err) {
+        console.error("getCurrentUser error:", err);
+        return { success: false };
+    }
+};
+
 // Get company login images API (public endpoint)
 export const getCompanyLoginApi = async () => {
     try {
