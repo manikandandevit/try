@@ -90,12 +90,12 @@ const DashboardCharts = () => {
         {/* Header with Year Filter */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6 md:mb-8">
           <div>
-            <h3 className="text-base sm:text-lg font-medium text-gray-800">
-              Total Quotations per Month
+            <h3 className="text-lg font-medium text-gray-800">
+              Quotations Overview
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            {/* <p className="text-sm text-gray-500 mt-1">
               Customer quotations sent by month
-            </p>
+            </p> */}
           </div>
 
           <select
