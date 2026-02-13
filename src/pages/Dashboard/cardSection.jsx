@@ -9,7 +9,9 @@ const CardSection = () => {
     const [stats, setStats] = useState({
         totalQuotations: 0,
         totalCustomers: 0,
-        totalUsers: 0,
+        totalDraft: 0,
+        totalSubmittedValue: 0,
+        totalAwardedValue: 0,
     });
 
     useEffect(() => {
@@ -21,7 +23,9 @@ const CardSection = () => {
                     setStats({
                         totalQuotations: response.data.kpis.total_quotations || 0,
                         totalCustomers: response.data.kpis.total_customers || 0,
-                        totalUsers: response.data.kpis.total_users || 0,
+                        totalDraft: response.data.kpis.total_draft || 0,
+                        totalSubmittedValue: response.data.kpis.total_submitted_value || 0,
+                        totalAwardedValue: response.data.kpis.total_awarded_value || 0,
                     });
                 }
             } catch (error) {
@@ -33,6 +37,14 @@ const CardSection = () => {
 
         fetchStats();
     }, []);
+
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+        }).format(value);
+    };
 
     const cardData = [
         {
@@ -52,12 +64,28 @@ const CardSection = () => {
             path: "/customer",
         },
         {
-            title: "Total Users",
-            value: loading ? "..." : stats.totalUsers.toString(),
-            icon: Images.totalUser,
-            bg: "bg-[#14C9C9]",
+            title: "Total Draft",
+            value: loading ? "..." : stats.totalDraft.toString(),
+            icon: Images.totalQuote,
+            bg: "bg-[#9CA3AF]",
             iconColor: "text-white",
-            path: "/users",
+            path: "/quotation",
+        },
+        {
+            title: "Total Submitted Value",
+            value: loading ? "..." : formatCurrency(stats.totalSubmittedValue),
+            icon: Images.totalQuote,
+            bg: "bg-[#10B981]",
+            iconColor: "text-white",
+            path: "/quotation",
+        },
+        {
+            title: "Total Awarded Value",
+            value: loading ? "..." : formatCurrency(stats.totalAwardedValue),
+            icon: Images.totalQuote,
+            bg: "bg-[#8B5CF6]",
+            iconColor: "text-white",
+            path: "/quotation",
         },
     ];
 
@@ -66,7 +94,7 @@ const CardSection = () => {
     };
 
     return (
-        <div className="flex flex-col sm:flex-row w-full gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 w-full gap-3 sm:gap-4">
             {cardData.map((item, index) => {
                 return (
                     <div

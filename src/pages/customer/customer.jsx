@@ -50,6 +50,7 @@ const Customers = () => {
                         client.quotation_sent_count ?? client.totalQuotation ?? 0
                     ),
                     active: client.is_active ?? client.active ?? true,
+                    created_by: client.created_by ?? "-",
                 }));
                 setCustomers(mappedCustomers);
             } else {
@@ -184,6 +185,10 @@ const Customers = () => {
         {
             name: "Total Quotation",
             selector: (row) => row.totalQuote,
+        },
+        {
+            name: "Created By",
+            selector: (row) => row.created_by || "-",
         },
         {
             name: "Status",
