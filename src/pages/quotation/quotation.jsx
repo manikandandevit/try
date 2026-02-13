@@ -181,7 +181,7 @@ const Quotation = () => {
     const canRedo = historyIndex < quotationHistory.length - 1;
 
     return (
-        <div className="flex w-full h-auto gap-3">
+        <div className="flex flex-col md:flex-row w-full h-auto gap-3">
             <ConversationPanel 
                 conversationHistory={conversationHistory}
                 setConversationHistory={setConversationHistory}

@@ -20,34 +20,38 @@ const ChatMessage = ({ message }) => {
 
     return (
         <div
-            className={`flex items-end gap-2 max-w-[90%] ${isOutgoing ? "ml-auto flex-row-reverse" : ""
+            className={`flex items-end gap-2 sm:gap-3 max-w-[90%] sm:max-w-[85%] ${isOutgoing ? "ml-auto flex-row-reverse" : ""
                 }`}
         >
             {/* Avatar */}
-            <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center">
                 {isOutgoing && (
-                    <span className="absolute -top-6 left-2 text-primary">
-                        <CheckCheck size={18} />
+                    <span className="absolute -top-5 sm:-top-6 left-1 sm:left-2 text-primary">
+                        <CheckCheck size={16} className="sm:w-5 sm:h-5 drop-shadow-sm" />
                     </span>
                 )}
 
-                <img
-                    src={isOutgoing ? Images.adminProfile : Images.smLogo}
-                    alt="avatar"
-                    className="w-8 h-8 rounded-full"
-                />
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-md border-2 ${isOutgoing ? 'border-primary/20' : 'border-white'}`}>
+                    <img
+                        src={isOutgoing ? Images.adminProfile : Images.smLogo}
+                        alt="avatar"
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
 
             {/* Message */}
             <div className={isOutgoing ? "text-right" : ""}>
                 <div
-                    className={`p-3 rounded-lg shadow text-[#636576] ${isOutgoing ? "bg-[#e3efff]" : "bg-white"
+                    className={`p-3 sm:p-4 rounded-2xl shadow-md text-sm sm:text-base break-words leading-relaxed ${isOutgoing 
+                        ? "bg-gradient-to-br from-primary/10 to-primary/5 text-textPrimary border border-primary/20" 
+                        : "bg-white text-textPrimary border border-lineColor/30"
                         }`}
                 >
                     {message.content || message.text}
                 </div>
 
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-[10px] sm:text-xs text-textSecondary mt-1.5 sm:mt-2 font-medium px-1">
                     {formatTime(message.timestamp) || message.time || ""}
                 </div>
             </div>
@@ -146,18 +150,29 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
     const formattedMessages = formatMessages(conversationHistory);
 
     return (
-        <div className="w-2/4 h-screen flex flex-col rounded-lg bg-white overflow-hidden">
+        <div className="w-full md:w-2/5 h-screen flex flex-col rounded-lg bg-white overflow-hidden shadow-lg border border-lineColor/30">
 
             {/* Header */}
-            <div className="bg-primary text-white px-4 py-3 font-semibold">
-                Conversation
+            <div className="bg-gradient-to-r from-primary to-primary/90 text-white px-4 sm:px-5 py-3 sm:py-4 font-bold text-base sm:text-lg shadow-md">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <span>Conversation</span>
+                </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 p-4 space-y-6 overflow-y-auto bg-[#f0f0fa] hide-scrollbar">
+            <div className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto bg-gradient-to-b from-gray-50/50 to-white hide-scrollbar">
                 {formattedMessages.length === 0 ? (
-                    <div className="text-center text-gray-400 mt-8">
-                        Start a conversation to create a quotation
+                    <div className="text-center text-textSecondary mt-12 px-4">
+                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-lineColor/30 inline-block">
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            </div>
+                            <p className="text-sm font-medium text-textPrimary mb-1">Start a conversation</p>
+                            <p className="text-xs text-textSecondary">Ask AI to create your quotation</p>
+                        </div>
                     </div>
                 ) : (
                     formattedMessages.map((msg) => (
@@ -168,11 +183,11 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
             </div>
 
             {/* Input Bar */}
-            <div className="p-3 bg-[#f0f0fa]">
-                <div className="bg-white rounded-xl w-full p-4 flex flex-col justify-between">
+            <div className="p-3 sm:p-4 bg-white border-t border-lineColor/30 shadow-lg">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl w-full p-3 sm:p-4 flex flex-col justify-between border border-lineColor/30 shadow-sm">
                     <textarea
                         ref={textareaRef}
-                        className="w-full resize-none bg-transparent outline-none text-sm text-textPrimary"
+                        className="w-full resize-none bg-transparent outline-none text-sm sm:text-base text-textPrimary placeholder:text-textSecondary/60 focus:ring-0"
                         placeholder="Type your message here..."
                         rows={3}
                         value={message}
@@ -181,12 +196,12 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
                         disabled={sending}
                     />
 
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-lineColor/30">
                         <div className="flex gap-2">
                             <button
                                 onClick={onUndo}
                                 disabled={!canUndo}
-                                className="p-2 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105"
                                 title="Undo"
                             >
                                 <Undo size={16} />
@@ -194,7 +209,7 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
                             <button
                                 onClick={onRedo}
                                 disabled={!canRedo}
-                                className="p-2 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105"
                                 title="Redo"
                             >
                                 <Redo size={16} />
@@ -202,11 +217,12 @@ const ConversationPanel = ({ conversationHistory, setConversationHistory, setQuo
                         </div>
 
                         <button 
-                            className="p-2 rounded-full bg-primary text-white disabled:opacity-50"
+                            className="p-2.5 rounded-lg bg-gradient-to-r from-primary to-primary/90 text-white disabled:opacity-50 shadow-md hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2"
                             onClick={handleSend}
                             disabled={sending || !message.trim()}
                         >
                             <Send size={16} />
+                            <span className="text-sm font-medium hidden sm:inline">Send</span>
                         </button>
                     </div>
                 </div>

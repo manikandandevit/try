@@ -66,30 +66,30 @@ const CardSection = () => {
     };
 
     return (
-        <div className="flex w-full gap-4">
+        <div className="flex flex-col sm:flex-row w-full gap-3 sm:gap-4">
             {cardData.map((item, index) => {
                 return (
                     <div
                         key={index}
                         onClick={() => handleCardClick(item.path)}
-                        className="flex-1 bg-white rounded-xl border border-lineColor px-6 py-4 shadow-md transition-all cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                        className="flex-1 bg-white rounded-lg sm:rounded-xl border border-lineColor px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 shadow-md transition-all cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                     >
                         {/* TOP TITLE */}
-                        <p className="text-lg font-semibold text-textPrimary mb-3">{item.title}</p>
+                        <p className="text-sm sm:text-base md:text-lg font-semibold text-textPrimary mb-2 sm:mb-3">{item.title}</p>
 
                         {/* SECOND ROW */}
                         <div className="flex items-center justify-between">
-                            <h2 className="text-3xl font-medium text-[#172B4D]">
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-[#172B4D]">
                                 {item.value}
                             </h2>
 
                             <div
-                                className={`w-14 h-14 rounded-full flex items-center justify-center ${item.bg}`}
+                                className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center ${item.bg} flex-shrink-0`}
                             >
                                 <img
                                     src={item.icon}
                                     alt={item.title}
-                                    className="w-7 h-7 object-contain"
+                                    className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 object-contain"
                                 />
                             </div>
                         </div>

@@ -116,21 +116,21 @@ const CustomerForm = ({
                 onClick={onClose}
             />
 
-            <div className="fixed top-0 right-0 h-screen w-full sm:w-105 bg-white z-50 flex flex-col animate-slideIn">
+            <div className="fixed top-0 right-0 h-screen w-full sm:w-96 md:w-105 bg-white z-50 flex flex-col animate-slideIn shadow-2xl">
 
                 {/* Header */}
-                <div className="px-5 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-primary">
+                <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200">
+                    <h3 className="text-base sm:text-lg font-semibold text-primary">
                         {mode === "add" ? "Add Customer" : "Edit Customer"}
                     </h3>
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 p-5 space-y-5 overflow-y-auto">
+                <div className="flex-1 p-4 sm:p-5 space-y-4 sm:space-y-5 overflow-y-auto">
 
                     {/* Customer Name */}
                     <div>
-                        <label className="text-sm font-medium">
+                        <label className="text-xs sm:text-sm font-medium">
                             Customer Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -138,7 +138,7 @@ const CustomerForm = ({
                             value={form.customerName}
                             placeholder="Enter Customer Name"
                             onChange={handleChange}
-                            className="w-full mt-1 border border-lineColor rounded-md px-3 py-2 focus:ring-1 focus:ring-primary"
+                            className="w-full mt-1 border border-lineColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm focus:ring-1 focus:ring-primary"
                         />
                         {errors.customerName && (
                             <p className="text-red-500 text-xs mt-1">
@@ -237,20 +237,19 @@ const CustomerForm = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-4 border-t border-gray-200 bg-white">
-                    <div className="flex gap-3">
+                <div className="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-200 bg-white">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <button
                             onClick={handleSubmit}
-                            className="flex items-center gap-2 bg-primary text-white px-4 py-2 text-sm"
+                            className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 text-xs sm:text-sm rounded-md hover:bg-primary/90 transition-colors"
                         >
-
                             {mode === "add" ? "Submit" : "Update"}
-                            <ArrowRight size={16} />
+                            <ArrowRight size={14} className="sm:w-4 sm:h-4" />
                         </button>
 
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 border border-primary text-primary text-sm"
+                            className="px-4 py-2 border border-primary text-primary text-xs sm:text-sm rounded-md hover:bg-primary/5 transition-colors"
                         >
                             Cancel
                         </button>

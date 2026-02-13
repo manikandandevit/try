@@ -11,8 +11,18 @@ import { getCompanyLoginApi } from "../API/authApi";
 const MainLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarMini, setSidebarMini] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const sidebarWidth = sidebarMini ? SIDEBAR_MINI_WIDTH : SIDEBAR_WIDTH;
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Set document title based on brand name
   useEffect(() => {
@@ -52,7 +62,7 @@ const MainLayout = ({ children }) => {
       <div
         className="flex-1 flex flex-col transition-all duration-300 w-full md:w-auto"
         style={{
-          marginLeft: window.innerWidth >= 768 ? sidebarWidth : '0',
+          marginLeft: windowWidth >= 768 ? sidebarWidth : '0',
         }}
       >
         <Header
@@ -65,7 +75,7 @@ const MainLayout = ({ children }) => {
           style={{ marginTop: TOPBAR_HEIGHT }}
         >
           <div className="bg-bgColor1 h-full flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-y-auto hide-scrollbar p-4">
+            <main className="flex-1 overflow-y-auto hide-scrollbar p-2 sm:p-3 md:p-4">
               {children}
             </main>
           </div>

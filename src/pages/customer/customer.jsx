@@ -255,8 +255,8 @@ const Customers = () => {
             <div className="bg-white rounded-lg shadow-sm">
 
                 {/* HEADER */}
-                <div className="flex items-center p-6 justify-between">
-                    <h2 className="text-xl font-medium text-textColor">
+                <div className="flex items-center p-3 sm:p-4 md:p-6 justify-between">
+                    <h2 className="text-base sm:text-lg md:text-xl font-medium text-textColor">
                         Customer List
                     </h2>
                 </div>
@@ -292,13 +292,13 @@ const Customers = () => {
 
             {/* STATUS CONFIRM POPUP */}
             {confirmPopup.open && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
-                    <div className="bg-white shadow-lg w-80 p-6">
-                        <h3 className="text-lg font-medium mb-4">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50 p-4">
+                    <div className="bg-white shadow-lg w-full max-w-sm sm:w-80 p-4 sm:p-6 rounded-lg">
+                        <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">
                             Confirm Status Change
                         </h3>
 
-                        <p className="text-sm text-gray-600 mb-6">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                             Are you sure want to{" "}
                             <span className="font-semibold">
                                 {confirmPopup.status ? "Deactivate" : "Activate"}
@@ -306,12 +306,12 @@ const Customers = () => {
                             this customer?
                         </p>
 
-                        <div className="flex justify-end gap-3">
+                        <div className="flex justify-end gap-2 sm:gap-3">
                             <button
                                 onClick={() =>
                                     setConfirmPopup({ open: false, id: null, status: null })
                                 }
-                                className="px-4 py-2 text-sm bg-gray-200"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gray-200 rounded"
                             >
                                 Cancel
                             </button>
@@ -321,7 +321,7 @@ const Customers = () => {
                                     toggleStatus(confirmPopup.id);
                                     setConfirmPopup({ open: false, id: null, status: null });
                                 }}
-                                className="px-4 py-2 text-sm bg-primary text-white"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary text-white rounded"
                             >
                                 Confirm
                             </button>

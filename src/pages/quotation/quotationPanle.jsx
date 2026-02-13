@@ -229,18 +229,18 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
   };
 
   return (
-    <div className="w-3/5 h-screen flex flex-col bg-gray-100">
+    <div className="w-full md:w-3/5 h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
 
       {/* Top Bar */}
-      <div className="bg-[#F1F1FA] rounded-xl px-4 py-2 flex justify-between items-center">
+      <div className="bg-gradient-to-r from-white to-gray-50 rounded-xl shadow-md border border-lineColor/30 px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-3">
         <div>
-          <h2 className="text-lg text-textPrimary font-bold">Preview</h2>
-          <p className="text-base font-normal text-textSecondary">
+          <h2 className="text-lg sm:text-xl text-textPrimary font-bold tracking-tight">Preview</h2>
+          <p className="text-sm sm:text-base font-medium text-textSecondary mt-0.5">
             Quotation Preview
           </p>
         </div>
 
-        <div className="flex items-right gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <TemplateDropdown
             onCustomerSelect={handleCustomerSelect}
             selectedCustomer={selectedCustomer}
@@ -269,20 +269,20 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
             />
           )}
 
-          <button className="p-1 bg-[#F7BA1E] text-primary rounded-full shrink-0">
-            <FileText size={14} className="w-5 h-5" />
+          <button className="p-2 bg-gradient-to-br from-[#F7BA1E] to-[#F5A623] text-white rounded-lg shrink-0 shadow-md hover:shadow-lg transition-all hover:scale-105">
+            <FileText size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button 
             onClick={handleEnhanceQuotation}
             disabled={!quotation || isEnhancing || !hasServices}
-            className="p-1 bg-primary text-white rounded-full shrink-0 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all relative"
+            className="p-2 bg-gradient-to-br from-primary to-primary/90 text-white rounded-lg shrink-0 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 relative"
             title={isEnhancing ? "Enhancing..." : "AI Enhance Service Names"}
           >
             {isEnhancing ? (
-              <Sparkles size={20} className="animate-pulse" />
+              <Sparkles size={18} className="sm:w-5 sm:h-5 animate-pulse" />
             ) : (
-              <img src={Images.starIcon} alt="star" className="w-7 h-7" />
+              <img src={Images.starIcon} alt="star" className="w-5 h-5 sm:w-6 sm:h-6" />
             )}
           </button>
         </div>
@@ -291,11 +291,14 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
       {/* Template Area */}
       <div
         id="quotation-preview"
-        className="flex-1 mt-2 overflow-y-auto hide-scrollbar bg-white rounded-xl"
+        className="flex-1 overflow-y-auto hide-scrollbar bg-white rounded-xl shadow-lg border border-lineColor/30 p-2 sm:p-3 md:p-4"
       >
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <p className="text-gray-400">Loading...</p>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-textSecondary font-medium">Loading quotation...</p>
+            </div>
           </div>
         ) : quotation ? (
           <QuotationTemplate
@@ -307,11 +310,13 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
             conversationHistory={conversationHistory}
           />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-gray-400">
-            <FileText size={50} className="mb-4 opacity-30" />
-            <p className="text-lg font-medium">No Quotation Generated</p>
-            <p className="text-sm mt-1">
-              Ask AI to generate a quotation to preview it here.
+          <div className="h-full flex flex-col items-center justify-center text-textSecondary p-8">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-8 mb-6">
+              <FileText size={64} className="text-primary/40" />
+            </div>
+            <p className="text-xl font-bold text-textPrimary mb-2">No Quotation Generated</p>
+            <p className="text-sm text-center max-w-md">
+              Start a conversation with AI to generate your quotation. Ask questions or request services to get started.
             </p>
           </div>
         )}

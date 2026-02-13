@@ -142,33 +142,33 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col md:flex-row">
       {/* ================= LEFT SIDE ================= */}
-      <div className="w-1/2 bg-primary text-white flex flex-col items-center justify-center p-10">
+      <div className="w-full md:w-1/2 bg-primary text-white flex flex-col items-center justify-center p-6 sm:p-8 md:p-10">
         <img
           src={loginImage}
           alt="Illustration"
-          className="w-75 h-70 object-contain mb-10"
+          className="w-48 sm:w-64 md:w-75 h-auto max-h-60 sm:max-h-80 md:max-h-96 object-contain mb-6 sm:mb-8 md:mb-10"
           onError={(e) => {
             // Fallback to default image if backend image fails to load
             e.target.src = Images.loginLeft;
           }}
         />
-        <h2 className="text-3xl font-semibold mb-4">
+        <h2 className="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4 text-center px-4">
           {brandName ? (
             brandName
           ) : (
-            <>Syn<span className="text-5xl">Q</span>uot</>
+            <>Syn<span className="text-3xl sm:text-4xl md:text-5xl">Q</span>uot</>
           )}
         </h2>
-        <p className="text-center text-md font-medium">
+        <p className="text-center text-sm sm:text-md font-medium px-4">
           Smart Quotes, Made Simple.
         </p>
       </div>
 
       {/* ================= RIGHT SIDE ================= */}
-      <div className="w-1/2 flex items-center justify-center bg-bgColor p-10">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+      <div className="w-full md:w-1/2 flex items-center justify-center bg-bgColor p-4 sm:p-6 md:p-10">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
           <div className="flex justify-center mb-6">
             <img 
               src={loginLogo} 

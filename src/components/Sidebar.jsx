@@ -126,36 +126,40 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
           }}
           className={`
           w-full flex items-center justify-between
-          px-4 py-3 text-base font-medium
-          ${isSub ? "pl-10 " : ""}
+          px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium
+          transition-all duration-200
+          ${isSub ? "pl-8 sm:pl-10" : ""}
           ${isActive
-              ? "bg-white text-primary border-r-3 border-primary" // Active menu
-              : "text-white/80 hover:bg-white/10"
+              ? "bg-white text-primary border-r-4 border-primary shadow-sm" // Active menu
+              : "text-white/80 hover:bg-white/10 hover:text-white"
             }
         `}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {isSub ? (
-              <Dot size={20} className={isActive ? "text-primary" : "text-white"} />
+              <Dot size={16} className={`sm:w-5 sm:h-5 flex-shrink-0 ${isActive ? "text-primary" : "text-white"}`} />
             ) : (
               <img
-                src={isActive && item.activeIcon ? item.activeIcon : item.icon} // <-- Active icon
-                className="w-5 h-5"
+                src={isActive && item.activeIcon ? item.activeIcon : item.icon}
+                className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                alt={item.name}
               />
             )}
-            {!isMini && <span>{item.name}</span>}
+            {!isMini && (
+              <span className="truncate text-xs sm:text-sm md:text-base">{item.name}</span>
+            )}
           </div>
 
           {!isMini && hasChildren && (
             <ChevronRight
-              size={16}
-              className={`transition-transform ${openIndex === index ? "rotate-90" : ""}`}
+              size={14}
+              className={`sm:w-4 sm:h-4 transition-transform flex-shrink-0 ${openIndex === index ? "rotate-90" : ""}`}
             />
           )}
         </button>
 
         {!isMini && hasChildren && openIndex === index && (
-          <div className="mt-1 space-y-1">
+          <div className="mt-0.5 sm:mt-1 space-y-0.5 sm:space-y-1 bg-white/5 rounded-lg mx-2 sm:mx-0">
             {item.children.map((child, i) =>
               renderMenu(child, `${index}-${i}`, true)
             )}
@@ -178,18 +182,22 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
 
       <aside
         className={`
-          fixed left-0 top-0 h-screen bg-primary z-50 transition-all duration-300 flex flex-col
+          fixed left-0 top-0 h-screen bg-gradient-to-b from-primary to-primary/95 z-50 transition-all duration-300 flex flex-col shadow-2xl
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
         style={{ width }}
       >
         {/* LOGO */}
-        <div className="h-20 flex items-center justify-center relative">
+        <div className="h-16 sm:h-18 md:h-20 flex items-center justify-center relative border-b border-white/10">
           <img
             src={isMini ? quotationLogo : loginLogo}
             alt="Logo"
-            className={`transition-all ${isMini ? "w-10" : "w-45"}`}
+            className={`transition-all object-contain ${
+              isMini 
+                ? "w-8 h-8 sm:w-10 sm:h-10" 
+                : "w-32 h-auto sm:w-36 md:w-45 max-h-12 sm:max-h-14 md:max-h-16"
+            }`}
             onError={(e) => {
               // Fallback to default logo if backend logo fails to load
               e.target.src = isMini ? Images.smLogo : Images.fullLogo;
@@ -199,7 +207,8 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
           {!isMini && (
             <button
               onClick={onMini}
-              className="absolute right-3 text-white/60 hidden md:block"
+              className="absolute right-2 sm:right-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg p-1.5 hidden md:block transition-all"
+              title="Minimize sidebar"
             >
               <ChevronLeft size={18} />
             </button>
@@ -207,38 +216,40 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
 
           <button
             onClick={onClose}
-            className="absolute right-3 text-white/60 md:hidden text-xl font-bold"
+            className="absolute right-2 sm:right-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg p-1.5 md:hidden transition-all"
+            aria-label="Close menu"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {isMini && (
           <button
             onClick={onExpand}
-            className="mx-auto mt-3 block text-white md:block"
+            className="mx-auto mt-2 sm:mt-3 block text-white/70 hover:text-white hover:bg-white/10 rounded-lg p-1.5 md:block transition-all"
+            title="Expand sidebar"
           >
             <ChevronRight size={18} />
           </button>
         )}
 
         {/* SCROLLABLE MENUS */}
-        <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="flex-1 overflow-y-auto hide-scrollbar px-1 sm:px-0">
           {/* MAIN MENUS */}
-          <nav className="mt-8 space-y-1">
+          <nav className="mt-4 sm:mt-6 md:mt-8 space-y-0.5 sm:space-y-1">
             {ProtectedRoutes.filter((r) => r.showInSidebar && !r.group)
               .map((item, index) => renderMenu(item, index))}
           </nav>
 
           {/* GROUPS */}
           {ProtectedRoutes.filter((r) => r.group).map((group) => (
-            <div key={group.group} className="mt-6 px-4">
+            <div key={group.group} className="mt-4 sm:mt-6 px-2 sm:px-4">
               {!isMini && (
-                <p className="text-xs text-white/60 uppercase mb-2 tracking-wide">
+                <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-2 sm:mb-3 tracking-wide font-semibold px-2">
                   {group.group}
                 </p>
               )}
-              <div className="space-y-1">
+              <div className="space-y-0.5 sm:space-y-1">
                 {group.menus.map((item, index) =>
                   renderMenu(item, `g-${index}`)
                 )}
@@ -248,27 +259,34 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
         </div>
 
         {/* BOTTOM MENUS */}
-        <div className="py-3">
+        <div className="py-2 sm:py-3 border-t border-white/10">
           {bottomMenus.map((item) => {
             const isActive = location.pathname === item.path;
 
             return (
               <button
                 key={item.name}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  onClose?.();
+                }}
                 className={`
-          w-full flex items-center gap-3 px-4 py-2 text-base font-medium
+          w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base font-medium
+          transition-all duration-200
           ${isActive
-                    ? "bg-white text-primary border-r-3 border-primary"
-                    : "text-white hover:bg-white/10"
+                    ? "bg-white text-primary border-r-4 border-primary shadow-sm"
+                    : "text-white/80 hover:bg-white/10 hover:text-white"
                   }
         `}
               >
                 <img
                   src={isActive ? item.activeIcon : item.icon}
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                  alt={item.name}
                 />
-                {!isMini && item.name}
+                {!isMini && (
+                  <span className="truncate text-xs sm:text-sm md:text-base">{item.name}</span>
+                )}
               </button>
             );
           })}
@@ -276,10 +294,10 @@ const Sidebar = ({ isOpen, isMini, onClose, onMini, onExpand }) => {
           {/* LOGOUT */}
           <button
             onClick={() => setShowLogoutPopup(true)}
-            className="w-full flex items-center gap-3 px-4 py-2 rounded-md text-white hover:bg-red-500/20"
+            className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-md text-white/80 hover:bg-red-500/20 hover:text-white transition-all duration-200 text-sm sm:text-base font-medium"
           >
-            <img src={Images.logoutIcon} className="w-5 h-5" />
-            {!isMini && "Logout"}
+            <img src={Images.logoutIcon} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" alt="Logout" />
+            {!isMini && <span className="truncate text-xs sm:text-sm md:text-base">Logout</span>}
           </button>
         </div>
       </aside>

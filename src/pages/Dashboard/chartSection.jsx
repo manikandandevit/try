@@ -28,6 +28,15 @@ const DashboardCharts = () => {
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState([]);
   const [pieData, setPieData] = useState(pieDataFallback);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -73,18 +82,18 @@ const DashboardCharts = () => {
   const totalPie = pieData.reduce((a, b) => a + b.value, 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
       
       {/* LEFT SIDE (WIDER) */}
-      <div className="lg:col-span-2 bg-white border border-lineColor rounded-xl p-5">
+      <div className="lg:col-span-2 bg-white border border-lineColor rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5">
 
         {/* Header with Year Filter */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6 md:mb-8">
           <div>
-            <h3 className="text-lg font-medium text-gray-800">
+            <h3 className="text-base sm:text-lg font-medium text-gray-800">
               Total Quotations per Month
             </h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Customer quotations sent by month
             </p>
           </div>
@@ -92,7 +101,7 @@ const DashboardCharts = () => {
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="border border-borderColor rounded-md px-3 py-1 text-sm focus:outline-none"
+            className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-auto"
           >
             {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
               <option key={y} value={String(y)}>{y}</option>
@@ -102,9 +111,14 @@ const DashboardCharts = () => {
 
         {/* Vertical Bar Chart - Monthly Total Quotations */}
         {loading ? (
-          <div className="flex items-center justify-center h-[300px] text-gray-500">Loading...</div>
+          <div className="flex items-center justify-center h-[250px] sm:h-[300px] text-gray-500">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              <p className="text-sm">Loading...</p>
+            </div>
+          </div>
         ) : (
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={windowWidth < 640 ? 250 : 300}>
           <BarChart data={monthlyData}>
             
             {/* Horizontal dotted lines */}
@@ -120,7 +134,7 @@ const DashboardCharts = () => {
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 13 }}
+              tick={{ fontSize: windowWidth < 640 ? 10 : 13 }}
             />
 
             {/* Y Axis (Dynamic) */}
@@ -132,7 +146,7 @@ const DashboardCharts = () => {
               )}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 13 }}
+              tick={{ fontSize: windowWidth < 640 ? 10 : 13 }}
             />
 
             <Tooltip />
@@ -141,7 +155,7 @@ const DashboardCharts = () => {
               dataKey="value"
               fill="#00085E"
               radius={[0, 0, 0, 0]}
-              barSize={25}
+              barSize={windowWidth < 640 ? 20 : 25}
               name="Quotations"
             />
           </BarChart>
@@ -150,22 +164,22 @@ const DashboardCharts = () => {
       </div>
 
       {/* RIGHT SIDE (SMALLER) */}
-      <div className="bg-white border border-lineColor rounded-xl p-5 flex flex-col justify-between">
+      <div className="bg-white border border-lineColor rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 flex flex-col justify-between">
 
         <div>
-          <h3 className="text-base font-semibold text-gray-800">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-800">
             Quotation Status
           </h3>
-          <p className="text-sm text-gray-500 mt-1 mb-4">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 mb-3 sm:mb-4">
             Draft, Submitted, Awarded
           </p>
           
           {/* Month and Year Selectors */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-4">
             <select
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="border border-borderColor rounded-md px-2 py-1 text-sm focus:outline-none flex-1"
+              className="border border-borderColor rounded-md px-2 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1"
             >
               <option value="1">January</option>
               <option value="2">February</option>
@@ -183,7 +197,7 @@ const DashboardCharts = () => {
             <select
               value={year}
               onChange={(e) => setYear(e.target.value)}
-              className="border border-borderColor rounded-md px-2 py-1 text-sm focus:outline-none flex-1"
+              className="border border-borderColor rounded-md px-2 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 flex-1"
             >
               {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
                 <option key={y} value={String(y)}>{y}</option>
@@ -194,14 +208,14 @@ const DashboardCharts = () => {
 
         {/* Full Pie Chart */}
         <div className="relative flex justify-center">
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={windowWidth < 640 ? 200 : 240}>
             <PieChart>
               <Pie
                 data={pieData}
                 dataKey="value"
                 cx="50%"
                 cy="50%"
-                outerRadius={90}
+                outerRadius={windowWidth < 640 ? 70 : 90}
               >
                 {pieData.map((entry, index) => (
                   <Cell key={index} fill={entry.color} />
@@ -214,25 +228,25 @@ const DashboardCharts = () => {
 
           {/* Center Total */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-            <p className="text-sm text-gray-500">Total</p>
-            <p className="text-xl font-bold text-gray-800">
+            <p className="text-xs sm:text-sm text-gray-500">Total</p>
+            <p className="text-lg sm:text-xl font-bold text-gray-800">
               {totalPie}
             </p>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex flex-col gap-2 mt-4 text-sm">
+        <div className="flex flex-col gap-1.5 sm:gap-2 mt-3 sm:mt-4 text-xs sm:text-sm">
           {pieData.map((item, index) => (
             <div key={index} className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span
-                  className="w-3 h-3 rounded-full"
+                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 ></span>
-                <span className="text-gray-600">{item.name}</span>
+                <span className="text-gray-600 truncate">{item.name}</span>
               </div>
-              <span className="font-medium text-gray-800">
+              <span className="font-medium text-gray-800 ml-2">
                 {item.value}
               </span>
             </div>

@@ -14,6 +14,7 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
   const [showTokens, setShowTokens] = useState(false);
   // const [openNotification, setOpenNotification] = useState(false);
   const menuRef = useRef(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   
   const [tokens, setTokens] = useState({
     accessToken: null,
@@ -40,6 +41,15 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
       }
     };
     fetchUser();
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const sidebarWidth = isSidebarMini
@@ -80,20 +90,26 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
   return (
     <>
       <header
-        className="fixed top-0 z-40 flex items-center px-4 md:px-6 shadow-sm bg-primary transition-all duration-300"
+        className="fixed top-0 z-40 flex items-center px-2 sm:px-3 md:px-4 lg:px-6 shadow-md bg-gradient-to-r from-primary to-primary/95 transition-all duration-300"
         style={{
-          height: TOPBAR_HEIGHT,
+          height: windowWidth < 640 ? '60px' : TOPBAR_HEIGHT,
           right: 0,
-          left: window.innerWidth >= 768 ? sidebarWidth : 0,
+          left: windowWidth >= 768 ? sidebarWidth : 0,
         }}
       >
         {/* MOBILE MENU */}
-        <button onClick={onMenuClick} className="md:hidden mr-4 text-2xl">
-          ☰
+        <button 
+          onClick={onMenuClick} 
+          className="md:hidden mr-2 sm:mr-3 p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+          aria-label="Toggle menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
         </button>
 
         {/* RIGHT SIDE */}
-        <div className="ml-auto flex items-center gap-4 md:gap-6">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6">
           {/* TOKEN VIEW TOGGLE */}
           {/* <button
             onClick={() => setShowTokens(!showTokens)}
@@ -103,25 +119,30 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
           </button> */}
 
           {/* NOTIFICATION */}
-          <div className="relative cursor-pointer" 
-          // onClick={handleNotificationToggle}
+          <div 
+            className="relative cursor-pointer p-2 hover:bg-white/10 rounded-lg transition-colors" 
+            // onClick={handleNotificationToggle}
+            title="Notifications"
           >
-            <img src={Images.bellIcon} className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+            <img src={Images.bellIcon} className="w-4 h-4 sm:w-5 sm:h-5" alt="Notifications" />
+            <span className="absolute top-1 right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full border-2 border-primary" />
           </div>
 
           {/* PROFILE */}
           <div ref={menuRef} className="relative">
-            <div className="flex items-center gap-2 md:gap-3">
-              <img
-                src={Images.adminProfile}
-                className="w-8 h-8 md:w-9 md:h-9 rounded-full"
-              />
-              <div className="hidden md:block leading-tight">
-                <p className="font-semibold text-base text-white">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+              <div className="relative">
+                <img
+                  src={Images.adminProfile}
+                  className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full border-2 border-white/30 shadow-sm"
+                  alt="Profile"
+                />
+              </div>
+              <div className="hidden sm:block leading-tight">
+                <p className="font-semibold text-xs sm:text-sm md:text-base text-white truncate max-w-[100px] sm:max-w-[120px] md:max-w-none">
                   {userDisplay.label}
                 </p>
-                <p className="text-sm font-medium text-white">
+                <p className="text-[10px] sm:text-xs md:text-sm font-medium text-white/90 truncate max-w-[100px] sm:max-w-[120px] md:max-w-none">
                   {userDisplay.displayName || (userDisplay.label === "Admin" ? "Admin" : "User")}
                 </p>
               </div>

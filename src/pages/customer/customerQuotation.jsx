@@ -216,15 +216,15 @@ const CustomerQuotation = () => {
     return (
         <>
             <div className="bg-white rounded-lg shadow-sm">
-                <div className="flex items-center p-6">
+                <div className="flex items-center p-3 sm:p-4 md:p-6">
                     <button
                         onClick={() => navigate(-1)}
-                        className="mr-3 p-2 rounded-full hover:bg-gray-100 transition"
+                        className="mr-2 sm:mr-3 p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition"
                         title="Back"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
                     </button>
-                    <h2 className="text-xl font-medium text-textColor">
+                    <h2 className="text-base sm:text-lg md:text-xl font-medium text-textColor truncate">
                         {customerName}
                     </h2>
                 </div>
@@ -250,12 +250,12 @@ const CustomerQuotation = () => {
             </div>
 
             {confirmPopup.open && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
-                    <div className="bg-white shadow-lg w-96 p-6">
-                        <h3 className="text-lg font-medium mb-4">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50 p-4">
+                    <div className="bg-white shadow-lg w-full max-w-sm sm:w-96 rounded-lg p-4 sm:p-6">
+                        <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">
                             Confirm Status Change
                         </h3>
-                        <p className="text-sm text-gray-600 mb-6">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                             Are you sure you want to change status from{" "}
                             <span className="font-semibold capitalize">
                                 {confirmPopup.oldStatus}
@@ -266,7 +266,7 @@ const CustomerQuotation = () => {
                             </span>
                             ?
                         </p>
-                        <div className="flex justify-end gap-3">
+                        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                             <button
                                 onClick={() =>
                                     setConfirmPopup({
@@ -276,13 +276,13 @@ const CustomerQuotation = () => {
                                         newStatus: "",
                                     })
                                 }
-                                className="px-4 py-2 text-sm bg-gray-200"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmStatusChange}
-                                className="px-4 py-2 text-sm bg-primary text-white"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
                             >
                                 Confirm
                             </button>
