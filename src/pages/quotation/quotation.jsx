@@ -182,23 +182,7 @@ const Quotation = () => {
     const canRedo = historyIndex < quotationHistory.length - 1;
 
     return (
-        <div className="flex flex-col w-full h-auto gap-3">
-
-            {/* ✅ Top Header (Only when ID exists) */}
-            {quotationId && (
-                <div className="flex items-center gap-3 p-3">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="flex items-center justify-center w-9 h-9 rounded hover:bg-gray-200 transition"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-primary" />
-                    </button>
-
-                    <h2 className="text-primary text-lg font-semibold">
-                        Quotation Details
-                    </h2>
-                </div>
-            )}
+        <div className="flex flex-col w-full h-auto gap-3">          
 
             {/* Existing Layout */}
             <div className="flex flex-col md:flex-row w-full h-auto gap-3">
