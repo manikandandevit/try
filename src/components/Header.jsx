@@ -85,12 +85,13 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
           height: windowWidth < 640 ? '60px' : TOPBAR_HEIGHT,
           right: 0,
           left: windowWidth >= 768 ? sidebarWidth : 0,
+          width: windowWidth >= 768 ? `calc(100% - ${sidebarWidth})` : '100%',
         }}
       >
         {/* MOBILE MENU */}
         <button
           onClick={onMenuClick}
-          className="md:hidden mr-2 sm:mr-3 p-2 text-white hover:bg-white/20 rounded-lg transition-colors"
+          className="md:hidden mr-2 sm:mr-3 p-2 text-white hover:bg-white/20 rounded-lg transition-colors shrink-0"
           aria-label="Toggle menu"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,30 +100,30 @@ const Header = ({ onMenuClick, isSidebarMini }) => {
         </button>
 
         {/* RIGHT SIDE */}
-        <div className="ml-auto flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 min-w-0">
 
           {/* PROFILE */}
-          <div ref={menuRef} className="relative">
-            <div onClick={() => setOpenDropdown((prev) => !prev)} className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-              <div className="relative">
+          <div ref={menuRef} className="relative shrink-0">
+            <div onClick={() => setOpenDropdown((prev) => !prev)} className="flex items-center gap-1.5 sm:gap-2 md:gap-3 cursor-pointer">
+              <div className="relative shrink-0">
                 <img
                   src={Images.adminProfile}
                   className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full border-2 border-white/30 shadow-sm"
                   alt="Profile"
                 />
               </div>
-              <div className="hidden sm:block leading-tight">
-                <p className="font-semibold text-xs sm:text-sm md:text-base text-white truncate max-w-25 sm:max-w-30 md:max-w-none">
+              <div className="hidden sm:block leading-tight min-w-0">
+                <p className="font-semibold text-xs sm:text-sm md:text-base text-white truncate max-w-[100px] sm:max-w-[120px] md:max-w-[150px] lg:max-w-none">
                   {userDisplay.label}
                 </p>
-                <p className="text-[10px] sm:text-xs md:text-sm font-medium text-white/90 truncate max-w-25 sm:max-w-30 md:max-w-none">
+                <p className="text-[10px] sm:text-xs md:text-sm font-medium text-white/90 truncate max-w-[100px] sm:max-w-[120px] md:max-w-[150px] lg:max-w-none">
                   {userDisplay.displayName || (userDisplay.label === "Admin" ? "Admin" : "User")}
                 </p>
               </div>
             </div>
             {/* DROPDOWN */}
             {openDropdown && (
-              <div className="absolute right-0 mt-3 w-40 bg-white rounded-lg shadow-lg border border-borderColor py-2 z-50 animate-fadeIn">
+              <div className="absolute right-0 mt-3 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-borderColor py-2 z-50 animate-fadeIn">
 
                 {/* SETTINGS */}
                 <button

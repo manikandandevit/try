@@ -2,17 +2,17 @@ const ConfirmPopup = ({ show, title, onConfirm, onCancel, loading = false }) => 
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-80 text-center">
-        <h3 className="text-lg font-semibold text-primary mb-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-sm text-center">
+        <h3 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4">
           {title}
         </h3>
 
-        <div className="flex justify-between gap-4">
+        <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4">
           <button
             onClick={onCancel}
             disabled={loading}
-            className={`w-full py-2 rounded-md border border-borderColor text-primary
+            className={`w-full py-2 px-4 rounded-md border border-borderColor text-primary text-sm sm:text-base hover:bg-gray-50 transition
               ${loading ? "opacity-60 cursor-not-allowed" : ""}
             `}
           >
@@ -22,8 +22,8 @@ const ConfirmPopup = ({ show, title, onConfirm, onCancel, loading = false }) => 
           <button
             onClick={onConfirm}
             disabled={loading}
-            className={`w-full py-2 rounded-md text-white flex items-center justify-center gap-2
-              ${loading ? "bg-primary/70 cursor-not-allowed" : "bg-primary"}
+            className={`w-full py-2 px-4 rounded-md text-white flex items-center justify-center gap-2 text-sm sm:text-base transition
+              ${loading ? "bg-primary/70 cursor-not-allowed" : "bg-primary hover:bg-primary/90"}
             `}
           >
             {loading ? (
@@ -47,7 +47,8 @@ const ConfirmPopup = ({ show, title, onConfirm, onCancel, loading = false }) => 
                     d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                   />
                 </svg>
-                Processing...
+                <span className="hidden sm:inline">Processing...</span>
+                <span className="sm:hidden">...</span>
               </>
             ) : (
               "Confirm"

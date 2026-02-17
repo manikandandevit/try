@@ -179,21 +179,21 @@ const Users = () => {
 
                 return (
                     <div className="relative group inline-block w-full">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col cursor-pointer">
                             <span className="text-textPrimary font-medium truncate">{createdBy}</span>
                             {createdAt && (
                                 <span className="text-xs text-textSecondary mt-0.5 truncate">{createdAt}</span>
                             )}
                         </div>
                         {createdBy !== "-" && (
-                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 text-left max-w-xs shadow-lg">
+                            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm px-4 py-3 rounded-lg shadow-2xl opacity-0 pointer-events-none transition-all duration-300 group-hover:opacity-100 z-[9999] min-w-[300px] max-w-[90vw]">
                                 <div className="flex flex-col gap-1">
-                                    <div className="font-medium">{createdBy}</div>
+                                    <div className="font-semibold text-base text-white mb-1">Created By</div>
+                                    <div className="text-white/90 font-medium">{createdBy}</div>
                                     {createdAt && (
-                                        <div className="text-gray-300 text-[11px]">{createdAt}</div>
+                                        <div className="text-white/70 text-xs mt-1">Created At: {createdAt}</div>
                                     )}
                                 </div>
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
                             </div>
                         )}
                     </div>
@@ -225,21 +225,21 @@ const Users = () => {
 
                 return (
                     <div className="relative group inline-block w-full">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col cursor-pointer">
                             <span className="text-textPrimary font-medium truncate">{updatedBy}</span>
                             {updatedAt && updatedBy !== "-" && (
                                 <span className="text-xs text-textSecondary mt-0.5 truncate">{updatedAt}</span>
                             )}
                         </div>
-                        {createdBy !== "-" && (
-                            <div className="absolute bottom-[120%] left-1/2 -translate-x-1/2 bg-black text-white text-xs px-3 py-2 rounded-md opacity-0 pointer-events-none transition group-hover:opacity-100 z-50 text-left max-w-xs shadow-lg">
+                        {updatedBy !== "-" && (
+                            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm px-4 py-3 rounded-lg shadow-2xl opacity-0 pointer-events-none transition-all duration-300 group-hover:opacity-100 z-[9999] min-w-[300px] max-w-[90vw]">
                                 <div className="flex flex-col gap-1">
-                                    <div className="font-medium">{createdBy}</div>
-                                    {createdAt && (
-                                        <div className="text-gray-300 text-[11px]">{createdAt}</div>
+                                    <div className="font-semibold text-base text-white mb-1">Updated By</div>
+                                    <div className="text-white/90 font-medium">{updatedBy}</div>
+                                    {updatedAt && (
+                                        <div className="text-white/70 text-xs mt-1">Updated At: {updatedAt}</div>
                                     )}
                                 </div>
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-4 border-t-black border-r-transparent border-b-transparent border-l-transparent"></div>
                             </div>
                         )}
                     </div>

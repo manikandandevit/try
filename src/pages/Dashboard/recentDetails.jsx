@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getDashboardCustomersApi } from "../../API/customerApi";
+import { SkeletonLoader } from "../../common/SkeletonLoader";
 
 const RecentDetails = () => {
     const [customersData, setCustomersData] = useState([]);
@@ -35,10 +36,22 @@ const RecentDetails = () => {
 
     if (loading) {
         return (
-            <div className="w-full bg-white border border-lineColor rounded-lg sm:rounded-xl p-4 sm:p-6 md:p-8 flex justify-center items-center min-h-[200px]">
-                <div className="flex flex-col items-center gap-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    <p className="text-sm text-textSecondary">Loading...</p>
+            <div className="w-full bg-white border border-lineColor rounded-lg sm:rounded-xl overflow-hidden">
+                <div className="p-4 sm:p-6 md:p-8 space-y-4">
+                    {/* Table Header Skeleton */}
+                    <div className="grid grid-cols-8 gap-4 pb-3 border-b border-gray-200">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <SkeletonLoader key={i} height="h-4" />
+                        ))}
+                    </div>
+                    {/* Table Rows Skeleton */}
+                    {[1, 2, 3, 4, 5].map((row) => (
+                        <div key={row} className="grid grid-cols-8 gap-4 py-3 border-b border-gray-100">
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((col) => (
+                                <SkeletonLoader key={col} height="h-4" />
+                            ))}
+                        </div>
+                    ))}
                 </div>
             </div>
         );

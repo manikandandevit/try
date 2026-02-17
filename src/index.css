@@ -51,6 +51,27 @@ select {
   background-color: white !important;
 }
 
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Ensure images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 .tooltip {
   @apply absolute bottom-[120%] left-1/2 -translate-x-1/2
   bg-black text-white text-xs px-2 py-1 rounded

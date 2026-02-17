@@ -17,22 +17,22 @@ const ConfirmDeleteModal = ({
 
         <Dialog.Content
           className="fixed top-1/2 left-1/2 z-50
-                     w-full max-w-sm
+                     w-full max-w-sm mx-4
                      -translate-x-1/2 -translate-y-1/2
-                     bg-white rounded-lg p-6 shadow-lg"
+                     bg-white rounded-lg p-4 sm:p-6 shadow-lg"
         >
-          <Dialog.Title className="text-lg font-semibold mb-2">
+          <Dialog.Title className="text-base sm:text-lg font-semibold mb-2">
             {title}
           </Dialog.Title>
 
-          <Dialog.Description className="text-sm text-gray-600 mb-5">
+          <Dialog.Description className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-5">
             {description}
           </Dialog.Description>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
             <button
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 border rounded border-borderColor"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 border rounded border-borderColor text-xs sm:text-sm hover:bg-gray-50 transition"
               disabled={loading}
             >
               {cancelText}
@@ -41,7 +41,7 @@ const ConfirmDeleteModal = ({
             <button
               onClick={onConfirm}
               disabled={loading}
-              className="px-4 py-2 rounded bg-red-600 text-white"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded bg-red-600 text-white text-xs sm:text-sm hover:bg-red-700 transition disabled:opacity-50"
             >
               {loading ? "Updating..." : confirmText}
             </button>

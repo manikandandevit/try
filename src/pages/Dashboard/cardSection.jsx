@@ -89,30 +89,30 @@ const CardSection = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 w-full gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 w-full gap-3 sm:gap-4">
             {cardData.map((item, index) => {
                 return (
                     <div
                         key={index}
                         onClick={() => handleCardClick(item.path)}
-                        className="flex-1 bg-white rounded-lg sm:rounded-xl border border-lineColor px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 shadow-md transition-all cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                        className="flex-1 bg-white rounded-lg sm:rounded-xl border border-lineColor px-3 py-3 sm:px-4 sm:py-4 md:px-5 md:py-4 lg:px-6 shadow-md transition-all cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                     >
                         {/* TOP TITLE */}
-                        <p className="text-sm sm:text-base md:text-lg font-semibold text-textPrimary mb-2 sm:mb-3">{item.title}</p>
+                        <p className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-textPrimary mb-2 sm:mb-3 line-clamp-2">{item.title}</p>
 
                         {/* SECOND ROW */}
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-[#172B4D]">
+                        <div className="flex items-center justify-between gap-2">
+                            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-[#172B4D] truncate flex-1 min-w-0">
                                 {item.value}
                             </h2>
 
                             <div
-                                className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center ${item.bg} shrink-0`}
+                                className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center ${item.bg} shrink-0`}
                             >
                                 <img
                                     src={item.icon}
                                     alt={item.title}
-                                    className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 object-contain"
+                                    className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 object-contain"
                                 />
                             </div>
                         </div>

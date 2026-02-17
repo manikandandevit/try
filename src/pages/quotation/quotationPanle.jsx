@@ -7,6 +7,8 @@ import ShareButton from "./share";
 import { getCompanyDetails } from "../../API/companyApi";
 import { FileText, Sparkles, ArrowLeft } from "lucide-react";
 import { enhanceQuotation } from "../../API/quotationApi";
+import { QuotationSkeleton } from "../../common/SkeletonLoader";
+import { OperationProgress } from "../../common/ProgressIndicator";
 
 // Map quotation_to format to selectedCustomer format
 const mapQuotationToToCustomer = (quotationTo) => {
@@ -231,11 +233,19 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
   };
 
   return (
-    <div className="w-full md:w-3/5 h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <>
+      {/* Progress Indicator for Enhance Operation */}
+      <OperationProgress 
+        isActive={isEnhancing}
+        message="Enhancing quotation with AI..."
+        showProgress={false}
+      />
+      
+      <div className="w-full lg:w-3/5 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] lg:h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
 
       {/* Top Bar */}
-      <div className="bg-gradient-to-r from-white to-gray-50 rounded-xl shadow-md border border-lineColor/30 px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-3">
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="bg-gradient-to-r from-white to-gray-50 rounded-lg sm:rounded-xl shadow-md border border-lineColor/30 px-3 sm:px-4 md:px-5 py-2 sm:py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {fromCustomerView && (
             <button
               onClick={() => {
@@ -257,26 +267,28 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
                   navigate("/customer");
                 }
               }}
-              className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition shrink-0"
               title="Back to Customer Quotations"
             >
-              <ArrowLeft size={18} className="sm:w-5 sm:h-5 text-textPrimary" />
+              <ArrowLeft size={16} className="sm:w-5 sm:h-5 text-textPrimary" />
             </button>
           )}
-          <div>
-            <h2 className="text-lg sm:text-xl text-textPrimary font-bold tracking-tight">Preview</h2>
-            <p className="text-sm sm:text-base font-medium text-textSecondary mt-0.5">
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg md:text-xl text-textPrimary font-bold tracking-tight truncate">Preview</h2>
+            <p className="text-xs sm:text-sm md:text-base font-medium text-textSecondary mt-0.5 truncate">
               Quotation Preview
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <TemplateDropdown
-            onCustomerSelect={handleCustomerSelect}
-            selectedCustomer={selectedCustomer}
-            readOnly={fromCustomerView}
-          />
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-wrap w-full sm:w-auto">
+          <div className="w-full sm:w-auto min-w-0">
+            <TemplateDropdown
+              onCustomerSelect={handleCustomerSelect}
+              selectedCustomer={selectedCustomer}
+              readOnly={fromCustomerView}
+            />
+          </div>
 
           {/* Pass all required props to ShareButton */}
           {data && (
@@ -300,20 +312,20 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
             />
           )}
 
-          <button className="p-2 bg-gradient-to-br from-[#F7BA1E] to-[#F5A623] text-white rounded-lg shrink-0 shadow-md hover:shadow-lg transition-all hover:scale-105">
-            <FileText size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
+          <button className="p-1.5 sm:p-2 bg-gradient-to-br from-[#F7BA1E] to-[#F5A623] text-white rounded-lg shrink-0 shadow-md hover:shadow-lg transition-all hover:scale-105">
+            <FileText size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
           </button>
 
           <button 
             onClick={handleEnhanceQuotation}
             disabled={!quotation || isEnhancing || !hasServices}
-            className="p-2 bg-gradient-to-br from-primary to-primary/90 text-white rounded-lg shrink-0 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 relative"
+            className="p-1.5 sm:p-2 bg-gradient-to-br from-primary to-primary/90 text-white rounded-lg shrink-0 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 relative"
             title={isEnhancing ? "Enhancing..." : "AI Enhance Service Names"}
           >
             {isEnhancing ? (
-              <Sparkles size={18} className="sm:w-5 sm:h-5 animate-pulse" />
+              <Sparkles size={16} className="sm:w-4 sm:h-4 md:w-5 md:h-5 animate-pulse" />
             ) : (
-              <img src={Images.starIcon} alt="star" className="w-5 h-5 sm:w-6 sm:h-6" />
+              <img src={Images.starIcon} alt="star" className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
             )}
           </button>
         </div>
@@ -322,15 +334,10 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
       {/* Template Area */}
       <div
         id="quotation-preview"
-        className="flex-1 overflow-y-auto hide-scrollbar bg-white rounded-xl shadow-lg border border-lineColor/30 p-2 sm:p-3 md:p-4"
+        className="flex-1 overflow-y-auto hide-scrollbar bg-white rounded-lg sm:rounded-xl shadow-lg border border-lineColor/30 p-2 sm:p-3 md:p-4 lg:p-6"
       >
         {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-textSecondary font-medium">Loading quotation...</p>
-            </div>
-          </div>
+          <QuotationSkeleton />
         ) : quotation ? (
           <QuotationTemplate
             quotation={quotation}
@@ -352,8 +359,8 @@ const QuotationPanel = ({ quotation, loading, setQuotation, initialCustomer, fro
           </div>
         )}
       </div>
-
     </div>
+    </>
   );
 };
 

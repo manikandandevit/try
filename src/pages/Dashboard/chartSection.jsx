@@ -15,6 +15,19 @@ import { getDashboardStatsApi } from "../../API/customerApi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+// Hook to get window width
+const useWindowWidth = () => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return windowWidth;
+};
+
 /* -------------------- PIE DATA FALLBACK -------------------- */
 const pieDataFallback = [
   { name: "Draft", value: 0, color: "#9CA3AF" },
@@ -24,6 +37,7 @@ const pieDataFallback = [
 
 const DashboardCharts = () => {
   const currentYear = new Date().getFullYear();
+  const windowWidth = useWindowWidth();
 
   /* -------------------- BAR FILTER -------------------- */
   const [filterType, setFilterType] = useState("week");
@@ -262,15 +276,15 @@ const DashboardCharts = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
       {/* ================= BAR CHART ================= */}
-      <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium">
+      <div className="lg:col-span-2 bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 shadow">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-medium">
             Quotations Overview
           </h3>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <select
               value={filterType}
               onChange={(e) => {
@@ -284,7 +298,7 @@ const DashboardCharts = () => {
                   setSelectedDate(new Date());
                 }
               }}
-              className="border border-borderColor rounded-md px-3 py-2 text-sm"
+              className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm flex-1 sm:flex-none min-w-[100px]"
             >
               <option value="week">Week</option>
               <option value="month">Month</option>
@@ -296,7 +310,7 @@ const DashboardCharts = () => {
                 selected={selectedDate}
                 onChange={(date) => setSelectedDate(date)}
                 dateFormat="dd/MM/yyyy"
-                className="border border-borderColor rounded-md px-3 py-2 text-sm"
+                className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm flex-1 sm:flex-none min-w-[140px]"
               />
             )}
 
@@ -306,7 +320,7 @@ const DashboardCharts = () => {
                 onChange={(date) => setSelectedDate(date)}
                 showMonthYearPicker
                 dateFormat="MMM yyyy"
-                className="border border-borderColor rounded-md px-3 py-2 text-sm"
+                className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm flex-1 sm:flex-none min-w-[140px]"
               />
             )}
 
@@ -316,18 +330,18 @@ const DashboardCharts = () => {
                 onChange={(date) => setSelectedDate(date)}
                 showYearPicker
                 dateFormat="yyyy"
-                className="border border-borderColor rounded-md px-3 py-2 text-sm"
+                className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm flex-1 sm:flex-none min-w-[100px]"
               />
             )}
           </div>
         </div>
 
         {loadingBar ? (
-          <div className="h-72 flex items-center justify-center">
-            Loading...
+          <div className="h-48 sm:h-64 md:h-72 flex items-center justify-center">
+            <div className="text-sm sm:text-base text-gray-500">Loading...</div>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={windowWidth < 640 ? 250 : windowWidth < 768 ? 280 : 300}>
             <BarChart data={monthlyData}>
               <CartesianGrid
                 horizontal
@@ -335,10 +349,11 @@ const DashboardCharts = () => {
                 stroke="#E5E7EB"
                 strokeDasharray="6 6"
               />
-              <XAxis dataKey="label" />
+              <XAxis dataKey="label" tick={{ fontSize: windowWidth < 640 ? 10 : 12 }} />
               <YAxis
                 domain={[0, roundedMax]}
                 ticks={dynamicTicks}
+                tick={{ fontSize: windowWidth < 640 ? 10 : 12 }}
               />
               <Tooltip />
               <Bar
@@ -351,18 +366,18 @@ const DashboardCharts = () => {
       </div>
 
       {/* ================= PIE CHART ================= */}
-      <div className="bg-white shadow rounded-xl p-5">
-        <h3 className="text-lg font-medium mb-4">
+      <div className="bg-white shadow rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5">
+        <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">
           Quotation Status
         </h3>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-4">
           <select
             value={pieMonth}
             onChange={(e) =>
               setPieMonth(e.target.value)
             }
-            className="border border-borderColor rounded-md px-3 py-2 text-sm flex-1"
+            className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm flex-1"
           >
             {[...Array(12)].map((_, i) => (
               <option key={i} value={i + 1}>
@@ -378,7 +393,7 @@ const DashboardCharts = () => {
             onChange={(e) =>
               setPieYear(e.target.value)
             }
-            className="border border-borderColor rounded-md px-3 py-2 text-sm flex-1"
+            className="border border-borderColor rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm flex-1"
           >
             {[currentYear, currentYear - 1, currentYear - 2].map(
               (y) => (
@@ -391,19 +406,19 @@ const DashboardCharts = () => {
         </div>
 
         {loadingPie ? (
-          <div className="h-60 flex items-center justify-center">
-            Loading...
+          <div className="h-48 sm:h-60 flex items-center justify-center">
+            <div className="text-sm sm:text-base text-gray-500">Loading...</div>
           </div>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={240}>
+            <ResponsiveContainer width="100%" height={windowWidth < 640 ? 200 : 240}>
               <PieChart>
                 <Pie
                   data={pieData}
                   dataKey="value"
                   cx="50%"
                   cy="50%"
-                  outerRadius={90}
+                  outerRadius={windowWidth < 640 ? 70 : 90}
                 >
                   {pieData.map((entry, index) => (
                     <Cell
@@ -417,18 +432,18 @@ const DashboardCharts = () => {
             </ResponsiveContainer>
 
             {/* ================= LEGEND ================= */}
-            <div className="grid grid-cols-3 gap-3 mt-4 text-sm">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-4 text-xs sm:text-sm">
               {pieData.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-center sm:justify-between"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <span
-                      className="w-3 h-3 rounded-full"
+                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                       style={{ backgroundColor: item.color }}
                     ></span>
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 text-xs sm:text-sm truncate">
                       {item.name}
                     </span>
                   </div>

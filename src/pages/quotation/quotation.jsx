@@ -65,15 +65,34 @@ const Quotation = () => {
             try {
                 setLoading(true);
 
-                // When no quotationId: new user -> empty; existing user -> redirect to last quotation
+                // When no quotationId in URL:
+                // - Existing user/admin (has created quotations) -> redirect to their last quotation
+                // - New user/admin (never created any quotations) -> show empty state
+                // Backend filters by created_by_user_id (for users) or created_by_type='company' (for admin)
+                // So each user/admin only sees their own work
                 if (!quotationId) {
                     const lastRes = await getLastQuotationId();
                     const lastId = lastRes?.success && lastRes?.data?.last_quotation_id;
                     if (lastId) {
+                        // Existing user/admin: has created quotations before - show their last work
                         navigate(`/quotation/${lastId}`, { replace: true });
                         return;
                     }
-                    // New user: show empty - use session quotation (will be empty)
+                    // New user/admin: never created any quotations - show empty state
+                    // Set empty quotation and empty conversation history
+                    setQuotationState({
+                        services: [],
+                        subtotal: 0,
+                        gst_percentage: 0,
+                        gst_amount: 0,
+                        shipping: 0,
+                        grand_total: 0
+                    });
+                    setConversationHistory([]);
+                    setQuotationHistory([]);
+                    setHistoryIndex(-1);
+                    setLoading(false);
+                    return;
                 }
 
                 const quotationPromise = quotationId
@@ -182,15 +201,16 @@ const Quotation = () => {
     const canRedo = historyIndex < quotationHistory.length - 1;
 
     return (
-        <div className="flex flex-col w-full h-auto gap-3">          
+        <div className="flex flex-col w-full h-auto gap-2 sm:gap-3">          
 
             {/* Existing Layout */}
-            <div className="flex flex-col md:flex-row w-full h-auto gap-3">
+            <div className="flex flex-col lg:flex-row w-full h-auto gap-2 sm:gap-3">
                 <ConversationPanel
                     conversationHistory={conversationHistory}
                     setConversationHistory={setConversationHistory}
                     setQuotation={setQuotation}
                     quotationId={quotationId || null}
+                    quotation={quotation}
                     onUndo={handleUndo}
                     onRedo={handleRedo}
                     canUndo={canUndo}

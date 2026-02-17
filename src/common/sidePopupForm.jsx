@@ -64,14 +64,14 @@ const SidePopupForm = ({
             />
 
             {/* DRAWER */}
-            <div className="fixed top-0 right-0 h-screen w-full sm:w-105 bg-white z-50 flex flex-col animate-slideIn">
+            <div className="fixed top-0 right-0 h-screen w-full sm:w-96 md:w-105 bg-white z-50 flex flex-col animate-slideIn overflow-y-auto">
                 {/* HEADER */}
-                <div className="px-5 py-4 border-b border-borderColor flex items-center justify-between">
-                    <h3 className="text-lg text-primary font-semibold">{title}</h3>
+                <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-borderColor flex items-center justify-between shrink-0">
+                    <h3 className="text-base sm:text-lg text-primary font-semibold">{title}</h3>
                 </div>
 
                 {/* BODY */}
-                <div className="flex-1 p-5 space-y-6">
+                <div className="flex-1 p-4 sm:p-5 space-y-4 sm:space-y-6">
 
                     {/* DROPDOWN FIELD */}
                     {dropdownLabel && (
@@ -215,18 +215,18 @@ const SidePopupForm = ({
 
 
                     {/* ACTION BUTTONS */}
-                    <div className="flex items-center gap-3 pt-2">
+                    <div className="flex items-center gap-2 sm:gap-3 pt-2 sm:pt-4 shrink-0">
                         <button
                             onClick={onSubmit}
                             disabled={submitting}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm text-white
-        ${submitting ? "bg-primary/70 cursor-not-allowed" : "bg-primary"}
+                            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-white rounded
+        ${submitting ? "bg-primary/70 cursor-not-allowed" : "bg-primary hover:bg-primary/90"}
     `}
                         >
                             {submitting ? (
                                 <>
                                     <svg
-                                        className="animate-spin h-4 w-4 text-white"
+                                        className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 text-white"
                                         viewBox="0 0 24 24"
                                     >
                                         <circle
@@ -244,11 +244,12 @@ const SidePopupForm = ({
                                             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                                         />
                                     </svg>
-                                    Processing...
+                                    <span className="hidden sm:inline">Processing...</span>
+                                    <span className="sm:hidden">...</span>
                                 </>
                             ) : (
                                 <>
-                                    <SendHorizonal size={16} />
+                                    <SendHorizonal size={14} className="sm:w-4 sm:h-4" />
                                     {submitText}
                                 </>
                             )}
@@ -257,7 +258,7 @@ const SidePopupForm = ({
 
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-primary border border-primary text-sm"
+                            className="px-3 sm:px-4 py-1.5 sm:py-2 text-primary border border-primary text-xs sm:text-sm rounded hover:bg-primary/5"
                         >
                             {cancelText}
                         </button>

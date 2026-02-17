@@ -143,36 +143,36 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* ================= LEFT SIDE ================= */}
-      <div className="w-full md:w-1/2 bg-primary text-white flex flex-col items-center justify-center p-6 sm:p-8 md:p-10">
+      <div className="w-full md:w-1/2 lg:w-2/5 bg-primary text-white flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10 min-h-[40vh] md:min-h-screen">
         <img
           src={loginImage}
           alt="Illustration"
-          className="w-48 sm:w-64 md:w-75 h-auto max-h-60 sm:max-h-80 md:max-h-96 object-contain mb-6 sm:mb-8 md:mb-10"
+          className="w-40 sm:w-56 md:w-64 lg:w-80 h-auto max-h-[200px] sm:max-h-[250px] md:max-h-[300px] lg:max-h-[400px] object-contain mb-4 sm:mb-6 md:mb-8 lg:mb-10"
           onError={(e) => {
             // Fallback to default image if backend image fails to load
             e.target.src = Images.loginLeft;
           }}
         />
-        <h2 className="text-2xl sm:text-3xl font-semibold mb-3 sm:mb-4 text-center px-4">
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-2 sm:mb-3 md:mb-4 text-center px-4">
           {brandName ? (
             brandName
           ) : (
-            <>Syn<span className="text-3xl sm:text-4xl md:text-5xl">Q</span>uot</>
+            <>Syn<span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Q</span>uot</>
           )}
         </h2>
-        <p className="text-center text-sm sm:text-md font-medium px-4">
+        <p className="text-center text-xs sm:text-sm md:text-base font-medium px-4">
           Smart Quotes, Made Simple.
         </p>
       </div>
 
       {/* ================= RIGHT SIDE ================= */}
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-bgColor p-4 sm:p-6 md:p-10">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-          <div className="flex justify-center mb-6">
+      <div className="w-full md:w-1/2 lg:w-3/5 flex items-center justify-center bg-bgColor p-4 sm:p-6 md:p-8 lg:p-10 min-h-[60vh] md:min-h-screen">
+        <div className="w-full max-w-md bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
+          <div className="flex justify-center mb-4 sm:mb-6">
             <img 
               src={loginLogo} 
               alt="Logo" 
-              className="w-86.5 h-25"
+              className="w-full max-w-[200px] sm:max-w-[250px] md:max-w-[300px] h-auto object-contain"
               onError={(e) => {
                 // Fallback to default logo if backend logo fails to load
                 e.target.src = Images.fullLogo;
@@ -180,16 +180,16 @@ const Login = () => {
             />
           </div>
 
-          <h2 className="text-center text-textPrimary text-2xl font-semibold mb-6">Welcome !</h2>
+          <h2 className="text-center text-textPrimary text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Welcome !</h2>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             {/* Email or Username */}
             <div>
               <label className="text-sm text-textPrimary font-medium">Email or Username</label>
               <input
                 type="text"
                 placeholder="Enter your email or username"
-                className="w-full mt-1 h-11 px-4 rounded-md border border-borderColor outline-none"
+                className="w-full mt-1 h-10 sm:h-11 px-3 sm:px-4 rounded-md border border-borderColor outline-none text-sm sm:text-base"
                 {...register("email")}
               />
               {errors.email && (
@@ -198,20 +198,20 @@ const Login = () => {
             </div>
 
             {/* PASSWORD */}
-            <div className="relative mt-1">
+            <div className="relative">
               <label className="text-sm text-textPrimary font-medium">Password</label>
               <input
                 type={show ? "text" : "password"}
                 placeholder="Enter your password"
-                className="w-full h-11 px-4 rounded-md border border-borderColor outline-none"
+                className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 sm:pr-12 rounded-md border border-borderColor outline-none text-sm sm:text-base"
                 {...register("password")}
               />
               <button
                 type="button"
                 onClick={() => setShow(!show)}
-                className="absolute right-4 top-11 -translate-y-1/2 text-gray-400"
+                className="absolute right-3 sm:right-4 top-[calc(50%+8px)] sm:top-[calc(50%+10px)] -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {show ? <Eye size={16} /> : <EyeOff size={16} />}
+                {show ? <Eye size={18} className="sm:w-5 sm:h-5" /> : <EyeOff size={18} className="sm:w-5 sm:h-5" />}
               </button>
               {errors.password && (
                 <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
@@ -222,7 +222,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-11 rounded-md mt-4 bg-primary text-white font-medium transition ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+              className={`w-full h-10 sm:h-11 rounded-md mt-3 sm:mt-4 bg-primary text-white font-medium transition text-sm sm:text-base ${loading ? "opacity-60 cursor-not-allowed" : "hover:bg-primary/90"}`}
             >
               {loading ? "Logging in..." : "Login"}
             </button>

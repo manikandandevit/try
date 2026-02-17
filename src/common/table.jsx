@@ -87,7 +87,7 @@ const CommonTable = ({
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  const isMobile = windowWidth < 768;
+  const isMobile = windowWidth < 1024;
 
   /* ------------------------------------------
      MOBILE PAGINATION (CLIENT SIDE)
@@ -147,9 +147,9 @@ const CommonTable = ({
   return (
     <div className="bg-white rounded-lg border border-lineColor flex flex-col h-full">
       {/* ---------- TOP BAR ---------- */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b border-lineColor">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 p-3 sm:p-4 border-b border-lineColor">
         {onSearch && (
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-64 md:w-72">
             <Search
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-lightGrey"
@@ -159,12 +159,12 @@ const CommonTable = ({
               value={searchValue}
               onChange={(e) => onSearch(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full border border-lineColor rounded-full pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full border border-lineColor rounded-full pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         )}
 
-        <div className="flex items-center gap-3 justify-end">
+        <div className="flex items-center gap-2 sm:gap-3 justify-end flex-wrap">
           {rightActions}
         </div>
       </div>

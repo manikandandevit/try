@@ -60,7 +60,7 @@ const MainLayout = ({ children }) => {
       </div>
 
       <div
-        className="flex-1 flex flex-col transition-all duration-300 w-full md:w-auto"
+        className="flex-1 flex flex-col transition-all duration-300 w-full"
         style={{
           marginLeft: windowWidth >= 768 ? sidebarWidth : '0',
         }}
@@ -72,10 +72,10 @@ const MainLayout = ({ children }) => {
 
         <div
           className="flex-1 bg-primary"
-          style={{ marginTop: TOPBAR_HEIGHT }}
+          style={{ marginTop: windowWidth < 640 ? '60px' : TOPBAR_HEIGHT }}
         >
           <div className="bg-bgColor1 h-full flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-y-auto hide-scrollbar p-2 sm:p-3 md:p-4">
+            <main className="flex-1 overflow-y-auto hide-scrollbar p-2 sm:p-3 md:p-4 lg:p-6">
               {children}
             </main>
           </div>
