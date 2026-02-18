@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+
+  
   "scripts": {
     "local": "vite --mode localenv",
     "dev": "vite --mode dev",
-    "build:dev": "vite build --mode dev",
+    "build": "vite build --mode prod",
     "build:prod": "vite build --mode prod",
     "preview": "vite preview --mode prod",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build:dev": "vite build --mode dev",
+    "preview:dev": "vite preview --mode dev"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
