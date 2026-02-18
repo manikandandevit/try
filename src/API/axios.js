@@ -6,6 +6,7 @@ const API = axios.create({
   withCredentials: true, //  allow cookies
 });
 
+
 // Attach access token
 API.interceptors.request.use((config) => {
   const accessToken = localStorage.getItem("accessToken");
