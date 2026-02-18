@@ -72,7 +72,11 @@ const Quotation = () => {
                 // So each user/admin only sees their own work
                 if (!quotationId) {
                     const lastRes = await getLastQuotationId();
-                    const lastId = lastRes?.success && lastRes?.data?.last_quotation_id;
+                    // Handle both old and new response structures for backward compatibility
+                    const lastId = lastRes?.success && (
+                        lastRes?.data?.data?.last_quotation_id ?? 
+                        lastRes?.data?.last_quotation_id
+                    );
                     if (lastId) {
                         // Existing user/admin: has created quotations before - show their last work
                         navigate(`/quotation/${lastId}`, { replace: true });
