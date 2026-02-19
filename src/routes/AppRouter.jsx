@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+
 import { publicRoutes, ProtectedRoutes } from "./routesConfig";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -44,39 +45,33 @@ const AppRouter = () => {
   const allProtectedRoutes = getAllProtectedRoutes(ProtectedRoutes);
 
   return (
-    <HashRouter>
-      <Routes>
+    <Routes>
 
-        {/* 🔹 Default Redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* -------- Public Routes -------- */}
-        {publicRoutes.map(({ path, element }, index) => (
-          <Route
-            key={index}
-            path={path}
-            element={<PublicRoute>{element}</PublicRoute>}
-          />
-        ))}
+      {publicRoutes.map(({ path, element }, index) => (
+        <Route
+          key={index}
+          path={path}
+          element={<PublicRoute>{element}</PublicRoute>}
+        />
+      ))}
 
-        {/* -------- Protected Routes -------- */}
-        {allProtectedRoutes.map((route, index) => (
-          <Route
-            key={index}
-            path={route.path}
-            element={
-              <ProtectedRoute permission={route.permission}>
-                <MainLayout>{route.element}</MainLayout>
-              </ProtectedRoute>
-            }
-          />
-        ))}
+      {allProtectedRoutes.map((route, index) => (
+        <Route
+          key={index}
+          path={route.path}
+          element={
+            <ProtectedRoute permission={route.permission}>
+              <MainLayout>{route.element}</MainLayout>
+            </ProtectedRoute>
+          }
+        />
+      ))}
 
-        {/* 🔹 404 Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
 
-      </Routes>
-    </HashRouter>
+    </Routes>
   );
 };
 

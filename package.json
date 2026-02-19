@@ -5,8 +5,8 @@
   "type": "module",
   "homepage": "https://manikandandevit.github.io/try",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node init && vite",
+    "build": "node init && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
