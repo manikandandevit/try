@@ -5,9 +5,11 @@ import AppRouter from "./routes/AppRouter";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>    
-        <SnackbarProviderWrapper>
-          <AppRouter />
-        </SnackbarProviderWrapper>     
+  <React.StrictMode>
+    <HashRouter>
+      <SnackbarProviderWrapper>
+        <AppRouter />
+      </SnackbarProviderWrapper>
+    </HashRouter>
   </React.StrictMode>
 );
