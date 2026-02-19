@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { publicRoutes, ProtectedRoutes } from "./routesConfig";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -8,12 +8,10 @@ const getAllProtectedRoutes = (routes = []) => {
   const result = [];
 
   routes.forEach(route => {
-    // normal parent routes
     if (route.path && route.element) {
       result.push(route);
     }
 
-    // children routes
     if (route.children) {
       route.children.forEach(child => {
         if (child.path && child.element) {
@@ -22,14 +20,12 @@ const getAllProtectedRoutes = (routes = []) => {
       });
     }
 
-    // 🔥 GROUP (Masters) MENUS
     if (route.group && route.menus) {
       route.menus.forEach(menu => {
         if (menu.path && menu.element) {
           result.push(menu);
         }
 
-        // nested children inside master menu
         if (menu.children) {
           menu.children.forEach(child => {
             if (child.path && child.element) {
@@ -45,12 +41,15 @@ const getAllProtectedRoutes = (routes = []) => {
 };
 
 const AppRouter = () => {
-
   const allProtectedRoutes = getAllProtectedRoutes(ProtectedRoutes);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
+
+        {/* 🔹 Default Redirect */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         {/* -------- Public Routes -------- */}
         {publicRoutes.map(({ path, element }, index) => (
           <Route
@@ -60,8 +59,7 @@ const AppRouter = () => {
           />
         ))}
 
-        {/* -------- Protected Routes (Parent + Submenus) -------- */}
-
+        {/* -------- Protected Routes -------- */}
         {allProtectedRoutes.map((route, index) => (
           <Route
             key={index}
@@ -73,46 +71,12 @@ const AppRouter = () => {
             }
           />
         ))}
-        
 
-        {/* {ProtectedRoutes.flatMap((route) => {
-          const routes = [];
-
-          if (route.element) {
-            routes.push(
-              <Route
-                key={route.path}
-                path={route.path}
-                element={
-                  <ProtectedRoute permission={route.permission}>
-                    <MainLayout>{route.element}</MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-            );
-          }
-
-          if (route.children) {
-            route.children.forEach((child) => {
-              routes.push(
-                <Route
-                  key={child.path}
-                  path={child.path}
-                  element={
-                    <ProtectedRoute permission={child.permission}>
-                      <MainLayout>{child.element}</MainLayout>
-                    </ProtectedRoute>
-                  }
-                />
-              );
-            });
-          }
-
-          return routes;
-        })} */}
+        {/* 🔹 404 Fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 
