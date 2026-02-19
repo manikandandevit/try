@@ -15,7 +15,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -62,11 +61,8 @@ db.sqlite3-journal
 /media/
 
 # Environment variables
-.env
-.env.local
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -79,3 +75,4 @@ Thumbs.db
 # WeasyPrint cache
 .weasyprint-cache/
 >>>>>>> 0b92379c81e512c6a0633abafde0b9b411610eb5
+config.bat
